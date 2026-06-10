@@ -1,0 +1,15 @@
+{
+  "name": "dev-workflow-marketplace",
+  "description": "Personal marketplace hosting the dev-workflow plugin",
+  "owner": {
+    "name": "Abdulazim Holdijk",
+    "email": "zimoholdijk@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "dev-workflow",
+      "description": "PRD-first development workflow: PRDs, phased plans, multi-stage reviews, implementation tracking, code reviews, tradeoff decisions, and doc audits.",
+      "source": "./"
+    }
+  ]
+}
