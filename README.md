@@ -9,6 +9,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | Skill | Purpose |
 |-------|---------|
 | `project-setup` | Bootstrap a new project with context docs, CLAUDE.md, and workflow conventions |
+| `discuss-feature` | Pre-PRD discussion in plain language: one topic per message, collects decisions, creates a backlog ticket, hands off to `write-prd` |
 | `write-prd` | Draft a PRD for a new feature |
 | `write-plan` | Draft a phased implementation plan from an approved PRD |
 | `plan-review` | Multi-stage plan review: junior Q&A, senior architecture review, conformance check |
@@ -58,4 +59,4 @@ Or, once pushed to GitHub:
 
 - When installed as a plugin, skills are namespaced: `/dev-workflow:write-prd` instead of `/write-prd`. Skill bodies reference each other by their short names (e.g. "Run /plan-review"); Claude resolves these to the namespaced versions.
 - Some skills read `~/.claude/CLAUDE.md` for global rules. If that file doesn't exist in the environment (e.g. a fresh Cowork session), the skills proceed without it.
-- The typical flow: `project-setup` once per repo, then per feature: `write-prd` → `write-plan` → `plan-review` → `tradeoff-review` → `implement-plan` → `full-code-review` → `doc-audit`. `overnight-delivery` chains the per-feature steps end-to-end.
+- The typical flow: `project-setup` once per repo, then per feature: `discuss-feature` → `write-prd` → `write-plan` → `plan-review` → `tradeoff-review` → `implement-plan` → `full-code-review` → `doc-audit`. `overnight-delivery` chains the per-feature steps end-to-end.
