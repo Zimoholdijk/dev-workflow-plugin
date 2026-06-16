@@ -38,12 +38,28 @@ From a local checkout:
 /plugin install dev-workflow@dev-workflow-marketplace
 ```
 
-Or, once pushed to GitHub:
+Or from GitHub:
 
 ```
-/plugin marketplace add <your-github-user>/dev-workflow-plugin
+/plugin marketplace add Zimoholdijk/dev-workflow-plugin
 /plugin install dev-workflow@dev-workflow-marketplace
 ```
+
+To pull updates later: `/plugin marketplace update` then `/reload-plugins`.
+
+## Personalize after installing
+
+This plugin ships generic on purpose: no personal workspace IDs, board IDs, or tracker choices are baked in, so it stays portable and safe to share or use at work. Personalization lives in two config layers the skills read at runtime, not in the plugin itself. After installing, set them up:
+
+1. **Pick a default issue tracker (once, global).** Some skills (`discuss-feature`, `write-prd`) create tickets. Add a line to your `~/.claude/CLAUDE.md` naming your default tracker, for example: "Default issue tracker is Notion; use it for backlog tickets and feature boards unless a project overrides it." Project config always overrides this. Do not put a specific board or data source ID here; that is per-project.
+
+2. **Capture each project's board (per repo).** Run `/dev-workflow:project-setup` in a repo. It asks which tracker and the exact target (Notion data source ID, Linear team/project) and writes it to an "Issue Tracker" section of that project's `.claude/CLAUDE.md`. `discuss-feature` and `write-prd` read that section and create tickets without re-asking. If a project has no board, leave it out and the skills just deliver the decision summary instead of creating a ticket.
+
+3. **Tune the global rules the skills inherit.** Every skill reads `~/.claude/CLAUDE.md`. Conventions you keep there (approval semantics, no-hardcoded-config, mobile-first, writing style) are obeyed by the whole workflow. This is where your cross-project standards and voice live.
+
+Creating tickets also requires the relevant MCP server connected in your environment (e.g. the Notion or Linear MCP). Without it, the skills still run the discussion and hand off; they just skip the ticket step.
+
+Why this split: project-specific values differ per repo and should not leak into a shared plugin, so they live in each project's config; cross-project preferences live in your global `~/.claude/CLAUDE.md`. The plugin stays portable, and "you" lives in the layers it reads.
 
 ## Design principles baked in (merged from the work version, v1.1.0)
 
