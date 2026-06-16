@@ -61,7 +61,7 @@ Creating tickets also requires the relevant MCP server connected in your environ
 
 Why this split: project-specific values differ per repo and should not leak into a shared plugin, so they live in each project's config; cross-project preferences live in your global `~/.claude/CLAUDE.md`. The plugin stays portable, and "you" lives in the layers it reads.
 
-## Design principles baked in (merged from the work version, v1.1.0)
+## Design principles baked in
 
 - Hard separation of what (PRD) from how (plan). No code in PRDs; no code blocks in plans.
 - Independent testability: every phase must be verifiable without later phases (page shell before content, hook + display together, foundation before polish).
