@@ -143,7 +143,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [If the project keeps older hand-written docs, list them last and mark them as potentially stale: cross-check against live code where it matters.]
 
 ## Workflow Skills
-The dev-workflow skills are available: `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (PRD, then implementation plan, then implementation) before writing code.
+The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation) before writing code.
 ```
 
 **Important:** Only include sections that are relevant. If there's no database, omit the Database section. If the tech stack is simple, keep it brief. The CLAUDE.md should grow organically as conventions are established. Don't front-load rules that haven't been tested yet.
@@ -307,6 +307,7 @@ Check that these companion skills are available (as personal skills in `~/.claud
 
 | Skill | Purpose | Required for |
 |-------|---------|-------------|
+| `discuss-feature` | Pre-PRD discussion, collects decisions | Before write-prd (optional) |
 | `write-prd` | Draft feature PRDs | Starting any new feature |
 | `write-plan` | Draft implementation plans | After PRD approval |
 | `plan-review` | Multi-stage plan review (junior + senior) | After drafting a plan |

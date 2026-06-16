@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
   "description": "PRD-first development workflow: write PRDs and phased implementation plans, run multi-stage plan reviews (junior Q&A, senior architecture review with framework-idiom and behavior-deletion checks), implement plans phase-by-phase with progress tracking, run 6-reviewer parallel code reviews including a regression pass, collect tradeoff decisions, and audit docs against the codebase.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "Abdulazim Holdijk",
     "email": "zimoholdijk@gmail.com"
