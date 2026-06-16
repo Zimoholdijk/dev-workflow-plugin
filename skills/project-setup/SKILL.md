@@ -41,6 +41,7 @@ Ask the user these questions (skip any that were auto-detected in Step 1):
 6. **Deployment target**: where will this run? (helps inform env var conventions)
 7. **Local-dev gotchas**: any non-default ports, service quirks, pre-existing build/lint errors, or env vars that have bitten before? (these go in CLAUDE.md so a fresh session doesn't waste its first turns rediscovering them)
 8. **Testing reality**: what test infrastructure exists today, if any? Can new features assume a suite?
+9. **Issue tracker / board**: which tracker does this project use, and what's the specific target? (e.g. Notion: backlog data source ID; Linear: team and project keys). This is what `discuss-feature` and `write-prd` read when creating tickets. If the global `~/.claude/CLAUDE.md` names a default tracker, confirm it applies here or override it. Skip only if the project has no board.
 
 Do NOT proceed until the user has confirmed or provided this info. The overview and CLAUDE.md must reflect the actual project, not assumptions.
 
@@ -141,6 +142,12 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - PRD: `/context/[product-prd-name].md` (created separately if needed)
 - Feature docs: `/context/<Feature>/` with PRD, implementation plan, and progress files
 [If the project keeps older hand-written docs, list them last and mark them as potentially stale: cross-check against live code where it matters.]
+
+## Issue Tracker
+[Fill from Step 2 question 9. State the tracker and the exact target so discuss-feature and write-prd can create tickets without asking. Examples:
+- Notion: backlog data source ID `[id]` (workspace [name])
+- Linear: team `[KEY]`, project `[name]`
+Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
 
 ## Workflow Skills
 The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation) before writing code.
