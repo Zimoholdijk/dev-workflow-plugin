@@ -22,14 +22,27 @@ Gather context that the reviewers will need. Read:
 
 You will pass ALL of this context to the sub-agents, since they have no prior knowledge of the project.
 
+## Clean-context rule (applies to every reviewer spawn, every stage, every invocation)
+
+Every reviewer must assess the ENTIRE plan from clean context. Never nudge a reviewer toward "what's still open", "what was raised last round", "what the prior reviewer missed", or any other narrowed focus. The reviewer's job is to evaluate the whole plan as if seeing it for the first time, against the full set of criteria for their role.
+
+Concretely:
+- **Strip the `## Review Log` section (and any other prior-round artefacts) from the plan text before pasting it into a reviewer prompt.** The Review Log lives in the plan file for the human and for the orchestrator; reviewers must not see it. If you spawn a reviewer and forget to strip it, abort that spawn and redo.
+- **Do not pass prior junior questions, prior senior verdicts, prior orchestrator responses, or prior-round diffs to any reviewer.** No "here's what was addressed last time", no "focus on the remaining concerns", no "the previous senior said X, do you agree". Each reviewer starts fresh.
+- **Do not summarise the plan's history or narrate what changed.** Hand over the current plan and the project context. That's it.
+- **Reviewer prompts must be invocation-invariant.** The prompt you send on round 3 should be structurally identical to round 1 (same context, same instructions, same criteria) — only the plan text differs because the plan itself has evolved.
+- This rule overrides any instinct to be "efficient" by pointing reviewers at what's changed. Efficiency here produces blind spots; clean context produces coverage.
+
 ## Stage 1: Junior Engineer Review
 
-Spawn the `junior-reviewer` sub-agent. In your prompt, include:
-1. The full text of the plan
+Spawn the `junior-reviewer` sub-agent. **Apply the clean-context rule above: strip the `## Review Log` section from the plan text before sending it, and do not narrate what was raised or addressed in any prior round.** The junior reads the whole plan from scratch.
+
+In your prompt, include:
+1. The current plan, with the `## Review Log` section stripped
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
-5. A summary of the current state of the codebase relevant to the plan (e.g., current schema, current file structure)
+5. A factual snapshot of the current state of the codebase relevant to the plan (e.g., current schema, current file structure). State facts, not interpretations — do not flag "this looks risky" or "this changed since round 1"; just describe what's there.
 6. **An orientation instruction.** The junior has Read, Glob, and Grep. Tell it: before asking anything, orient like a day-one engineer, open the files and directories the plan touches and the patterns it references. A question the orientation reading would answer (e.g. "what props does component X take?") is noise; a question that survives the orientation is signal (e.g. "the plan reuses pattern X from `routeZ.tsx:42`, but X is inline-defined and not exported, should I export, move, or duplicate it?"). Ask for project-grounded questions that cite file paths.
 
 The junior reviewer will return a list of clarifying questions.
@@ -55,15 +68,18 @@ The junior reviewer will return a list of clarifying questions.
 
 ### Spawn
 
-Spawn the `senior-reviewer` sub-agent. In your prompt, include:
-1. The UPDATED plan (after Stage 1 revisions)
+Spawn the `senior-reviewer` sub-agent. **Apply the clean-context rule above: strip the `## Review Log` section from the plan text, do NOT pass junior questions or your Stage 1 responses, do NOT narrate what changed since the last round.** The senior reviews the whole plan from scratch.
+
+In your prompt, include:
+1. The current plan, with the `## Review Log` section stripped
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
-5. The list of junior questions and your responses (so the senior can see what was already addressed)
-6. **Explicit instruction (Axis 9): Repetition / factoring smell.** Tell the senior: "Grep the plan's prose for near-identical branch descriptions (verb + object that recur with only a literal, key, separator, or metadata differing). If found, flag it as a structural issue (not a spec violation) and sketch what a unified path would look like. This is grading internal factoring, not just spec compliance. You cannot return a Pass verdict without explicitly stating whether the plan has repetition smell."
-7. **Explicit instruction (Axis 10): Framework-idiom check.** Tell the senior: "When the plan involves SQL, RLS policies, ORM queries, framework hooks, middleware, or any code shape governed by a third-party tool's conventions, verify the pattern appears in that tool's official documentation. Constrain doc lookups to the framework's own site (e.g. site:prisma.io/docs, site:supabase.com/docs, site:react.dev), not blogs, Stack Overflow, or community discussions, which routinely endorse non-idiomatic patterns. A pattern that implements the spec correctly but has no documented analog is still likely wrong; homegrown patterns are usually invented to satisfy a prose spec, not because the framework lacks a documented solution. Grade against the framework, not just against the plan."
-8. **Explicit instruction (Axis 11): Behavior the plan implicitly removes.** Tell the senior: "When the plan rewrites an existing hook, module, route, or shared file, read the actual file before the rewrite and enumerate its current responsibilities: every switch case, guard clause, ref and its side effects, exported helper, and documented convention. Check the plan against that list: is each one preserved or intentionally dropped, or does the plan only describe additions and leave preservation implicit? Also scan the plan for 'remove', 'delete', and 'no longer needed': when the plan removes a documented convention, verify the code that convention protected is either preserved or genuinely obsolete. Do not grade 'is the new design coherent'; grade 'would shipping this design quietly break anything the old code did?'"
+5. **Explicit instruction (Axis 9): Repetition / factoring smell.** Tell the senior: "Grep the plan's prose for near-identical branch descriptions (verb + object that recur with only a literal, key, separator, or metadata differing). If found, flag it as a structural issue (not a spec violation) and sketch what a unified path would look like. This is grading internal factoring, not just spec compliance. You cannot return a Pass verdict without explicitly stating whether the plan has repetition smell."
+6. **Explicit instruction (Axis 10): Framework-idiom check.** Tell the senior: "When the plan involves SQL, RLS policies, ORM queries, framework hooks, middleware, or any code shape governed by a third-party tool's conventions, verify the pattern appears in that tool's official documentation. Constrain doc lookups to the framework's own site (e.g. site:prisma.io/docs, site:supabase.com/docs, site:react.dev), not blogs, Stack Overflow, or community discussions, which routinely endorse non-idiomatic patterns. A pattern that implements the spec correctly but has no documented analog is still likely wrong; homegrown patterns are usually invented to satisfy a prose spec, not because the framework lacks a documented solution. Grade against the framework, not just against the plan."
+7. **Explicit instruction (Axis 11): Behavior the plan implicitly removes.** Tell the senior: "When the plan rewrites an existing hook, module, route, or shared file, read the actual file before the rewrite and enumerate its current responsibilities: every switch case, guard clause, ref and its side effects, exported helper, and documented convention. Check the plan against that list: is each one preserved or intentionally dropped, or does the plan only describe additions and leave preservation implicit? Also scan the plan for 'remove', 'delete', and 'no longer needed': when the plan removes a documented convention, verify the code that convention protected is either preserved or genuinely obsolete. Do not grade 'is the new design coherent'; grade 'would shipping this design quietly break anything the old code did?'"
+
+These axes are general criteria the senior must always apply. They are not "focus areas raised last round" — they apply identically on every invocation.
 
 The senior reviewer will return a structured review with verdict, critical issues, and suggestions.
 
@@ -108,4 +124,6 @@ This log is part of the plan, it documents the reasoning behind the final versio
 
 ## Re-invocation
 
-This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. Each invocation runs all stages fresh against the current state of the plan; rounds from prior invocations don't count. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the Review Log.
+This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the Review Log.
+
+Each invocation runs all stages from clean context against the current state of the plan; rounds from prior invocations don't count and must not influence the reviewers. Re-read the "Clean-context rule" above before spawning anything: strip the Review Log, do not pass prior rounds' questions/verdicts/responses, do not narrow the reviewer's focus to "what's still open" or "what the last round missed". The senior on round 5 must receive the same shape of prompt (with the same clean plan, no prior-round artefacts) as the senior on round 1 — the only thing that should differ is the current plan text.
