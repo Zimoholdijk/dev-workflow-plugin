@@ -33,7 +33,7 @@ This drafts a phased implementation plan based on the approved PRD. The plan is 
 Run `/plan-review context/[Feature]/implementation-plan.md` **four times in sequence**. Each round builds on the previous: the plan is updated between rounds, so each review sees a progressively refined version.
 
 ### Round 1
-- Fresh junior + senior review against the initial draft.
+- Fresh clarifying-questions, deep-critique, and red-team passes against the initial draft.
 - Apply all critical issues and clear improvements. Update the plan.
 
 ### Round 2

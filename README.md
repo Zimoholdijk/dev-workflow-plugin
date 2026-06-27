@@ -1,6 +1,6 @@
 # dev-workflow
 
-A Claude Code plugin packaging a PRD-first development workflow: write PRDs, draft phased implementation plans, run multi-stage reviews with junior and senior reviewer sub-agents, implement plans phase-by-phase with progress tracking, run parallel code reviews, collect tradeoff decisions, and audit documentation against the codebase. Testing is treated as a first-class part of the workflow: plans must carry a testing strategy, every phase ships its own tests, a dedicated review agent runs the suite, and a bundled Playwright MCP drives real-browser end-to-end tests.
+A Claude Code plugin packaging a PRD-first development workflow: write PRDs, draft phased implementation plans, run multi-lens plan reviews (clarifying-questions, deep-critique, and adversarial red-team passes), implement plans phase-by-phase with progress tracking, run parallel code reviews, collect tradeoff decisions, and audit documentation against the codebase. Testing is treated as a first-class part of the workflow: plans must carry a testing strategy, every phase ships its own tests, a dedicated review agent runs the suite, and a bundled Playwright MCP drives real-browser end-to-end tests.
 
 ## What's included
 
@@ -12,9 +12,10 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `discuss-feature` | Pre-PRD discussion in plain language: one topic per message, collects decisions, creates a backlog ticket, hands off to `write-prd` |
 | `write-prd` | Draft a PRD for a new feature |
 | `write-plan` | Draft a phased implementation plan from an approved PRD |
-| `plan-review` | Multi-stage plan review: junior Q&A, senior architecture review, conformance check |
-| `junior-review` | Spawn the junior-reviewer sub-agent for clarifying questions |
-| `senior-review` | Spawn the senior-reviewer sub-agent for architectural review |
+| `plan-review` | Multi-lens plan review: clarifying-questions pass, deep-critique pass (factoring, framework-idiom, implicit-deletion, test-coverage, operational failure modes, with cited findings), adversarial red-team pass, then a conformance check |
+| `junior-review` | Spawn the junior-reviewer sub-agent for the clarifying-questions pass |
+| `senior-review` | Spawn the senior-reviewer sub-agent for the deep-critique pass |
+| `red-team-review` | Spawn the red-team-reviewer sub-agent to adversarially stress-test a plan or design |
 | `research` | Spin up a research sub-agent to answer a technical question or find best practices, docs-first then reputable sources, grounded in the repo, plans, and current discussion |
 | `implement-plan` | Execute an approved plan phase-by-phase, writing tests as each phase lands and keeping progress docs in sync |
 | `write-e2e-tests` | Drive a real browser via the bundled Playwright MCP to verify flows, then write durable Playwright spec files and run them |
@@ -28,8 +29,9 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 
 | Agent | Purpose |
 |-------|---------|
-| `junior-reviewer` | Anxious junior engineer who surfaces ambiguity and gaps in plans |
-| `senior-reviewer` | Senior architect who reviews for fit, scope creep, and risk |
+| `junior-reviewer` | Clarifying-questions pass: surfaces ambiguity, gaps, and missing tests |
+| `senior-reviewer` | Deep-critique pass: grades fit, scope, operational failure modes, and test coverage, with cited findings |
+| `red-team-reviewer` | Adversarial pass: tries to break the plan and returns ranked, cited failure scenarios |
 
 ### Bundled MCP servers
 
@@ -78,6 +80,7 @@ Why this split: project-specific values differ per repo and should not leak into
 - Branch-vs-data smell: N near-identical branches differing only by a literal should usually be one path with the difference as data.
 - Framework-idiom checks: reviewers verify SQL/ORM/hook patterns against official framework docs, not blogs. A pattern with no documented analog is a red flag.
 - Behavior-deletion checks: a dedicated regression reviewer grades what a diff removes, and the senior plan reviewer grades what a rewrite implicitly drops.
+- Reviewers organized by lens, not seniority role-play: a clarifying-questions pass, a deep-critique pass (cited findings; a Pass is blocked until implicit-deletions, test coverage, and operational failure modes are explicitly cleared), and an adversarial red-team pass that tries to break the plan. Persona framing like "you are a senior engineer" is deliberately avoided, evidence shows it can lower accuracy on this kind of judgment.
 - Testing is non-optional: plans carry a testing strategy and every phase names the tests it adds; tests are written as each phase lands, not batched to the end; a dedicated review agent runs the suite; critical flows get automated Playwright coverage rather than manual-only checks.
 - Strict approval gates: silence, "ok", or "thanks" is not approval.
 - Reviews are re-runnable on request, without pushback.

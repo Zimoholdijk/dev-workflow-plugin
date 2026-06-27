@@ -5,9 +5,9 @@ disable-model-invocation: false
 argument-hint: "[path to plan or file to review]"
 ---
 
-# Junior Engineer Review
+# Clarifying-Questions Review
 
-You have been asked to get a junior engineer review of: $ARGUMENTS
+You have been asked to run the clarifying-questions pass over: $ARGUMENTS
 
 ## Before starting
 

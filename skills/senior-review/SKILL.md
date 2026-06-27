@@ -5,9 +5,9 @@ disable-model-invocation: false
 argument-hint: "[path to plan or file to review]"
 ---
 
-# Senior Architect Review
+# Deep-Critique Review
 
-You have been asked to get a senior architect review of: $ARGUMENTS
+You have been asked to run the deep-critique pass over: $ARGUMENTS
 
 ## Before starting
 
@@ -30,9 +30,10 @@ Spawn the `senior-reviewer` sub-agent. In your prompt, include:
 ## After the review
 
 Present the senior reviewer's feedback to the user, structured as:
-1. **Verdict** (Approve / Approve with changes / Request changes)
-2. **Critical issues**: with your take on each
-3. **Suggestions**: with your take on each
-4. **What's good**
+1. **Strongest reason to reject** (stated before the verdict, per the reviewer's format)
+2. **Verdict** (Approve / Approve with changes / Request changes)
+3. **Critical issues**: with your take on each (each should carry a `file:line` or quoted-line citation)
+4. **Suggestions**: with your take on each
+5. **What's good**
 
 Let the user decide what to act on.

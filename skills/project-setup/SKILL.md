@@ -299,7 +299,7 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 
 ## Planning Workflow
 - When creating an implementation or refactoring plan, use `/plan-review` to run the multi-stage review workflow after drafting.
-- The workflow spawns a junior-reviewer (clarifying questions) and senior-reviewer (architectural review) sub-agent in sequence, followed by a quality/conformance check.
+- The workflow runs three reviewer lenses in sequence, a junior-reviewer (clarifying questions), a senior-reviewer (deep critique with cited findings), and a red-team-reviewer (adversarial, tries to break the plan), followed by a quality/conformance check.
 - Sub-agents receive full project context (CLAUDE.md, overview, PRDs), treat them as team members with zero prior knowledge of the project.
 - The main agent exercises critical judgement on all feedback: apply it or document why not. Sub-agents are advisory, not authoritative.
 - Use judgement on when to invoke the full workflow. It's valuable for plans spanning 3+ files or involving schema/architecture changes. Skip for trivial changes.
@@ -327,7 +327,7 @@ Check that these companion skills are available (as personal skills in `~/.claud
 | `discuss-feature` | Pre-PRD discussion, collects decisions | Before write-prd (optional) |
 | `write-prd` | Draft feature PRDs | Starting any new feature |
 | `write-plan` | Draft implementation plans | After PRD approval |
-| `plan-review` | Multi-stage plan review (junior + senior) | After drafting a plan |
+| `plan-review` | Multi-lens plan review (clarifying-questions + deep-critique + red-team) | After drafting a plan |
 | `research` | Research sub-agent for technical questions / best practices (docs-first, then reputable sources), grounded in the repo and plans | Any time a "what's the right way?" question surfaces |
 | `implement-plan` | Phase-by-phase implementation | After plan approval |
 | `write-e2e-tests` | Write & run Playwright browser tests via the bundled Playwright MCP | After/while implementing user-facing flows |
@@ -335,8 +335,9 @@ Check that these companion skills are available (as personal skills in `~/.claud
 | `doc-audit` | Documentation vs. codebase audit | After implementation |
 | `overnight-delivery` | End-to-end PRD-to-code pipeline | Full feature delivery |
 | `tradeoff-review` | Walk through trade-offs one by one | During review gates |
-| `junior-review` | Sub-agent: clarifying questions | Used by plan-review |
-| `senior-review` | Sub-agent: architectural review | Used by plan-review |
+| `junior-review` | Sub-agent: clarifying-questions pass | Used by plan-review |
+| `senior-review` | Sub-agent: deep-critique pass (cited findings) | Used by plan-review |
+| `red-team-review` | Sub-agent: adversarial pass that tries to break the plan | Used by plan-review |
 
 If any are missing, inform the user which skills are not installed and what workflow steps will be unavailable.
 
