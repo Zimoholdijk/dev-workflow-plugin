@@ -15,6 +15,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `plan-review` | Multi-stage plan review: junior Q&A, senior architecture review, conformance check |
 | `junior-review` | Spawn the junior-reviewer sub-agent for clarifying questions |
 | `senior-review` | Spawn the senior-reviewer sub-agent for architectural review |
+| `research` | Spin up a research sub-agent to answer a technical question or find best practices, docs-first then reputable sources, grounded in the repo, plans, and current discussion |
 | `implement-plan` | Execute an approved plan phase-by-phase, writing tests as each phase lands and keeping progress docs in sync |
 | `write-e2e-tests` | Drive a real browser via the bundled Playwright MCP to verify flows, then write durable Playwright spec files and run them |
 | `full-code-review` | 7 parallel review agents (security, backend, frontend, architecture, docs, regressions, testing) in branch-diff or full codebase-health scope. The testing reviewer checks new code has tests and runs the suite |

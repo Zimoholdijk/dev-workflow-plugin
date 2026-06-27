@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "dev-workflow",
-      "description": "PRD-first development workflow with testing built in: PRDs, phased plans (tests ship per phase), multi-stage reviews, implementation tracking, Playwright e2e tests via bundled MCP, 7-reviewer code reviews with a test-execution pass, tradeoff decisions, and doc audits.",
+      "description": "PRD-first development workflow with testing built in: PRDs, phased plans (tests ship per phase), multi-stage reviews, a docs-first research sub-agent, implementation tracking, Playwright e2e tests via bundled MCP, 7-reviewer code reviews with a test-execution pass, tradeoff decisions, and doc audits.",
       "source": "./"
     }
   ]

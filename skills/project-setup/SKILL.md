@@ -159,7 +159,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
 
 ## Workflow Skills
-The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
+The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
 ```
 
 **Important:** Only include sections that are relevant. If there's no database, omit the Database section. If the tech stack is simple, keep it brief. The CLAUDE.md should grow organically as conventions are established. Don't front-load rules that haven't been tested yet.
@@ -328,6 +328,7 @@ Check that these companion skills are available (as personal skills in `~/.claud
 | `write-prd` | Draft feature PRDs | Starting any new feature |
 | `write-plan` | Draft implementation plans | After PRD approval |
 | `plan-review` | Multi-stage plan review (junior + senior) | After drafting a plan |
+| `research` | Research sub-agent for technical questions / best practices (docs-first, then reputable sources), grounded in the repo and plans | Any time a "what's the right way?" question surfaces |
 | `implement-plan` | Phase-by-phase implementation | After plan approval |
 | `write-e2e-tests` | Write & run Playwright browser tests via the bundled Playwright MCP | After/while implementing user-facing flows |
 | `full-code-review` | 7-reviewer parallel code review incl. a testing reviewer that runs the suite (branch diff or `full` codebase health check) | After implementation; periodically with `full` |
