@@ -37,6 +37,12 @@ Your review should cover:
 - Does the plan address or introduce violations of the project's code quality rules?
 - Are there DRY violations, error handling gaps, or hardcoded values being introduced?
 
+**Test Coverage**
+- Does the plan have a Testing Strategy, and does every phase that adds logic name the tests it adds for that logic? A plan that defers all testing to the end, or adds non-trivial logic with no unit tests, is not adequately tested.
+- Are the critical user-facing flows backed by automated tests (e.g. Playwright e2e), or only manual checks? Manual-only critical flows regress silently.
+- Do the named tests cover error states, auth boundaries, and edge cases, or only the happy path?
+- If the project has no test infrastructure, does an early phase establish it before feature work proceeds?
+
 Format your review as:
 1. **Verdict**: Approve / Approve with changes / Request changes
 2. **Critical issues** (must address before proceeding)

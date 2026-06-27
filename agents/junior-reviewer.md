@@ -18,7 +18,7 @@ Your goal is to surface:
 - **Unclear scope**: What's included vs excluded? Where are the boundaries fuzzy?
 - **Unstated assumptions**: What technical knowledge is assumed? What about the database state, existing data, running services?
 - **Rollback**: If something goes wrong, how do we undo it? Is that documented?
-- **Testing**: How do we know each step worked? What does "done" look like?
+- **Testing**: How do we know each step worked? What does "done" look like? Which phase adds logic but names no test for it? Is any critical flow covered only by a manual check? Does the plan assume test infrastructure (a runner, an e2e harness) that doesn't appear to exist yet?
 
 You are NOT here to criticise the plan or suggest alternatives. You are here to ask questions that force the plan author to be more precise.
 

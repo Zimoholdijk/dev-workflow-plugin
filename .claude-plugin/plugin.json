@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
-  "description": "PRD-first development workflow: write PRDs and phased implementation plans, run multi-stage plan reviews (junior Q&A, senior architecture review with framework-idiom and behavior-deletion checks), implement plans phase-by-phase with progress tracking, run 6-reviewer parallel code reviews including a regression pass, collect tradeoff decisions, and audit docs against the codebase.",
-  "version": "1.4.1",
+  "description": "PRD-first development workflow with testing built in: write PRDs and phased implementation plans (each phase ships its own tests), run multi-stage plan reviews (junior Q&A, senior architecture review with framework-idiom, behavior-deletion, and test-coverage checks), implement plans phase-by-phase with progress tracking, write and run Playwright end-to-end tests via a bundled MCP, run 7-reviewer parallel code reviews including regression and test-execution passes, collect tradeoff decisions, and audit docs against the codebase.",
+  "version": "1.5.0",
   "author": {
     "name": "Abdulazim Holdijk",
     "email": "zimoholdijk@gmail.com"

@@ -1,13 +1,13 @@
 ---
 name: full-code-review
-description: Spawn 6 parallel code review agents (security, backend, frontend, architecture, documentation, regressions) to review code. Two scopes; branch diff review (default, use after completing an implementation before committing) or whole-codebase health check (pass 'full', use as a periodic project health check).
+description: Spawn 7 parallel code review agents (security, backend, frontend, architecture, documentation, regressions, testing) to review code. The testing reviewer checks that new code has tests and actually runs the suite. Two scopes; branch diff review (default, use after completing an implementation before committing) or whole-codebase health check (pass 'full', use as a periodic project health check).
 disable-model-invocation: false
 argument-hint: "[base branch or commit, e.g. 'main' or 'HEAD~5', or 'full' for a whole-codebase health check]"
 ---
 
 # Full Code Review
 
-You are orchestrating a 6-reviewer code review. The argument: $ARGUMENTS
+You are orchestrating a 7-reviewer code review. The argument: $ARGUMENTS
 
 If no argument was provided, do not silently assume `main`. Determine the base branch in this order:
 
@@ -37,9 +37,11 @@ For **full scope**, skip the diff commands. Instead, read `context/overview.md` 
 
 **Important:** Do NOT pre-read the full diff, source files, or overview yourself. Each reviewer agent will gather its own context by reading the codebase directly. Your job is to orchestrate, not to pre-digest context.
 
-## Step 2: Spawn 6 reviewers in parallel
+## Step 2: Spawn 7 reviewers in parallel
 
-Launch ALL SIX agents in a **single message** so they run in parallel. Each is a `general-purpose` agent (not a sub-agent type like `junior-reviewer`). Each gathers its own context and reviews through a different lens.
+Launch ALL SEVEN agents in a **single message** so they run in parallel. Each is a `general-purpose` agent (not a sub-agent type like `junior-reviewer`). Each gathers its own context and reviews through a different lens.
+
+The Testing reviewer (Reviewer 7) is the one that actually executes the test suite. It needs to run commands; the others are read-and-reason. All seven are still `general-purpose` agents and all run in the same parallel batch.
 
 **Each reviewer is self-serve:** Tell them the base branch/commit to diff against and which documentation files to read (`.claude/CLAUDE.md`, `context/overview.md`, `.codereviewr`, implementation plans in `context/`). They will run `git diff`, read source files, and explore the codebase themselves. Do NOT paste diffs, file contents, or project rules into their prompts.
 
@@ -250,9 +252,47 @@ Prompt the agent:
 >
 > End with a summary: counts per classification, and an overall regression verdict (Pass / Pass with concerns / Fail).
 
+### Reviewer 7: Testing & Test Execution
+
+Prompt the agent:
+
+> Your task is to review the **test coverage** of the changes on the current branch vs `<base>`, and to **actually run the test suite** and report what happened. The other reviewers reason about the code; your job is to verify, empirically, that the new code is tested and that the tests pass. You have a full toolset including the ability to run commands, use it.
+>
+> **How to gather context:**
+> 1. Run `git diff <base>...HEAD --stat` and `git diff <base>...HEAD` to see what changed (and `git diff` for uncommitted changes)
+> 2. Read `.claude/CLAUDE.md`, especially the **Testing Reality** section, for what test infrastructure exists and how to run it
+> 3. Read `context/overview.md` for architecture, and any implementation plan's **Testing Strategy** section in `context/` for what the plan said it would test
+> 4. Find the test setup: glob for `*.test.*`, `*.spec.*`, `playwright.config.*`, `vitest.config.*`, `jest.config.*`, a `tests/` or `e2e/` directory, and the test scripts in `package.json` (or the equivalent for the stack)
+>
+> **Part A, coverage analysis (does the new code have tests?):**
+> For every changed source file that contains logic (not pure config, types, or styling), check whether a corresponding or updated test exists and whether it covers the behavior that changed:
+> - **New logic with no test at all** is a finding. Pure functions, validators, reducers, server utilities, and API handlers should have unit/integration tests; user-facing flows should have an e2e test.
+> - **Tests that only cover the happy path** when the change introduces error states, auth boundaries, or edge cases is a finding, name the uncovered case.
+> - **Assertions that don't actually assert** the changed behavior (snapshot-only, or asserting on a mock instead of real output) is a finding.
+> - **Critical flows covered only manually** (the plan's Verification list has no matching automated test) is a finding.
+>
+> **Part B, run the suite (does it actually pass?):**
+> 1. Determine the test command from `package.json` / `CLAUDE.md` and run the **full** test suite. Report the exact command and the exact result (pass/fail counts, failing test names).
+> 2. If the project has an e2e suite (Playwright), run it too if the environment allows (a dev server / base URL is reachable). If it cannot be run here, say so explicitly rather than claiming it passed.
+> 3. If tests fail, capture the failure output and determine whether the failure is caused by the branch's changes (a real regression) or a pre-existing/environmental issue. Do not fix anything, report.
+> 4. If there is **no runnable test suite at all**, that itself is the top finding for this review: the change shipped with no way to verify it automatically.
+>
+> Report results faithfully. If tests fail, say so with the output. If you could not run them, say that, do not claim a green suite you did not see.
+>
+> **Output format:**
+> For each coverage finding, state:
+> - **Severity:** Critical / High / Medium / Low / Info
+> - **File and line(s):** the untested or under-tested code
+> - **Finding:** what behavior lacks a test, or what the existing test fails to assert
+> - **Recommendation:** the specific test to add (which case, which boundary), and whether it's a unit, integration, or e2e test (suggest `/write-e2e-tests` for browser flows)
+>
+> Then a **Test run** section: the exact command(s) run, pass/fail counts, names of any failing tests, and whether each failure is a branch regression or pre-existing.
+>
+> End with a summary: total coverage findings by severity, the test-run result, and an overall testing verdict (Pass / Pass with concerns / Fail). Fail if new logic ships untested, if the suite is red because of this branch, or if there is no runnable suite.
+
 ## Full scope adjustments
 
-When the argument is `full`, keep the same six reviewers and output formats but adapt each brief:
+When the argument is `full`, keep the same seven reviewers and output formats but adapt each brief:
 
 - **All reviewers:** replace the diff-gathering steps with "read `context/overview.md` and `.claude/CLAUDE.md`, then explore the codebase directly (Glob, Grep, Read)". They range over the whole project; nothing is out of bounds as "pre-existing". Skip plan-conformance checks against a single feature; grade against project-level docs instead.
 - **Security:** scan auth gates, session handling, token generation, env-var usage, query patterns, error responses, headers and CORS, file uploads, and the dependency surface.
@@ -260,12 +300,13 @@ When the argument is `full`, keep the same six reviewers and output formats but 
 - **Frontend:** scan top-level UI patterns, the shared component library, route conventions, design-system compliance, and the accessibility baseline.
 - **Architecture & Quality:** scan directory structure, lib vs route vs component boundaries, where types and shared logic live, and dependency direction across the codebase. Scan for repetition smell at the codebase level: files or modules containing 3+ near-identical handlers, branches, or case arms differing only by a literal are refactor candidates. Cross-check layer placement against the framework's documented separation of concerns; where the codebase has accumulated rules at non-canonical layers, flag those as architectural debt.
 - **Documentation:** audit all top-level docs against current code reality: stale literals, drifted conventions, missing onboarding info, inconsistent sibling planning docs.
-- **Regressions:** still spawn it, but its brief is one line: return immediately with "out of scope for full mode". Regression review only makes sense with a diff to inspect; the consistency of always spawning six is worth more than the saved tokens.
+- **Regressions:** still spawn it, but its brief is one line: return immediately with "out of scope for full mode". Regression review only makes sense with a diff to inspect; the consistency of always spawning seven is worth more than the saved tokens.
+- **Testing:** scan the whole test suite, not a diff. Map the major modules/features against the tests that exist and report the coverage gaps, untested subsystems, critical flows with no e2e test, and whole areas (auth, payments, data integrity) with thin or no coverage. Run the full suite and report its health (green/red, flaky tests, slowest tests, total count). The verdict reflects the project's overall testing posture, not a single diff.
 - **Consolidation:** severity framing shifts from "must fix before committing" to "must fix before the next sprint" and "must fix before scaling". Findings become tickets or Deferred Items entries rather than pre-commit fixes, so route them through `context/overview.md`'s Deferred Items tables when the user accepts them.
 
 ## Step 3: Consolidate and present
 
-Once all 6 reviewers complete, present the results to the user in this format:
+Once all 7 reviewers complete, present the results to the user in this format:
 
 ```
 ## Full Code Review Results
@@ -288,6 +329,10 @@ Once all 6 reviewers complete, present the results to the user in this format:
 ### Regression Review: [verdict]
 [List deletions by classification: Likely regression first, then Unclear, then Intentional]
 
+### Testing Review: [verdict]
+[List coverage findings by severity, highest first. Then the test-run result: command,
+pass/fail counts, any failing tests, and whether each failure is a branch regression.]
+
 ---
 
 ### Cross-reviewer themes
@@ -306,6 +351,7 @@ Once all 6 reviewers complete, present the results to the user in this format:
 **Important:**
 - Exercise critical judgment. Not every finding needs action. Some are nitpicks, some conflict with project decisions already made.
 - Treat the regression reviewer's "Likely regression" entries as Critical findings. Deletions of load-bearing behavior are not stylistic choices.
+- Treat a red test suite caused by this branch, or new logic shipping with no test, as a Critical finding, not a nitpick. "It works when I click around" is not a substitute for an automated test. If the Testing reviewer could not run the suite, surface that as an open item rather than assuming green.
 - If a finding contradicts an explicit decision in the implementation plan or CLAUDE.md, note that the reviewer missed existing context.
 - Group duplicate findings (same issue flagged by multiple reviewers), present once with a note that multiple reviewers caught it.
 - Surface trade-offs to the user: do NOT silently accept or dismiss findings. Let the user decide on anything ambiguous.

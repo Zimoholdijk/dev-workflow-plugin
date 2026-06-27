@@ -19,6 +19,7 @@ These rules are non-negotiable:
 4. **Surface trade-offs.** If you encounter a decision not covered by the plan, surface it to the user. Document their decision in `progress.md`.
 5. **No commits unless asked.** The user manages git.
 6. **No dev server restarts.** The user manages dev servers.
+7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy and that phase's "Testable" section, unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
 
 ## Step 1: Gather context
 
@@ -130,14 +131,16 @@ For each phase (in order):
 1. Follow the plan's sub-steps in order
 2. Use existing shared code: check the Shared Utilities table in `overview.md`
 3. If you create a new shared utility, note it for the overview update
-4. If you deviate from the plan (different approach, extra file, skipped step), document why in `progress.md` under "Deviations from Plan"
-5. If you encounter a trade-off not covered by the plan, stop and surface it to the user. Record their decision in `progress.md` under "Trade-off Decisions"
+4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, plus an e2e test for any user-facing flow (use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
+5. If you deviate from the plan (different approach, extra file, skipped step), document why in `progress.md` under "Deviations from Plan"
+6. If you encounter a trade-off not covered by the plan, stop and surface it to the user. Record their decision in `progress.md` under "Trade-off Decisions"
 
 ### After completing the phase:
-1. Update the progress doc: set the phase status to "Done" (or "Test" if it can't be end-to-end verified yet)
-2. Add a changelog entry describing what the phase produced and any surprises
-3. Tell the user what's testable (per the plan's "Testable" section for that phase)
-4. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
+1. Run the test suite (the new tests plus the full existing suite) and confirm it's green. Report the command and the real result. If a test fails, fix it before marking the phase Done; never weaken an assertion just to pass, and never mark Done with the suite red.
+2. Update the progress doc: set the phase status to "Done" (or "Test" if it can't be end-to-end verified yet)
+3. Add a changelog entry describing what the phase produced, the tests added, and any surprises
+4. Tell the user what's testable (per the plan's "Testable" section for that phase) and the test result
+5. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
 
 ## Step 4: After all phases are complete
 

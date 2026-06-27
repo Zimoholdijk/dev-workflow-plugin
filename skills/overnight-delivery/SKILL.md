@@ -90,7 +90,7 @@ This implements the plan phase by phase, creating the progress doc, writing code
 
 Run `/full-code-review` with the feature branch's base (the branch this feature will merge into; check the plan's Branch field or the project's documented integration branch).
 
-This spawns 5 parallel reviewers (security, backend, frontend, architecture, documentation). After consolidation:
+This spawns 7 parallel reviewers (security, backend, frontend, architecture, documentation, regressions, and testing, the testing reviewer checks that new code has tests and runs the suite). After consolidation:
 
 1. **Clear fixes**: Apply immediately (typos, missing constants, accessibility, dead code).
 2. **Tradeoffs**: Note them. They'll be reviewed after Round 2.
@@ -139,7 +139,7 @@ Present the delivery summary:
 - [N] code review rounds (2)
 - [N] findings fixed
 - [N] tradeoffs accepted
-- Final verdicts: Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict]
+- Final verdicts: Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict], Regressions [verdict], Testing [verdict]
 
 ### Documentation updated
 - overview.md: [what changed]

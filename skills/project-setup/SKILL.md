@@ -9,7 +9,7 @@ argument-hint: "[project name, e.g. 'ToySwap' or 'my-saas-app']"
 
 You are setting up a new project: $ARGUMENTS
 
-This skill creates the full project scaffolding: context directory, CLAUDE.md rules, overview doc, and working agreements, based on battle-tested conventions. It produces files that the other skills (`/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/full-code-review`, `/doc-audit`, `/overnight-delivery`) depend on.
+This skill creates the full project scaffolding: context directory, CLAUDE.md rules, overview doc, and working agreements, based on battle-tested conventions. It produces files that the other skills (`/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/overnight-delivery`) depend on.
 
 ---
 
@@ -118,7 +118,16 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - Check for existing components and helpers to reuse before creating new ones.
 - Run [build command] to surface specific build errors before attempting fixes. [Adapt to the toolchain.]
 - Run [lint command] to surface specific lint errors before attempting fixes.
+- Run [test command] and confirm the suite is green before considering a change done. Never weaken or skip a test to make the suite pass.
 - At task completion, review changes for type safety, unused imports/variables, and proper error handling.
+
+## Testing
+- Every aspect of code that's written gets a test. Logic gets unit tests; endpoints and module boundaries get integration tests; user-facing flows get Playwright e2e tests (use `/write-e2e-tests`). New code without a test is incomplete.
+- Test as you build, in the same phase, not as a final clean-up pass. A phase is not done until its tests exist and pass.
+- Cover more than the happy path: error states, auth boundaries (signed-out, wrong-owner, expired), and empty/loading states.
+- Tests must be deterministic and isolated: each sets up and tears down its own data, waits on application state rather than fixed sleeps, and passes in any order.
+- Critical flows must be covered by an automated test, not just a manual check, manual-only coverage regresses silently.
+[If the project has no test runner yet, the first task is to establish one (runner + e2e harness + a first passing test) before feature work. Note the chosen tools here once picked.]
 
 ## TypeScript
 [Include this section only when the detected stack uses TypeScript. Omit it entirely otherwise.]
@@ -150,7 +159,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
 
 ## Workflow Skills
-The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation) before writing code.
+The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
 ```
 
 **Important:** Only include sections that are relevant. If there's no database, omit the Database section. If the tech stack is simple, keep it brief. The CLAUDE.md should grow organically as conventions are established. Don't front-load rules that haven't been tested yet.
@@ -212,7 +221,8 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 ## Working Agreements
 
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
-- **Testable phases.** Each phase produces something visible in the browser. Pages before components.
+- **Testable phases.** Each phase produces something visible in the browser AND ships its own tests. Pages before components.
+- **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints, Playwright e2e tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
 - **Mobile first.** Desktop is progressive enhancement.
 - **No auto-commits.** Claude does not commit unless explicitly asked.
 - **Document freeze.** PRDs and plans are frozen once agreed. Deviations go in `progress.md`, not by editing the plan.
@@ -319,7 +329,8 @@ Check that these companion skills are available (as personal skills in `~/.claud
 | `write-plan` | Draft implementation plans | After PRD approval |
 | `plan-review` | Multi-stage plan review (junior + senior) | After drafting a plan |
 | `implement-plan` | Phase-by-phase implementation | After plan approval |
-| `full-code-review` | 6-reviewer parallel code review (branch diff or `full` codebase health check) | After implementation; periodically with `full` |
+| `write-e2e-tests` | Write & run Playwright browser tests via the bundled Playwright MCP | After/while implementing user-facing flows |
+| `full-code-review` | 7-reviewer parallel code review incl. a testing reviewer that runs the suite (branch diff or `full` codebase health check) | After implementation; periodically with `full` |
 | `doc-audit` | Documentation vs. codebase audit | After implementation |
 | `overnight-delivery` | End-to-end PRD-to-code pipeline | Full feature delivery |
 | `tradeoff-review` | Walk through trade-offs one by one | During review gates |
