@@ -85,6 +85,7 @@ Why this split: project-specific values differ per repo and should not leak into
 - Strict approval gates: silence, "ok", or "thanks" is not approval.
 - Reviews are re-runnable on request, without pushback.
 - Cold-start reviews: every reviewer, every round, sees only the current plan and project context, never the prior reviewers' questions, the trade-off decisions, or the plan's Review Log (it's stripped before spawning). Priming a reviewer with "this was already addressed" anchors it to rubber-stamp those parts; a cold reviewer re-scrutinizes them, so round 4 reviews as hard as round 1.
+- Trade-offs are researched before they reach you: across write-plan, plan-review, implement-plan, and tradeoff-review, the workflow runs `/research` on any trade-off with a technical or best-practice dimension. The ones documented best practice settles are resolved with a citation (shown as FYI you can object to); only genuinely contested choices are surfaced for your decision, each pre-loaded with the evidence and a recommendation, never a bare "A or B?".
 
 ## Notes
 

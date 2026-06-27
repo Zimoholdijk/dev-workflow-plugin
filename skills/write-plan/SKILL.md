@@ -20,7 +20,7 @@ These rules are non-negotiable:
 9. **Testing is part of the plan, not an afterthought.** The plan must include a "Testing Strategy" section (see structure below) and every phase must name the tests it adds. Do not defer all testing to a final phase. New code is covered as it lands. If the project has no test infrastructure yet, the first phase establishes it (test runner, e2e harness, a first passing test) before feature work proceeds, and the plan says so explicitly.
 5. **Pages before components.** Create the page shell first, then add interactive islands. This matches the Astro SSR-first architecture.
 6. **Document freeze.** Once approved, the plan is frozen. Deviations during implementation go in `progress.md`.
-7. **Surface all trade-offs.** Never accept trade-offs silently. Note known limitations, performance compromises, and security implications. Let the user decide.
+7. **Surface all trade-offs, but research them first.** Never accept trade-offs silently. Note known limitations, performance compromises, and security implications. But before presenting a trade-off as an open choice, research it (Step 2.6): documented best practice often resolves it outright, and the user should only adjudicate genuinely open choices, each backed by evidence, never a bare "A or B?" they have to research themselves.
 8. **Structure smell-check before finalizing.** Before presenting the plan for review, re-read every phase looking for this shape: "for type A do X with separator Y1; for type B do X with separator Y2." When N branches differ only by a literal or small piece of metadata, surface "branched plan vs. single path with data difference" as an explicit Architecture Decision trade-off. A branched plan produces branched code; catching it in prose is cheaper than refactoring merged code.
 
 ## Step 1: Gather context
@@ -198,6 +198,19 @@ Before saving and presenting the plan, run this self-check:
 
 A branched plan produces branched code. Catching the shape in prose is far cheaper than refactoring after merge.
 
+## Step 2.6: Research the plan's trade-offs
+
+Before saving and presenting, look at every trade-off the plan raises: each Architecture Decision carrying a "Known trade-off:" or "Known limitation:" line, and the branched-vs-unified question from the smell-check. Don't hand the user a list of bare "A vs B" choices, research them first.
+
+For each trade-off with a **technical or best-practice dimension** (framework behavior, idiom, security, performance, data modeling, API design), run `/research` grounded in the project's stack and versions. Research several in parallel. Then:
+
+- **Settled by evidence** → documented best practice clearly favors one option, or the downside is negligible at this project's scale. Bake the recommended choice into the AD and cite the source in the AD prose. It's now a resolved decision, not an open trade-off; flag it in the Step 4 presentation as "resolved per [source]" so the user can still object.
+- **Genuinely contested** → keep it as an open trade-off in the AD, and carry the researched points (what the docs say, the cost of each side, your recommendation) into the Step 4 presentation.
+
+Pure product/UX-preference trade-offs with no documented answer don't need research; leave them as open ADs for the user.
+
+This keeps the plan's open trade-offs down to the ones that actually need the user, each backed by evidence.
+
 ## Step 3: File placement
 
 Save the plan to: `context/[Feature]/implementation-plan.md`
@@ -209,7 +222,7 @@ The feature directory should already exist (created during PRD writing). If not,
 After writing the plan, present it to the user with:
 
 1. A count of architecture decisions and phases
-2. Call out any trade-offs or known limitations that need user input
+2. Trade-offs, split into two groups: (a) **resolved by research** — list each with the option taken and its citation, as FYI the user can object to; (b) **needs your input** — the genuinely contested ones, each presented with its researched points and your recommendation
 3. Note any deviations from the PRD (there shouldn't be any, but flag if the implementation reveals issues)
 4. Summarize the Testing Strategy: what gets unit-tested, what gets an e2e test, and anything deliberately left untested (with the reason)
 5. Suggest running `/plan-review` for the multi-stage review workflow

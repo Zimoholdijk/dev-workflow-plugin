@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
-  "description": "PRD-first development workflow with testing built in: write PRDs and phased implementation plans (each phase ships its own tests), run multi-lens plan reviews (a clarifying-questions pass, a deep-critique pass graded on framework-idiom, behavior-deletion, test-coverage, and operational failure modes with cited findings, and an adversarial red-team pass that tries to break the plan), spin up a docs-first research sub-agent to answer technical questions and find best practices, implement plans phase-by-phase with progress tracking, write and run Playwright end-to-end tests via a bundled MCP, run 7-reviewer parallel code reviews including regression and test-execution passes, collect tradeoff decisions, and audit docs against the codebase.",
-  "version": "1.7.1",
+  "description": "PRD-first development workflow with testing built in: write PRDs and phased implementation plans (each phase ships its own tests), run multi-lens plan reviews (a clarifying-questions pass, a deep-critique pass graded on framework-idiom, behavior-deletion, test-coverage, and operational failure modes with cited findings, and an adversarial red-team pass that tries to break the plan), spin up a docs-first research sub-agent to answer technical questions, find best practices, and research trade-offs before they're surfaced for decision (so documented best practice resolves the non-issues instead of burdening the user), implement plans phase-by-phase with progress tracking, write and run Playwright end-to-end tests via a bundled MCP, run 7-reviewer parallel code reviews including regression and test-execution passes, collect tradeoff decisions, and audit docs against the codebase.",
+  "version": "1.8.0",
   "author": {
     "name": "Abdulazim Holdijk",
     "email": "zimoholdijk@gmail.com"

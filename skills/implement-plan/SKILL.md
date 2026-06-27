@@ -16,7 +16,7 @@ These rules are non-negotiable:
 1. **Plan must be approved and reviewed first.** Check the plan's status field. If it says "Draft" or has no Review Log, stop and tell the user the plan needs review first.
 2. **Never edit the plan or PRD.** They are frozen. All deviations, decisions, and trade-offs go in `progress.md`.
 3. **Implement phase by phase.** Complete one phase fully before starting the next. After each phase, update the progress doc.
-4. **Surface trade-offs.** If you encounter a decision not covered by the plan, surface it to the user. Document their decision in `progress.md`.
+4. **Research in-flight trade-offs, then surface only the genuine ones.** If you hit a decision not covered by the plan, research it first with `/research` (grounded in the project's stack) when it has a technical or best-practice dimension. If documented best practice or the project's own conventions clearly resolve it, apply that, record the decision and citation in `progress.md`, and don't stop the user for a settled question. Surface to the user only the genuinely contested choices, and bring the researched points with them. Document the user's decision in `progress.md`.
 5. **No commits unless asked.** The user manages git.
 6. **No dev server restarts.** The user manages dev servers.
 7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy and that phase's "Testable" section, unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
@@ -133,7 +133,7 @@ For each phase (in order):
 3. If you create a new shared utility, note it for the overview update
 4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, plus an e2e test for any user-facing flow (use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
 5. If you deviate from the plan (different approach, extra file, skipped step), document why in `progress.md` under "Deviations from Plan"
-6. If you encounter a trade-off not covered by the plan, stop and surface it to the user. Record their decision in `progress.md` under "Trade-off Decisions"
+6. If you encounter a trade-off not covered by the plan, stop and research it first (`/research`). If the evidence settles it, apply it and record the decision + citation; otherwise surface it to the user with the researched points. Record the decision in `progress.md` under "Trade-off Decisions"
 
 ### After completing the phase:
 1. Run the test suite (the new tests plus the full existing suite) and confirm it's green. Report the command and the real result. If a test fails, fix it before marking the phase Done; never weaken an assertion just to pass, and never mark Done with the suite red.

@@ -26,6 +26,17 @@ Read the following files to collect all unresolved tradeoffs:
 
 Build a numbered list of every distinct tradeoff. Deduplicate: if the same concern was raised by multiple reviewers or in multiple rounds, merge into one entry.
 
+## Step 1.5: Research each tradeoff before presenting it
+
+Many "tradeoffs" dissolve under a few minutes of docs-grounded research: one option is the documented best practice, or the downside is a non-issue at this project's scale. Don't make the user adjudicate a question the framework's docs already answer.
+
+For each tradeoff that has a **technical or best-practice dimension** (framework behavior, idiom, security, performance, data modeling, API design), run `/research` on it, grounded in the project's stack and versions. Research several in parallel rather than serially. Then sort each tradeoff:
+
+- **Resolved by evidence** — the docs/best practices clearly favor one option, or the concern is negligible here. Pull it OUT of the one-by-one walk: take the recommended option and list it in the overview under "Resolved by research" with a one-line rationale and citation, so the user can still object but doesn't spend a decision turn on a settled question.
+- **Genuine tradeoff** — still defensible either way, or the choice depends on product/UX/risk preference the user owns. Keep it in the walk-through, and attach the researched evidence to its presentation (Step 3).
+
+Pure product/UX-preference tradeoffs with no documented answer (e.g. sticky vs scroll-away banner) skip research, keep them in the walk-through as-is.
+
 ## Step 2: Present overview
 
 Show the user a summary before starting:
@@ -33,8 +44,14 @@ Show the user a summary before starting:
 ```
 ## Tradeoff Review: [Feature]
 
-Found [N] tradeoffs to review. I'll walk through each one individually.
+Researched [M] tradeoffs; [K] were resolved by documented best practice, [N] genuinely need your call.
 
+### Resolved by research (FYI — tell me if you disagree)
+| # | Tradeoff | Resolution | Source |
+|---|----------|-----------|--------|
+| - | [description] | [option taken + one-line rationale] | [doc/best-practice citation] |
+
+### Need your decision ([N])
 | # | Summary | Source |
 |---|---------|--------|
 | 1 | [one-line description] | [plan AD-3 / review round 2 / code review / etc.] |
@@ -43,6 +60,8 @@ Found [N] tradeoffs to review. I'll walk through each one individually.
 
 Starting with #1.
 ```
+
+Omit the "Resolved by research" table if nothing was resolved that way. If ALL tradeoffs were resolved by research, say so and skip the one-by-one walk entirely — just confirm the resolutions and let the user object to any.
 
 ## Step 3: Walk through one by one
 
@@ -55,6 +74,8 @@ For **each** tradeoff, present it as a single message with this structure:
 
 **Why it exists:** [context: why this came up, what constraint or design choice created it]
 
+**Researched evidence:** [what the docs / best practices say about this, with citation; or "no documented best practice — this is a judgment call." This is why it reached you instead of being auto-resolved: either the evidence is genuinely split, or the choice is a preference the docs can't settle.]
+
 **Risk if we accept it:** [what could go wrong, who is affected, how likely]
 
 **Alternatives:**
@@ -62,7 +83,7 @@ For **each** tradeoff, present it as a single message with this structure:
 2. [Fix now]: [what the fix involves, rough effort]
 3. [Other option if applicable]: [consequence]
 
-**My recommendation:** [which option and why, stated clearly]
+**My recommendation:** [which option and why, informed by the researched evidence above]
 
 Which option?
 ```
