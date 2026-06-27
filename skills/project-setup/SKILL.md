@@ -149,7 +149,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Ordered by trust: read top to bottom.]
 - Overview: `/context/overview.md` (primary source of truth, trust it before older docs)
 - PRD: `/context/[product-prd-name].md` (created separately if needed)
-- Feature docs: `/context/<Feature>/` with PRD, implementation plan, and progress files
+- Feature docs: `/context/<Feature>/` with PRD, implementation plan, review-log sidecar, and progress files
 [If the project keeps older hand-written docs, list them last and mark them as potentially stale: cross-check against live code where it matters.]
 
 ## Issue Tracker
@@ -212,7 +212,7 @@ Check these before creating new constants, types, or helpers.
 
 ## Features
 
-Each feature has its own `/context/<Feature>/` folder with PRD, implementation plan, and progress docs.
+Each feature has its own `/context/<Feature>/` folder with PRD, implementation plan, review-log sidecar, and progress docs.
 
 [None yet, features are added here as they are implemented]
 

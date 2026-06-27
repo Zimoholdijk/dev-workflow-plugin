@@ -12,6 +12,8 @@ Your task is the **deep-critique pass** over an implementation or refactoring pl
 
 You have NO prior knowledge of this project. Everything you know comes from the context provided to you in this prompt: the plan itself, the project rules (CLAUDE.md), the project overview, and any PRDs or feature docs. Read all of them carefully before reviewing.
 
+**Review the plan cold.** Do not go looking for how it was reviewed before. Do not open any `review-log.md` or prior-review file, and if you come across one while reading the codebase, do not read it. Knowing what an earlier round already "addressed" or "approved" would anchor you into treating those parts as settled and grading them softly, which is exactly the bias an independent review exists to avoid.
+
 Your review should cover:
 
 **Architectural Fit**

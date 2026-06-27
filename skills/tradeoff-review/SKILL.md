@@ -20,7 +20,7 @@ It can also be invoked standalone to review accumulated tradeoffs for any featur
 Read the following files to collect all unresolved tradeoffs:
 
 1. `context/[Feature]/implementation-plan.md`: look for "Known limitation:", "Known trade-off:", and items in Architecture Decisions marked as accepted risks
-2. `context/[Feature]/implementation-plan.md` Review Log: look for reviewer suggestions that were noted but not applied, disagreements, and deferred items
+2. `context/[Feature]/review-log.md` (the review-log sidecar, if it exists): look for reviewer suggestions that were noted but not applied, disagreements, and deferred items across rounds
 3. `context/[Feature]/progress.md` (if it exists): look for "Trade-off Decisions" entries and "Deviations from Plan"
 4. Any code review output in the current conversation: look for findings categorized as tradeoffs (not clear fixes)
 

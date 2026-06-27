@@ -18,9 +18,11 @@ Every reviewer, in every stage and every round, reviews the plan **cold**. Pass 
 - the prior reviewers' questions, or your responses to them,
 - the trade-off decisions already made,
 - any summary of "what changed", "what was already addressed", or "what a previous round approved",
-- the plan's **Review Log** section, strip it out before sending the plan to any reviewer.
+- the review history in any form.
 
-Why: telling a reviewer that part of the plan was "already addressed" or "already reviewed" anchors it to treat that part as settled, so it stops scrutinizing exactly where prior rounds drew their conclusions. A cold reviewer re-examines those conclusions and routinely finds issues a primed reviewer rubber-stamps. The plan artifact itself reflects the changes you've accepted, that is the thing under review, but nothing in the reviewer's context should signal that any part of it carries a stamp of approval. This holds **within** a single run (the senior and red-team do not see the junior's exchange) and **across** re-invocations (round 2+ sees the plan, not the history).
+**The Review Log lives in a sidecar file, not in the plan.** All review history is written to `context/[Feature]/review-log.md`, never appended to `implementation-plan.md`. This is structural, not just procedural: reviewers have Read/Glob/Grep and are told to orient in the codebase, so if the log lived in the plan they could simply open the plan and read last round's conclusions even when you don't hand them the log. Keeping it in a separate file removes that temptation. Belt and suspenders: the reviewer agents are also instructed never to open a `review-log` or prior-review file, and you must not point them at one.
+
+Why this matters: telling (or letting) a reviewer learn that part of the plan was "already addressed" or "already reviewed" anchors it to treat that part as settled, so it stops scrutinizing exactly where prior rounds drew their conclusions. A cold reviewer re-examines those conclusions and routinely finds issues a primed reviewer rubber-stamps. The plan artifact itself reflects the changes you've accepted, that is the thing under review, but nothing in the reviewer's context should signal that any part of it carries a stamp of approval. This holds **within** a single run (the senior and red-team do not see the junior's exchange) and **across** re-invocations (round 2+ sees the plan, not the history).
 
 ## Before starting
 
@@ -36,7 +38,7 @@ You will pass ALL of this context to the sub-agents, since they have no prior kn
 ## Stage 1: Clarifying-Questions Review (junior-reviewer)
 
 Spawn the `junior-reviewer` sub-agent. In your prompt, include:
-1. The full text of the plan, **with the Review Log section removed** (on a re-invocation the plan carries prior rounds, the junior must not see them; cold start applies here too)
+1. The full text of the plan. (Review history lives in the `review-log.md` sidecar, not the plan, so there's nothing to strip from the plan itself; just never point the junior at the sidecar.)
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
@@ -74,7 +76,7 @@ The junior reviewer will return a list of clarifying questions.
 ### Spawn
 
 Spawn the `senior-reviewer` sub-agent. In your prompt, include:
-1. The current plan text, **with the Review Log section removed** (the senior must not see prior rounds). The plan already incorporates the Stage 1 fixes; that's fine, it's the artifact under review. Just don't narrate what changed.
+1. The current plan text. The plan already incorporates the Stage 1 fixes; that's fine, it's the artifact under review. Just don't narrate what changed, and don't point the senior at the `review-log.md` sidecar.
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
@@ -92,7 +94,7 @@ The senior reviewer will return a structured review with verdict, critical issue
 - For each critical issue: update the plan to address it, or document why you disagree.
 - For each suggestion: apply if it improves the plan, or note why you're not applying it.
 - Be willing to push back on the senior reviewer if their feedback conflicts with the project's stated goals or working agreements.
-- **Same trade-off rule as Stage 1 applies.** If a critical issue or suggestion involves a trade-off the user should own (UX, strictness, deferral, scope), STOP and ask the user. One trade-off per message. Do NOT dump a list of "here are three open trade-offs, pick for each" at the end of the workflow. Resolve them interactively before finalising the plan. The Review Log should record the user's decision, not a list of open questions for them to answer later.
+- **Same trade-off rule as Stage 1 applies.** If a critical issue or suggestion involves a trade-off the user should own (UX, strictness, deferral, scope), STOP and ask the user. One trade-off per message. Do NOT dump a list of "here are three open trade-offs, pick for each" at the end of the workflow. Resolve them interactively before finalising the plan. The review-log sidecar should record the user's decision, not a list of open questions for them to answer later.
 - If the senior raises multiple trade-offs, walk them one-by-one in sequence. After each user decision, apply the revision to the plan before asking the next question.
 
 ## Stage 3: Red-Team (Adversarial) Review
@@ -102,7 +104,7 @@ The junior and senior passes are cooperative and evaluative: one asks what's unc
 ### Spawn
 
 Spawn the `red-team-reviewer` sub-agent against the plan **as revised after Stages 1–2** (you want to stress-test the plan you'll actually ship, not the first draft). Cold start still applies: the red-team sees the current artifact, not the history of how it got there. In your prompt, include:
-1. The current plan text, **with the Review Log removed**, and with no summary of what Stages 1–2 changed (a "this part was already hardened" hint is exactly the anchor that makes it skip that part)
+1. The current plan text, with no summary of what Stages 1–2 changed (a "this part was already hardened" hint is exactly the anchor that makes it skip that part). Don't point the red-team at the `review-log.md` sidecar.
 2. The full project overview and CLAUDE.md rules
 3. Any relevant PRD content
 4. A pointer to the actual code the plan touches (so its attacks are concrete, not hypothetical)
@@ -128,10 +130,14 @@ Additionally, review the final plan yourself against the project's CLAUDE.md rul
 
 ## Stage 5: Final Plan
 
-Update the plan file with all revisions. At the bottom of the plan, add a section:
+Update the plan file with all revisions (the plan itself, never a Review Log section). Then write the review history to the **sidecar** at `context/[Feature]/review-log.md`, NOT to the plan. If the sidecar already exists (a prior invocation), append a new round; if not, create it. Use this structure:
 
 ```markdown
-## Review Log
+# [Feature]: Review Log
+
+> Sidecar for `implementation-plan.md`. Review history lives here, never in the plan, so reviewers reading the plan can't be primed by prior rounds. For the author and user only.
+
+## Round [N] — [date]
 
 ### Clarifying Questions (junior-reviewer)
 - [Summary of questions raised and how each was addressed]
@@ -149,10 +155,10 @@ Update the plan file with all revisions. At the bottom of the plan, add a sectio
 - [Any simplification or conformance changes made]
 ```
 
-This log is part of the plan, it documents the reasoning behind the final version.
+The sidecar documents the reasoning behind the final version. Do NOT add a Review Log section to `implementation-plan.md`. The plan may carry a `Status` field (e.g. "Reviewed") in its header, that one-word stamp is acceptable; the detailed round-by-round history is what must stay in the sidecar.
 
 ## Re-invocation
 
-This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. Each invocation runs all stages fresh against the current state of the plan; rounds from prior invocations don't count. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the Review Log.
+This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. Each invocation runs all stages fresh against the current state of the plan; rounds from prior invocations don't count. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the `review-log.md` sidecar.
 
-The Review Log is for **you and the user**, not for the reviewers. Reviewers never see it (strip it before spawning, per the cold-start rule), so every round is a genuine cold start, the reviewer evaluates the plan as if for the first time rather than being told it already passed N rounds. A plan that has survived five rounds should still get a reviewer that scrutinizes it as hard as round one; the accumulating "Reviewed" stamps are precisely the anchor we keep out of the reviewer's context.
+The sidecar is for **you and the user**, not for the reviewers. Because it's a separate file (and the reviewer agents are told never to open a review-log file), every round is a genuine cold start: the reviewer evaluates the plan as if for the first time rather than learning it already passed N rounds. A plan that has survived five rounds should still get a reviewer that scrutinizes it as hard as round one; the accumulating "Reviewed" stamps are precisely the anchor we keep out of the reviewer's context.

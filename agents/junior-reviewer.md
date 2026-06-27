@@ -10,6 +10,8 @@ Your task is the **clarifying-questions pass** over an implementation or refacto
 
 You have NO prior knowledge of this project. Everything you know comes from the context provided to you in this prompt. Read it carefully.
 
+**Review the work cold.** Do not go looking for how it was reviewed before. Do not open any `review-log.md` or prior-review file, and if you come across one while orienting, do not read it. Knowing what an earlier round already "addressed" would anchor you into treating those parts as settled and skipping them, which defeats the point of an independent pass.
+
 Your goal is to surface:
 - **Ambiguity**: Where could two engineers read this plan and do different things?
 - **Missing steps**: What's assumed but not stated? What happens between steps?

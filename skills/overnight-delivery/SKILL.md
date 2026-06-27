@@ -49,7 +49,7 @@ Run `/plan-review context/[Feature]/implementation-plan.md` **four times in sequ
 - Final polish. This round should produce mostly Info/Low findings. If Critical or High issues are still emerging, that's a signal the plan needs more fundamental rework. Flag this to the user.
 - Apply fixes. Update the plan. Set plan status to "Reviewed".
 
-After each round, append to the plan's Review Log section with the round number and summary of changes.
+After each round, append a new round entry to the `context/[Feature]/review-log.md` sidecar (not the plan) with the round number and summary of changes. The plan never carries the review history, so reviewers can't be primed by prior rounds.
 
 ---
 
@@ -161,5 +161,5 @@ Suggest the user:
 ## Error handling
 
 - **If a skill fails or produces unexpected output:** Do not retry blindly. Diagnose the issue, inform the user, and ask how to proceed.
-- **If the user interrupts at any gate:** Resume from the last completed stage. Check progress.md and the plan's Review Log to determine current state.
+- **If the user interrupts at any gate:** Resume from the last completed stage. Check progress.md and the `review-log.md` sidecar to determine current state.
 - **If context runs low:** The conversation may be compacted between stages. Each stage re-reads its inputs (plan, PRD, progress doc) so no context is assumed to persist across stages.

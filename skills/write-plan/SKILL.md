@@ -160,13 +160,11 @@ Cover: happy paths, edge cases, auth boundaries, error states.
 Mark which scenarios are covered by an automated test (the Playwright e2e specs from the
 Testing Strategy) versus verified manually. Aim for the critical flows to be automated, a
 scenario that only ever gets a manual check will regress silently.]
-
----
-
-## Review Log
-
-[Left empty, populated by /plan-review runs.]
 ```
+
+Do NOT add a Review Log section to the plan. Review history is kept in a **sidecar** at
+`context/[Feature]/review-log.md` (created by `/plan-review`), never in the plan itself, so
+that reviewers reading the plan can't be primed by prior rounds. The plan ends at Verification.
 
 ## Step 2.4: Phasing patterns (independent testability)
 
@@ -270,16 +268,19 @@ Both plans use the same header:
 - Cover: happy path, auth boundaries, error states, edge cases
 - Format: "N. Action → expected result"
 
-### Review Log
-- Structured by review round
-- Junior questions: count + key changes applied + questions noted but not applied
-- Senior review: verdict + critical issues (applied) + suggestions (applied or noted)
+### Review Log (sidecar, not in the plan)
+- Lives in `context/[Feature]/review-log.md`, written by `/plan-review`, never appended to the plan
+- Structured by review round, each round clearly numbered
+- Clarifying questions: count + key changes applied + questions noted but not applied
+- Deep-critique review: verdict + critical issues (applied) + suggestions (applied or noted)
+- Red-team review: unaddressed-critical-failure-mode Yes/No + scenarios fixed or dismissed
 - Quality check: conformance changes
-- Each round clearly numbered
+- Kept separate so reviewers reading the plan can't be primed by prior rounds
 
 ### Things to avoid
 - No code blocks, Prisma syntax, or TypeScript in the plan
 - No implementation details that belong in the code (exact prop shapes, CSS classes, etc.)
+- No Review Log inside the plan (it's a sidecar)
 - No phases that aren't browser-testable
 - No phase that adds logic without naming the tests it adds for that logic
 - No plan without a Testing Strategy section

@@ -13,7 +13,7 @@ You are implementing an approved plan for: $ARGUMENTS
 
 These rules are non-negotiable:
 
-1. **Plan must be approved and reviewed first.** Check the plan's status field. If it says "Draft" or has no Review Log, stop and tell the user the plan needs review first.
+1. **Plan must be approved and reviewed first.** Check the plan's status field and the review-log sidecar. If the status is "Draft", or `context/[Feature]/review-log.md` doesn't exist (no review round has run), stop and tell the user the plan needs review first. (Review history lives in that sidecar, not in the plan.)
 2. **Never edit the plan or PRD.** They are frozen. All deviations, decisions, and trade-offs go in `progress.md`.
 3. **Implement phase by phase.** Complete one phase fully before starting the next. After each phase, update the progress doc.
 4. **Research in-flight trade-offs, then surface only the genuine ones.** If you hit a decision not covered by the plan, research it first with `/research` (grounded in the project's stack) when it has a technical or best-practice dimension. If documented best practice or the project's own conventions clearly resolve it, apply that, record the decision and citation in `progress.md`, and don't stop the user for a settled question. Surface to the user only the genuinely contested choices, and bring the researched points with them. Document the user's decision in `progress.md`.
