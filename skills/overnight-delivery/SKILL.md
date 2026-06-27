@@ -30,7 +30,7 @@ This drafts a phased implementation plan based on the approved PRD. The plan is 
 
 ## Stage 2: Plan Review Loop (4 rounds)
 
-Run `/plan-review context/[Feature]/implementation-plan.md` **four times in sequence**. Each round builds on the previous: the plan is updated between rounds, so each review sees a progressively refined version.
+Run `/plan-review context/[Feature]/implementation-plan.md` **four times in sequence**. The plan is updated between rounds, so each round reviews a progressively refined artifact. But each round is a **cold start**: plan-review strips the Review Log before spawning reviewers, so a reviewer in round 4 scrutinizes the plan as hard as round 1 instead of deferring to prior "Reviewed" stamps. The plan improves between rounds; the reviewers are never told what changed or what a prior round approved, that anchoring is exactly what we keep out.
 
 ### Round 1
 - Fresh clarifying-questions, deep-critique, and red-team passes against the initial draft.

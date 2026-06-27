@@ -21,7 +21,7 @@ Gather context that the reviewer will need. Read:
 ## Run the review
 
 Spawn the `senior-reviewer` sub-agent. In your prompt, include:
-1. The full text of the file to review
+1. The full text of the file to review (if it carries a Review Log or prior-review section, strip it, the reviewer evaluates the work cold, not the history of how it was reviewed)
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content

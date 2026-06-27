@@ -84,6 +84,7 @@ Why this split: project-specific values differ per repo and should not leak into
 - Testing is non-optional: plans carry a testing strategy and every phase names the tests it adds; tests are written as each phase lands, not batched to the end; a dedicated review agent runs the suite; critical flows get automated Playwright coverage rather than manual-only checks.
 - Strict approval gates: silence, "ok", or "thanks" is not approval.
 - Reviews are re-runnable on request, without pushback.
+- Cold-start reviews: every reviewer, every round, sees only the current plan and project context, never the prior reviewers' questions, the trade-off decisions, or the plan's Review Log (it's stripped before spawning). Priming a reviewer with "this was already addressed" anchors it to rubber-stamp those parts; a cold reviewer re-scrutinizes them, so round 4 reviews as hard as round 1.
 
 ## Notes
 

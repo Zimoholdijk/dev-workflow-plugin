@@ -11,6 +11,17 @@ You have drafted or been given a plan at: $ARGUMENTS
 
 Execute this multi-stage review process. You are the main agent: you orchestrate, critically assess all feedback, and make final decisions.
 
+## Cold-start every reviewer (non-negotiable)
+
+Every reviewer, in every stage and every round, reviews the plan **cold**. Pass each reviewer sub-agent only the current plan text and the project context (overview, CLAUDE.md, PRD, and the relevant code). **Never** pass:
+
+- the prior reviewers' questions, or your responses to them,
+- the trade-off decisions already made,
+- any summary of "what changed", "what was already addressed", or "what a previous round approved",
+- the plan's **Review Log** section, strip it out before sending the plan to any reviewer.
+
+Why: telling a reviewer that part of the plan was "already addressed" or "already reviewed" anchors it to treat that part as settled, so it stops scrutinizing exactly where prior rounds drew their conclusions. A cold reviewer re-examines those conclusions and routinely finds issues a primed reviewer rubber-stamps. The plan artifact itself reflects the changes you've accepted, that is the thing under review, but nothing in the reviewer's context should signal that any part of it carries a stamp of approval. This holds **within** a single run (the senior and red-team do not see the junior's exchange) and **across** re-invocations (round 2+ sees the plan, not the history).
+
 ## Before starting
 
 Gather context that the reviewers will need. Read:
@@ -25,7 +36,7 @@ You will pass ALL of this context to the sub-agents, since they have no prior kn
 ## Stage 1: Clarifying-Questions Review (junior-reviewer)
 
 Spawn the `junior-reviewer` sub-agent. In your prompt, include:
-1. The full text of the plan
+1. The full text of the plan, **with the Review Log section removed** (on a re-invocation the plan carries prior rounds, the junior must not see them; cold start applies here too)
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
@@ -60,11 +71,11 @@ The junior reviewer will return a list of clarifying questions.
 ### Spawn
 
 Spawn the `senior-reviewer` sub-agent. In your prompt, include:
-1. The UPDATED plan (after Stage 1 revisions)
+1. The current plan text, **with the Review Log section removed** (the senior must not see prior rounds). The plan already incorporates the Stage 1 fixes; that's fine, it's the artifact under review. Just don't narrate what changed.
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
 4. Any relevant PRD content
-5. The list of junior questions and your responses (so the senior can see what was already addressed)
+5. **Cold start, per the rule above.** Do NOT include the junior's questions, your responses, the trade-off decisions, or any "here's what we already addressed" summary. If the senior independently re-raises something the junior already surfaced, that is signal (an independent second hit), not wasted effort, do not suppress it by pre-loading the senior with answers.
 6. **Explicit instruction (Axis 9): Repetition / factoring smell.** Tell the senior: "Grep the plan's prose for near-identical branch descriptions (verb + object that recur with only a literal, key, separator, or metadata differing). If found, flag it as a structural issue (not a spec violation) and sketch what a unified path would look like. This is grading internal factoring, not just spec compliance. You cannot return a Pass verdict without explicitly stating whether the plan has repetition smell."
 7. **Explicit instruction (Axis 10): Framework-idiom check.** Tell the senior: "When the plan involves SQL, RLS policies, ORM queries, framework hooks, middleware, or any code shape governed by a third-party tool's conventions, verify the pattern appears in that tool's official documentation. Constrain doc lookups to the framework's own site (e.g. site:prisma.io/docs, site:supabase.com/docs, site:react.dev), not blogs, Stack Overflow, or community discussions, which routinely endorse non-idiomatic patterns. A pattern that implements the spec correctly but has no documented analog is still likely wrong; homegrown patterns are usually invented to satisfy a prose spec, not because the framework lacks a documented solution. Grade against the framework, not just against the plan." If the senior flags a pattern as possibly non-idiomatic but can't confirm against the docs, run `/research` to settle it with sources before deciding.
 8. **Explicit instruction (Axis 11): Behavior the plan implicitly removes.** Tell the senior: "When the plan rewrites an existing hook, module, route, or shared file, read the actual file before the rewrite and enumerate its current responsibilities: every switch case, guard clause, ref and its side effects, exported helper, and documented convention. Check the plan against that list: is each one preserved or intentionally dropped, or does the plan only describe additions and leave preservation implicit? Also scan the plan for 'remove', 'delete', and 'no longer needed': when the plan removes a documented convention, verify the code that convention protected is either preserved or genuinely obsolete. Do not grade 'is the new design coherent'; grade 'would shipping this design quietly break anything the old code did?'"
@@ -87,8 +98,8 @@ The junior and senior passes are cooperative and evaluative: one asks what's unc
 
 ### Spawn
 
-Spawn the `red-team-reviewer` sub-agent against the plan **as revised after Stages 1–2** (you want to stress-test the plan you'll actually ship, not the first draft). In your prompt, include:
-1. The UPDATED plan
+Spawn the `red-team-reviewer` sub-agent against the plan **as revised after Stages 1–2** (you want to stress-test the plan you'll actually ship, not the first draft). Cold start still applies: the red-team sees the current artifact, not the history of how it got there. In your prompt, include:
+1. The current plan text, **with the Review Log removed**, and with no summary of what Stages 1–2 changed (a "this part was already hardened" hint is exactly the anchor that makes it skip that part)
 2. The full project overview and CLAUDE.md rules
 3. Any relevant PRD content
 4. A pointer to the actual code the plan touches (so its attacks are concrete, not hypothetical)
@@ -140,3 +151,5 @@ This log is part of the plan, it documents the reasoning behind the final versio
 ## Re-invocation
 
 This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. Each invocation runs all stages fresh against the current state of the plan; rounds from prior invocations don't count. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the Review Log.
+
+The Review Log is for **you and the user**, not for the reviewers. Reviewers never see it (strip it before spawning, per the cold-start rule), so every round is a genuine cold start, the reviewer evaluates the plan as if for the first time rather than being told it already passed N rounds. A plan that has survived five rounds should still get a reviewer that scrutinizes it as hard as round one; the accumulating "Reviewed" stamps are precisely the anchor we keep out of the reviewer's context.
