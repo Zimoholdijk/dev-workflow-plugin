@@ -32,7 +32,7 @@ Before writing anything, read:
 4. The feature's PRD, implementation plan, and `progress.md` if they exist, the plan's **Testing Strategy** and per-phase **Testable** sections tell you what the acceptance flows are
 5. Any existing tests (glob for `*.spec.ts`, `*.test.ts`, `e2e/`, `tests/`, `playwright.config.*`) to match the project's conventions, helpers, fixtures, and file placement
 
-If the project has **no e2e setup at all** (no `playwright.config.*`, no test directory), do not silently invent one. Tell the user what you propose to add (a `playwright.config`, a `tests/e2e/` directory, a test script in `package.json`, and how the dev server / base URL is resolved) and confirm before scaffolding it. Reuse the project's existing browser, base URL, and auth-bootstrap conventions wherever they exist.
+If the project has **no e2e setup at all** (no `playwright.config.*`, no test directory), do not silently invent one. Tell the user what you propose to add (a `playwright.config` with a `webServer` block so the suite starts and waits for the app, plus a `baseURL`; a `tests/e2e/` directory; a test script in `package.json`; and how the dev server / base URL is resolved) and confirm before scaffolding it. Reuse the project's existing browser, base URL, and auth-bootstrap conventions wherever they exist. For repeated sign-in, prefer Playwright's `storageState` (authenticate once, reuse the saved session) over logging in at the top of every spec.
 
 ## Step 2: Confirm the app is reachable
 
@@ -56,8 +56,10 @@ Translate each verified flow into a Playwright spec, following the project's exi
 - Name the test for the behavior it proves, not the mechanics ("claims an available toy and sees it in My Claims", not "click test 3").
 - Assert on user-visible state and application state, not implementation details.
 - Use role- and text-based locators (`getByRole`, `getByText`, `getByLabel`) over brittle CSS/XPath selectors.
-- Wait on state (element visible, URL changed, network idle), never fixed timeouts.
+- Wait on state via Playwright's web-first, auto-retrying assertions (`expect(locator).toBeVisible()`, `toHaveURL`, etc.), never fixed timeouts or `waitForTimeout`.
 - Set up and tear down the spec's own data so it is isolated and order-independent.
+- Wrap multi-step flows in `test.step()` so a failure (and its trace) reads as a named sequence, not one opaque block.
+- Don't test third-party sites or APIs you don't control. Intercept them with `page.route` and assert your app's behavior at the boundary. This is also how you make an otherwise-flaky external dependency deterministic (rule 6).
 - Group related flows in one spec file per feature or page, matching how the project already organizes tests.
 
 ## Step 5: Run the suite and confirm green
@@ -66,6 +68,7 @@ Run the project's test command (from `package.json` scripts or `CLAUDE.md`) and 
 
 - If a new spec fails, fix the spec if the test is wrong, or surface the failure if the app is wrong. Never weaken an assertion just to make it pass.
 - If an existing test starts failing because of timing or shared state your spec introduced, fix the isolation, do not delete or skip the other test.
+- When a failure is hard to diagnose (especially one that only reproduces in CI), enable the Playwright **trace viewer** (`trace: 'on-first-retry'` in config) and read the trace instead of guessing.
 - Report the actual command you ran and its actual result. If tests fail, say so with the output. Do not claim green you have not seen.
 
 ## Step 6: Report
@@ -80,6 +83,7 @@ Tell the user:
 
 ## Notes
 
-- E2E tests are the top of the pyramid: slow, high-confidence, few. They complement unit and integration tests, they do not substitute for them. When a bug could be caught by a fast unit test, prefer that and reserve e2e for whole-flow confidence.
+- E2E tests are the top of the pyramid: slow, high-confidence, few. They complement unit and integration tests, they do not substitute for them. Below them, integration tests (units working together) usually deserve the most coverage, with unit tests for isolated logic, the closer a test resembles real usage, the more confidence it buys. When a bug could be caught by a fast unit test, prefer that and reserve e2e for whole-flow confidence.
 - This skill pairs with `/full-code-review`, whose Testing reviewer checks that new code has tests and runs the suite. Use this skill to *add* the coverage; that reviewer verifies it exists and passes.
-- The Playwright MCP runs a real browser via `npx @playwright/mcp@latest`. In a remote/CI session, Chromium is pre-installed, do not run `playwright install`.
+- Lint specs with `eslint-plugin-playwright`. The single most common e2e failure is a missing `await` on an action or assertion, which the linter catches before it becomes flakiness.
+- **Provisioning the browser.** The Playwright MCP (`npx @playwright/mcp@latest`) launches **headed** and uses your **system Chrome** by default, good for watching tests on a desktop. In a **headless remote/CI session there is no display and no system Chrome**, so the default fails. Add flags to the `mcpServers.playwright.args` in your `.mcp.json`: `--headless` and `--browser chromium` (and `--no-sandbox` if Chromium won't launch in a container). `--browser chromium` is what makes the MCP use the bundled Chromium under `PLAYWRIGHT_BROWSERS_PATH`; without it the MCP looks for system Chrome and errors with "Browser 'chrome' is not installed". Don't run `playwright install` where the bundled Chromium is already present; if the MCP still can't find a browser, point it at the binary with `--executable-path`. (Note: this provisioning applies to the MCP only. The durable specs in Step 5 run under the project's `@playwright/test`, which defaults to bundled Chromium and honors `PLAYWRIGHT_BROWSERS_PATH` on its own.)

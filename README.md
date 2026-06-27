@@ -37,7 +37,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 |--------|---------|
 | `playwright` | Microsoft's Playwright MCP (`npx @playwright/mcp@latest`), exposes `mcp__playwright__*` browser tools. `write-e2e-tests` uses it to drive a real browser and verify flows before writing spec files. Starts automatically when the plugin is enabled. |
 
-The server runs a real browser via `npx`, so Node.js must be available in the environment. In remote/CI sessions a browser is typically pre-installed, no `playwright install` needed.
+The server runs a real browser via `npx`, so Node.js must be available. It defaults to **headed** mode with **system Chrome**, ideal on a desktop where you want to watch tests run. For a **headless remote/CI session** (no display, no system Chrome), add `--headless --browser chromium` to the server's `args` in `.mcp.json` (and `--no-sandbox` in some containers); `--browser chromium` makes it use the bundled Chromium under `PLAYWRIGHT_BROWSERS_PATH` instead of hunting for system Chrome. No `playwright install` is needed where the bundled Chromium is already present. This applies to the MCP only; durable specs run under the project's own `@playwright/test`.
 
 ## Installation
 

@@ -127,7 +127,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - Cover more than the happy path: error states, auth boundaries (signed-out, wrong-owner, expired), and empty/loading states.
 - Tests must be deterministic and isolated: each sets up and tears down its own data, waits on application state rather than fixed sleeps, and passes in any order.
 - Critical flows must be covered by an automated test, not just a manual check, manual-only coverage regresses silently.
-[If the project has no test runner yet, the first task is to establish one (runner + e2e harness + a first passing test) before feature work. Note the chosen tools here once picked.]
+[If the project has no test runner yet, the first task is to establish one (runner + e2e harness + a first passing test) before feature work. For a new TypeScript/Vite stack, Vitest is the current default (Jest-compatible API, native TS/ESM, shared Vite config); use Jest to match an existing codebase or for React Native, and Playwright for e2e. For an existing repo, adopt whatever runner is already there rather than introducing a second one. Note the chosen tools here once picked.]
 
 ## TypeScript
 [Include this section only when the detected stack uses TypeScript. Omit it entirely otherwise.]
