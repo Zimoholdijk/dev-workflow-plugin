@@ -20,6 +20,8 @@ These rules are non-negotiable:
 5. **No commits unless asked.** The user manages git.
 6. **No dev server restarts.** The user manages dev servers.
 7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy and that phase's "Testable" section, unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
+8. **You are the only writer; delegate only reads.** Do every file edit yourself, in the main session. Never spawn sub-agents to write code in parallel: parallel writers make conflicting implicit decisions the orchestrator can't reconcile. You may delegate read-only work (locating code, researching an idiom, reviewing a diff) to a sub-agent so its file-reading stays out of your context, but only when the reads are large enough to be worth the token cost. Don't spin up an agent for a trivial single-file lookup.
+9. **Don't thrash.** After about two failed attempts at the same issue, stop. Re-anchor from `progress.md` and the plan phase with fresh framing, and `/research` the actual error instead of guessing again. If still stuck, surface it to the user with what you tried. Never loop on the same broken approach.
 
 ## Step 1: Gather context
 
@@ -126,6 +128,7 @@ For each phase (in order):
 1. Update the progress doc: set the phase status to "In progress"
 2. Re-read the plan's phase description carefully
 3. Check shared utilities in `context/overview.md` before creating new constants, types, or helpers
+4. **Pattern-first, then docs.** If the phase touches an unfamiliar surface (a hook lifecycle, RLS, a migration shape, a library API not used here yet), find how the repo already does it and follow that in-repo example. If there's no precedent, run `/research` docs-first *before* writing, not after it breaks. Researching the idiom up front is cheaper than having the code review reject a non-idiomatic pattern later.
 
 ### During the phase:
 1. Follow the plan's sub-steps in order
@@ -136,11 +139,12 @@ For each phase (in order):
 6. If you encounter a trade-off not covered by the plan, stop and research it first (`/research`). If the evidence settles it, apply it and record the decision + citation; otherwise surface it to the user with the researched points. Record the decision in `progress.md` under "Trade-off Decisions"
 
 ### After completing the phase:
-1. Run the test suite (the new tests plus the full existing suite) and confirm it's green. Report the command and the real result. If a test fails, fix it before marking the phase Done; never weaken an assertion just to pass, and never mark Done with the suite red.
-2. Update the progress doc: set the phase status to "Done" (or "Test" if it can't be end-to-end verified yet)
-3. Add a changelog entry describing what the phase produced, the tests added, and any surprises
-4. Tell the user what's testable (per the plan's "Testable" section for that phase) and the test result
-5. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
+1. **Verify with evidence.** Run the test suite (the new tests plus the full existing suite) and paste the actual command and its output, never a bare "tests pass" claim. If the phase exposed a user-facing flow, also observe it working (`/verify` or `/run`): a green suite is not proof the UX works. For a phase with no user-facing surface that can't yet be checked end-to-end, mark it `Test` rather than `Done`. If a test fails, fix it before marking Done; never weaken an assertion just to pass, and never mark Done with the suite red.
+2. **Optional self-review.** For a non-trivial phase, run `/code-review` on just this phase's diff before moving on. Tell it to flag only correctness and requirement gaps, not style or speculative hardening (a reviewer told to "find problems" invents them). Catching a bug now is cheaper than at the final full review.
+3. Update the progress doc: set the phase status to "Done" (or "Test" per above)
+4. Add a changelog entry describing what the phase produced, the tests added, and any surprises
+5. Tell the user what's testable (per the plan's "Testable" section for that phase) and the test result
+6. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
 
 ## Step 4: After all phases are complete
 
@@ -199,7 +203,7 @@ These are the moments when documentation MUST be updated:
 
 If the user invokes this skill and a `progress.md` already exists with some phases marked "Done":
 
-1. Read the progress doc to understand current state
+1. **Verify before extending.** Before writing any new code, read the progress doc and the recent git log, then run the test suite (and boot the app if the feature has a UI) to confirm the existing work is actually green. Undocumented breakage from a prior session is common; catch it before stacking new code on top.
 2. Identify the first phase that is NOT "Done"
 3. Resume from that phase
 4. Do not re-implement completed phases
