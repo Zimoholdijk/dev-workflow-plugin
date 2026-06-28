@@ -1,6 +1,6 @@
 ---
 name: overnight-delivery
-description: End-to-end feature delivery pipeline. Writes implementation plan, runs 4 review rounds, gates on tradeoffs, implements all phases, runs 2 code review rounds with fixes. Takes a feature name with an approved PRD.
+description: End-to-end feature delivery pipeline. Writes implementation plan, runs plan review to convergence, gates on tradeoffs, implements all phases, runs 2 code review rounds with fixes. Takes a feature name with an approved PRD.
 disable-model-invocation: false
 argument-hint: "[feature name or path to PRD, e.g. 'RelatedToys' or 'context/RelatedToys/RelatedToysPRD.md']"
 ---
@@ -28,28 +28,18 @@ This drafts a phased implementation plan based on the approved PRD. The plan is 
 
 ---
 
-## Stage 2: Plan Review Loop (4 rounds)
+## Stage 2: Plan Review (run to convergence)
 
-Run `/plan-review context/[Feature]/implementation-plan.md` **four times in sequence**. The plan is updated between rounds, so each round reviews a progressively refined artifact. But each round is a **cold start**: plan-review strips the Review Log before spawning reviewers, so a reviewer in round 4 scrutinizes the plan as hard as round 1 instead of deferring to prior "Reviewed" stamps. The plan improves between rounds; the reviewers are never told what changed or what a prior round approved, that anchoring is exactly what we keep out.
+Run `/plan-review context/[Feature]/implementation-plan.md` and let it run to convergence. Do not pick a round count. plan-review loops internally: it runs review rounds (clarifying-questions, deep-critique, red-team, quality) until a round produces no Critical/High findings and applies no fixes, then reports **Converged**. The exit condition decides when to stop, not a fixed "4 rounds".
 
-### Round 1
-- Fresh clarifying-questions, deep-critique, and red-team passes against the initial draft.
-- Apply all critical issues and clear improvements. Update the plan.
+Why convergence beats a fixed number: a round that applies any fix is never the last round, those fixes are themselves unreviewed, and a fix made to satisfy one round routinely becomes the next round's regression. The loop stops only on a clean, no-op round, so the plan you carry into implementation has survived a cold pass that changed nothing.
 
-### Round 2
-- Second pass catches issues introduced by Round 1 fixes, or concerns the first reviewers missed.
-- Different reviewer agents may catch different things: diversity of perspective is the point.
-- Apply fixes. Update the plan.
+What to rely on (plan-review owns the mechanics):
+- **Cold start every round.** The `review-log.md` sidecar is withheld from reviewers, so a late round scrutinizes the plan as hard as the first instead of deferring to prior "Reviewed" stamps.
+- **Trade-offs carry to the Stage 3 gate.** This pipeline runs unattended, so genuine user-owned trade-offs surfaced during the loop are accumulated for `/tradeoff-review` at Stage 3, not blocked on mid-loop. Clear, best-practice-resolved decisions are applied in-loop with their citation.
+- **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md`; the plan status is set to "Reviewed" once converged.
 
-### Round 3
-- By now the plan should be stable. This round focuses on edge cases, subtle correctness issues, and conformance.
-- Apply any remaining fixes. Update the plan.
-
-### Round 4
-- Final polish. This round should produce mostly Info/Low findings. If Critical or High issues are still emerging, that's a signal the plan needs more fundamental rework. Flag this to the user.
-- Apply fixes. Update the plan. Set plan status to "Reviewed".
-
-After each round, append a new round entry to the `context/[Feature]/review-log.md` sidecar (not the plan) with the round number and summary of changes. The plan never carries the review history, so reviewers can't be primed by prior rounds.
+If Critical/High findings are still emerging after several rounds (the loop isn't converging), that is a signal the plan needs more fundamental rework, not more rounds. Flag it to the user rather than looping indefinitely.
 
 ---
 
@@ -57,7 +47,7 @@ After each round, append a new round entry to the `context/[Feature]/review-log.
 
 Run `/tradeoff-review [Feature]`.
 
-This walks the user through every tradeoff from the plan and 4 review rounds **one at a time**, collecting a decision on each (accept / fix now / skip). The tradeoff-review skill handles gathering, deduplication, and presentation.
+This walks the user through every tradeoff from the plan and the review loop **one at a time**, collecting a decision on each (accept / fix now / skip). The tradeoff-review skill handles gathering, deduplication, and presentation.
 
 **If the tradeoff-review verdict includes "fix now" items:** Apply those fixes to the plan before proceeding to implementation.
 
@@ -78,7 +68,7 @@ This implements the plan phase by phase, creating the progress doc, writing code
 - Updating `overview.md` after all phases complete
 - Running `/doc-audit local` for documentation consistency
 
-**Important:** Tell the implement-plan skill to proceed through all phases without waiting for confirmation between phases. The plan has been reviewed 4 times: phase-level confirmation adds friction without value at this point.
+**Important:** Tell the implement-plan skill to proceed through all phases without waiting for confirmation between phases. The plan has been reviewed to convergence: phase-level confirmation adds friction without value at this point.
 
 **Gate:** All phases must be marked "Done" in `progress.md` before proceeding.
 
@@ -127,7 +117,7 @@ Present the delivery summary:
 ### Plan
 - [N] architecture decisions
 - [N] phases implemented
-- [N] plan review rounds (4)
+- [N] plan review rounds (ran to convergence)
 - [N] total plan revisions applied
 
 ### Implementation

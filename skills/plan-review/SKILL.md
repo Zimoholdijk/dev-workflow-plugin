@@ -103,8 +103,8 @@ The junior and senior passes are cooperative and evaluative: one asks what's unc
 
 ### Spawn
 
-Spawn the `red-team-reviewer` sub-agent against the plan **as revised after Stages 1–2** (you want to stress-test the plan you'll actually ship, not the first draft). Cold start still applies: the red-team sees the current artifact, not the history of how it got there. In your prompt, include:
-1. The current plan text, with no summary of what Stages 1–2 changed (a "this part was already hardened" hint is exactly the anchor that makes it skip that part). Don't point the red-team at the `review-log.md` sidecar.
+Spawn the `red-team-reviewer` sub-agent against the plan **as revised after Stages 1-2** (you want to stress-test the plan you'll actually ship, not the first draft). Cold start still applies: the red-team sees the current artifact, not the history of how it got there. In your prompt, include:
+1. The current plan text, with no summary of what Stages 1-2 changed (a "this part was already hardened" hint is exactly the anchor that makes it skip that part). Don't point the red-team at the `review-log.md` sidecar.
 2. The full project overview and CLAUDE.md rules
 3. Any relevant PRD content
 4. A pointer to the actual code the plan touches (so its attacks are concrete, not hypothetical)
@@ -137,7 +137,7 @@ Update the plan file with all revisions (the plan itself, never a Review Log sec
 
 > Sidecar for `implementation-plan.md`. Review history lives here, never in the plan, so reviewers reading the plan can't be primed by prior rounds. For the author and user only.
 
-## Round [N] — [date]
+## Round [N], [date]
 
 ### Clarifying Questions (junior-reviewer)
 - [Summary of questions raised and how each was addressed]
@@ -159,6 +159,27 @@ The sidecar documents the reasoning behind the final version. Do NOT add a Revie
 
 ## Re-invocation
 
-This workflow can be invoked as many times as the user wants on the same plan. There is no cap and no diagnostic gate before running again. Each invocation runs all stages fresh against the current state of the plan; rounds from prior invocations don't count. If the user asks for another round, run it. Do not argue that prior reviews should be sufficient, and do not propose skipping ahead as an alternative. Each round appends a new numbered entry to the `review-log.md` sidecar.
+A single invocation runs review rounds in an **internal loop until the plan converges**: you invoke it once and it keeps running rounds until one comes back clean. There is no cap and no diagnostic gate. If the user later asks for another pass on an already-converged plan, run it; never argue that prior reviews should be sufficient or propose skipping ahead. Every round appends a numbered entry to the `review-log.md` sidecar.
+
+## Convergence (the exit condition)
+
+Run rounds in a loop. After each round, evaluate the **exit condition**:
+
+> **Converged** = the round produced no Critical/High findings AND applied no fixes.
+
+- If converged, stop. That clean, no-op round is the signal it's safe to implement.
+- If the round applied any fix (or surfaced any Critical/High), run another round.
+
+The rule that drives the loop: **a round that changed anything is never the last round.** Its fixes are themselves unreviewed changes, and fixes routinely introduce new bugs, a fix made to satisfy one round becomes the next round's regression. Only the next cold round verifies them. So you stop on the first round that changes nothing, not on the round that "looks done".
+
+Pausing for the user: the loop resolves clear fixes on its own, but it still obeys the trade-off rule. When a round surfaces a genuine user-owned trade-off (per Stage 1 and Stage 2), stop and ask, one at a time, then resume the loop after the decision. Converging never means deciding trade-offs on the user's behalf.
+
+State the exit-condition result explicitly at the end of each round so the stop is unambiguous:
+- **Converged**: no Critical/High, no fixes this round. Safe to implement.
+- **Another round**: list what was fixed; those fixes are unverified until a clean round confirms them.
+
+Do not call a plan implementation-ready off a round that made fixes, even if everything looks resolved; the fixes haven't faced a cold reviewer yet.
+
+This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it should not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the skill already knows deterministically whether it applied a fix, so it owns the exit decision directly. Cold-start holds across the internal rounds for the same reason it holds across manual re-invocations: each round spawns fresh reviewer sub-agents fed only the plan, with the `review-log.md` sidecar withheld. The loop's accumulating orchestrator context never reaches the reviewers.
 
 The sidecar is for **you and the user**, not for the reviewers. Because it's a separate file (and the reviewer agents are told never to open a review-log file), every round is a genuine cold start: the reviewer evaluates the plan as if for the first time rather than learning it already passed N rounds. A plan that has survived five rounds should still get a reviewer that scrutinizes it as hard as round one; the accumulating "Reviewed" stamps are precisely the anchor we keep out of the reviewer's context.
