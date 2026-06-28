@@ -180,6 +180,17 @@ State the exit-condition result explicitly at the end of each round so the stop 
 
 Do not call a plan implementation-ready off a round that made fixes, even if everything looks resolved; the fixes haven't faced a cold reviewer yet.
 
+### Convergence is the signal, not the target (anti-gaming)
+
+The exit condition can be cheated, and cheating it defeats the entire point. Two failure modes to refuse:
+
+1. **Severity downgrading.** Severity is the *cold reviewer's* assignment. You may not relabel a Critical or High as Low/Info so it can be "declined" instead of fixed. If you ever catch yourself re-rating a finding *downward* in order to avoid a fix or to force a no-op round, stop, that is the anti-pattern. When you genuinely disagree with a reviewer's severity, record the disagreement and your reasoning in the sidecar; don't silently mark it down.
+2. **Blanket-declining to stop the loop.** Apply Low/Info findings that genuinely improve the plan. You may decline *true* nitpicks, declining a real nitpick is not a fix and does not block convergence, but record each decline (one line, with why) in the `review-log.md` sidecar. Declining is a judgement you defend, not a lever you pull to reach the no-op round faster.
+
+The goal is a stable, correct plan. Convergence is the *evidence* you got there, not the thing to optimize. If you optimize for the no-op round, you corrupt the signal it carries.
+
+Sanity check: a fresh **Draft** almost never converges on round 1. If round 1 "converges" by finding nothing Critical/High and declining everything, treat that as suspicious, re-read the plan or re-run a round, rather than banking it. Honest convergence on a real draft usually takes a few rounds where Criticals and Highs are actually fixed and then verified clean.
+
 This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it should not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the skill already knows deterministically whether it applied a fix, so it owns the exit decision directly. Cold-start holds across the internal rounds for the same reason it holds across manual re-invocations: each round spawns fresh reviewer sub-agents fed only the plan, with the `review-log.md` sidecar withheld. The loop's accumulating orchestrator context never reaches the reviewers.
 
 The sidecar is for **you and the user**, not for the reviewers. Because it's a separate file (and the reviewer agents are told never to open a review-log file), every round is a genuine cold start: the reviewer evaluates the plan as if for the first time rather than learning it already passed N rounds. A plan that has survived five rounds should still get a reviewer that scrutinizes it as hard as round one; the accumulating "Reviewed" stamps are precisely the anchor we keep out of the reviewer's context.
