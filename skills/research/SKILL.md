@@ -55,7 +55,7 @@ Pass it the question, the technologies and versions, the project context from St
 > - The plan / code this question is about: [the specific plan section or files]
 > - Documentation tools available to you: [e.g. "the Supabase MCP `search_docs` tool", or "none, use web search and fetch"]
 >
-> Answer from sources you read during this task, not from prior knowledge, training data on these tools is stale and these answers are version-sensitive. This prompt deliberately does not assign you a role or persona; answer from the evidence, not from an assumed identity.
+> Answer from sources you read during this task, not from prior knowledge, training data on these tools is stale and these answers are version-sensitive.
 >
 > **Research in this order:**
 >
