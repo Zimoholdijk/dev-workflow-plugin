@@ -2,7 +2,7 @@
 name: regression-reviewer
 description: Code-review lens for what a change REMOVES. Reads the minus-lines of a diff and flags load-bearing behavior, guards, or documented conventions that were dropped with no replacement. Branch scope only (a diff is required). Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 maxTurns: 20
 ---
 

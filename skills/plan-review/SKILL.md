@@ -101,14 +101,22 @@ Fix the contradictions you find, then re-check those follow-on fixes. The domina
 
 After each reviewer returns, spawn the `grader` sub-agent. Give it: the reviewer's findings, the current plan, the project context, the **severity rubric above** (verbatim), and whether **production data exists** for this project. It returns each finding tagged with `{tier, area, one-line reason}`.
 
-You then **fix every finding it surfaced**, regardless of tier (the tier governs convergence later, not whether to fix now). Apply the trade-off rule below for anything genuinely user-owned. You may **escalate** the grader's tier (treat a Minor as Medium) or record a disagreement in the sidecar, but you may **never downgrade** a tier to avoid a round or a fix: severity is the grader's call, not yours.
+You then **address every finding it surfaced**, regardless of tier. How you address it depends on the tier: **Medium and Minor you fix autonomously**; **One-way and Significant you treat as the user's call** per the trade-off rule below, they are the irreversible or consequential decisions, and the point of grading by reversibility is that a person, not the loop, owns them. The tier also governs convergence later. You may **escalate** the grader's tier (treat a Minor as Medium) or record a disagreement in the sidecar, but you may **never downgrade** a tier to avoid a round, a fix, or a question to the user: severity is the grader's call, not yours.
 
-## Trade-offs (cross-cutting)
+## Trade-offs: ask the user about One-way and Significant decisions
 
-Some findings are genuine user-owned trade-offs, not clear fixes. For any with a technical or best-practice dimension, run `/research` first (grounded in the project's stack and versions; several in parallel is fine). Then:
+The tier decides who owns the call. **One-way and Significant findings are the user's to decide** whenever they involve a genuine choice: those are the irreversible or consequential decisions, and the whole point of grading by reversibility is that a person owns them, not the loop. **Medium and Minor you fix autonomously**, do not bother the user with reversible, low-stakes fixes.
 
-- **Resolved by evidence** (docs/best practice clearly favor one option, or the downside is negligible at this scale): apply it, record the decision + citation in the plan, tell the user what you did so they can object. Do not make the user adjudicate a settled question.
-- **Genuine trade-off** (defensible either way, depends on product/UX/risk preference): STOP and ask the user, **one trade-off per message**, with the researched points (what the docs say, the real cost of each side, your recommendation). Never a bare "A or B?". Wait for the answer before the next one. If several accumulate, use `/tradeoff-review` to walk them one at a time.
+So as you address each finding:
+
+- **Medium / Minor** → just fix it. No question.
+- **One-way / Significant** → before you decide it, run `/research` if it has a technical or best-practice dimension (grounded in the project's stack and versions; several in parallel is fine), then route by what the evidence shows:
+  - **Resolved by evidence** (docs/best practice clearly favor one option, or the downside is negligible at this scale): apply the documented answer, record the decision + citation in the plan, and **tell the user what you did and why so they can object**. An irreversible or consequential call still gets surfaced even when the answer is clear.
+  - **Genuine choice** (defensible either way, depends on product/UX/risk preference): **STOP and ask the user before deciding it.** One decision per message, with the researched points (what the docs say, the real cost of each side, your recommendation). Never a bare "A or B?". Wait for the answer before continuing.
+
+**Ask at the moment you reach it, not batched at the end.** When the orchestrator hits a One-way or Significant finding that needs a call, surface it then, one at a time, and resume after the user answers. Do not silently decide a user-owned call to keep the loop moving, and do not pile them into one end-of-run "pick for each of these" message (the user has repeatedly flagged that as the wrong pattern). If several genuinely accumulate, use `/tradeoff-review` to walk them one at a time.
+
+**Unattended exception.** When this loop runs inside an unattended pipeline (e.g. `/overnight-delivery`), you cannot stop for each answer. There, apply only the evidence-resolved One-way/Significant calls in-loop (with citations), and accumulate the genuine choices for that pipeline's trade-off gate instead of blocking mid-loop.
 
 ## Stage 1: Clarifying-Questions Review (junior-reviewer)
 

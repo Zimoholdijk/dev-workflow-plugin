@@ -2,7 +2,7 @@
 name: architecture-reviewer
 description: Code-review lens for design quality, plan conformance, DRY/repetition smell, scope discipline, and layer placement against framework conventions. Reviews a branch diff or (full scope) the whole codebase. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash, WebFetch
-model: sonnet
+model: opus
 maxTurns: 20
 ---
 

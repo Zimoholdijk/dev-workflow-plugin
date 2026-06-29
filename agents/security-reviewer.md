@@ -2,7 +2,7 @@
 name: security-reviewer
 description: Code-review lens for security. Reviews a branch diff (or, in full scope, the whole codebase) against the OWASP Top 10 and returns severity-rated findings. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash, WebFetch
-model: sonnet
+model: opus
 maxTurns: 20
 ---
 

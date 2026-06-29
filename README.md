@@ -22,7 +22,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `full-code-review` | 7 parallel review agents (security, backend, frontend, architecture, docs, regressions, testing) in branch-diff or full codebase-health scope. The testing reviewer checks new code has tests and runs the suite |
 | `tradeoff-review` | Walk through accumulated tradeoffs one by one, collecting decisions |
 | `doc-audit` | Audit project docs against the actual codebase |
-| `overnight-delivery` | End-to-end pipeline: plan, 4 review rounds, implement, 2 code review rounds |
+| `overnight-delivery` | End-to-end pipeline: plan, plan-review to convergence, tradeoff gate, implement, 2 code review rounds |
 | `supabase-security` | Research and apply Supabase security fixes (RLS, SECURITY DEFINER, storage) |
 
 ### Agents
@@ -39,7 +39,7 @@ All defined roles live in `agents/`, so skills spawn named sub-agents (consisten
 | `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor and tags it with an area. Cold to the cost of fixing |
 | `assessor` | Runs every round, holds the full review log, counts recurrence by area, defers churning reversible areas to test obligations at K=3, and makes the converge / another-round call |
 
-**Code-review** (Sonnet), the seven lenses `full-code-review` runs in parallel:
+**Code-review** (Opus), the seven lenses `full-code-review` runs in parallel:
 
 | Agent | Purpose |
 |-------|---------|
@@ -56,7 +56,7 @@ All defined roles live in `agents/`, so skills spawn named sub-agents (consisten
 | Agent | Purpose |
 |-------|---------|
 | `researcher` (Opus) | Docs-first, cited, recommendation-first answer to a technical question, grounded in the project's stack and versions. Used by `research` |
-| `doc-auditor` (Sonnet) | Audits docs against the code, change-scoped or full. Used by `doc-audit` |
+| `doc-auditor` (Opus) | Audits docs against the code, change-scoped or full. Used by `doc-audit` |
 
 ### Bundled MCP servers
 

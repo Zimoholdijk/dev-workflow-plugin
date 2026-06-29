@@ -2,7 +2,7 @@
 name: documentation-reviewer
 description: Code-review lens that checks whether project documentation reflects the changes (or, in full scope, the current code). Reviews a branch diff or the whole codebase. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 maxTurns: 20
 ---
 

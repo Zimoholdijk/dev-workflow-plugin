@@ -2,7 +2,7 @@
 name: testing-reviewer
 description: Code-review lens that checks test coverage of a change AND actually runs the test suite, reporting the real result. Reviews a branch diff or (full scope) the whole suite. Runs commands; does not edit files.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 maxTurns: 25
 ---
 

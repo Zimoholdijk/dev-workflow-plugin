@@ -2,7 +2,7 @@
 name: doc-auditor
 description: Audits project documentation against the actual codebase and reports drift. Runs in two modes set by the task message, change-scoped (does the documentation reflect a given diff) or full (does every claim in the docs still match the code). Returns categorized findings with suggested fixes, never edits files.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 maxTurns: 20
 ---
 

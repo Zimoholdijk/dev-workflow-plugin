@@ -146,6 +146,17 @@ deferred, which is the exact failure mode this design exists to fix.
 **Recurrence threshold K = 3** (fixed in prose up to twice; the third recurrence in the
 same area is a defer).
 
+## 6b. Who decides: trade-offs by tier
+
+The tier governs not only convergence but **who owns the decision**:
+
+- **Medium / Minor**: the orchestrator fixes autonomously. They are reversible and low-stakes; asking about them is noise.
+- **One-way / Significant**: the user's call when they involve a genuine choice. Before deciding one, the orchestrator runs `/research` if it has a technical dimension, then routes: if the evidence settles it, apply the documented answer and tell the user (an irreversible call is surfaced even when clear); if it is a genuine choice (defensible either way, depends on product/UX/risk), STOP and ask the user, one at a time, **at the moment it is reached**, not batched at the end.
+
+This is the long-standing "ask me about the things that need my input" rule, now tied explicitly to the rubric: the things that need input are the irreversible and consequential ones (One-way and Significant), which is exactly what the grader already identifies.
+
+**Unattended exception:** inside an unattended pipeline (e.g. overnight-delivery), the loop cannot stop per answer; it applies evidence-resolved calls in-loop and accumulates the genuine One-way/Significant choices for that pipeline's trade-off gate.
+
 ## 7. Convergence definition
 
 A plan is **converged** on a round that has:
