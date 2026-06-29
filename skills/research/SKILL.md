@@ -40,41 +40,20 @@ Before spawning anything, pin down what's actually being asked and assemble what
 4. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
 5. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a Supabase MCP with a `search_docs` tool, or a docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
 
-## Step 2: Spawn the research sub-agent
+## Step 2: Spawn the researcher agent
 
-Spawn a `general-purpose` agent (it has web search/fetch and can reach connected MCP doc tools). For multiple distinct questions, spawn one agent per question in a single message so they run in parallel.
+Spawn the `researcher` sub-agent (it carries the docs-first methodology and output format, and has web search/fetch plus read access to the repo and connected MCP doc tools). For multiple distinct questions, spawn one `researcher` per question in a single message so they run in parallel.
 
-Pass it the question, the technologies and versions, the project context from Step 1, and the prompt below. Substitute the bracketed parts; do not add persona framing.
+You do not need to restate the methodology; the agent owns it. Give it only the **task context** from Step 1:
 
-> Your task is to research and answer this question so it can be acted on in a real codebase: **[question]**.
->
-> **Context you must work within** (this is the project; you have no other knowledge of it):
-> - Technologies and versions in play: [list, with versions]
-> - Project stack and architecture: [from overview.md]
-> - Project rules and conventions: [relevant CLAUDE.md excerpts]
-> - The plan / code this question is about: [the specific plan section or files]
-> - Documentation tools available to you: [e.g. "the Supabase MCP `search_docs` tool", or "none, use web search and fetch"]
->
-> Answer from sources you read during this task, not from prior knowledge, training data on these tools is stale and these answers are version-sensitive.
->
-> **Research in this order:**
->
-> 1. **Official documentation first.** Go to the canonical docs for the specific technology (e.g. `supabase.com/docs`, `prisma.io/docs`, `react.dev`, the library's own docs site or GitHub README). If a documentation-search tool is available, use it here. Read the *actual current docs*, and prefer the page that matches the project's installed version. Establish what the tool officially supports and recommends before looking anywhere else.
-> 2. **The tool's own source, changelog, and issue tracker** when the docs are ambiguous or silent. Release notes, maintainer answers in GitHub issues/discussions, and the source itself are high-signal for "is this supported and idiomatic in this version?"
-> 3. **Reputable secondary sources** for real-world tradeoffs, pitfalls, and patterns the docs omit: well-regarded engineering blogs and newsletters (quality Substacks, company engineering blogs, maintainers' personal writing), and conference talks. Weight by author credibility and recency. Prefer recent, dated material from authors with a track record.
-> 4. **Treat with skepticism** and do not rely on alone: SEO content farms, undated tutorials, AI-generated listicles, and unattributed forum answers. A single Stack Overflow answer is a lead to verify against the docs, not a conclusion.
->
-> **Cross-check:** where a secondary source conflicts with the official docs on what is supported or idiomatic, the docs win, note the conflict. Secondary sources are for tradeoffs and gotchas, not for overriding the documented behavior. Where reputable sources genuinely disagree on a judgment call, present both positions rather than picking one silently.
->
-> **Ground every recommendation in the project's actual versions and constraints given above.** Do not recommend a pattern the project's version does not support, or one that violates its stated conventions, flag it if the idiomatic approach conflicts with a project rule.
->
-> **Output format:**
-> 1. **Recommendation** (lead with it): the concrete answer for *this* project, in 2-4 sentences.
-> 2. **Why:** the reasoning, citing the documentation that supports it.
-> 3. **Tradeoffs / alternatives:** other viable approaches and when they'd be better; pitfalls to avoid.
-> 4. **Fit check:** how this lands against the project's stack, versions, and rules (any conflicts).
-> 5. **Sources:** every source as a URL, each tagged with its tier (official docs / maintainer / reputable blog / other) and one line on what it supports.
-> 6. **Confidence and open questions:** how settled this is, and anything you could not verify.
+- **The question** (narrowed to the decision actually in front of you).
+- **Technologies and versions in play** (from `package.json` / `deno.json` / lockfiles / `prisma/schema.prisma`).
+- **Project stack and architecture** (from `overview.md`).
+- **Project rules and conventions** (relevant `CLAUDE.md` excerpts).
+- **The plan or code this question is about** (the specific plan section or files, so the answer is concrete).
+- **Documentation tools available** (e.g. "the Supabase MCP `search_docs` tool", or "none, use web search and fetch").
+
+The agent returns a recommendation-first, cited answer (Recommendation, Why, Tradeoffs, Fit check, Sources, Confidence and open questions).
 
 ## Step 3: Assess and synthesize
 

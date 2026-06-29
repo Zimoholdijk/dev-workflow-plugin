@@ -27,6 +27,10 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 
 ### Agents
 
+All defined roles live in `agents/`, so skills spawn named sub-agents (consistent prompt, explicit model, restricted tools) rather than ad-hoc inline ones.
+
+**Plan-review** (Opus):
+
 | Agent | Purpose |
 |-------|---------|
 | `junior-reviewer` | Clarifying-questions pass: surfaces ambiguity, gaps, and missing tests |
@@ -34,6 +38,25 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `red-team-reviewer` | Adversarial pass: tries to break the plan and returns ranked, cited failure scenarios |
 | `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor and tags it with an area. Cold to the cost of fixing |
 | `assessor` | Runs every round, holds the full review log, counts recurrence by area, defers churning reversible areas to test obligations at K=3, and makes the converge / another-round call |
+
+**Code-review** (Sonnet), the seven lenses `full-code-review` runs in parallel:
+
+| Agent | Purpose |
+|-------|---------|
+| `security-reviewer` | OWASP Top 10, auth, secrets, injection, SSRF, upload safety |
+| `backend-reviewer` | API/query/error-handling correctness, performance, framework-idiom check |
+| `frontend-reviewer` | component architecture, accessibility, responsive/UX, type safety |
+| `architecture-reviewer` | design quality, plan conformance, DRY/repetition smell, scope, layer placement |
+| `documentation-reviewer` | whether the docs reflect the change (or current code, in full scope) |
+| `regression-reviewer` | the `-` lines: behavior, guards, or conventions deleted with no replacement |
+| `testing-reviewer` | test coverage of the change, and actually runs the suite |
+
+**Other:**
+
+| Agent | Purpose |
+|-------|---------|
+| `researcher` (Opus) | Docs-first, cited, recommendation-first answer to a technical question, grounded in the project's stack and versions. Used by `research` |
+| `doc-auditor` (Sonnet) | Audits docs against the code, change-scoped or full. Used by `doc-audit` |
 
 ### Bundled MCP servers
 
