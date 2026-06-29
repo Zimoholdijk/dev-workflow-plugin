@@ -114,7 +114,10 @@ magnitude under Significant.
    **orchestrator** fixes them, then runs the **self-consistency pass**.
 2. **Senior** reviews (cold) -> grader grades + tags -> orchestrator fixes + self-consistency.
 3. **Red-team** reviews (cold) -> grader grades + tags -> orchestrator fixes + self-consistency.
-4. **Assessor** runs (every round): reads the full log, updates per-area recurrence counts,
+4. **Quality and conformance pass** (orchestrator): `/simplify` plus a self-check for
+   repetition smell, test coverage, and CLAUDE.md conformance; anything substantive is
+   routed through the grader like a reviewer finding.
+5. **Assessor** runs (every round): reads the full log, updates per-area recurrence counts,
    applies the tier -> behavior rules (section 6), decides converge or another round, and
    compiles the test-obligation list.
 

@@ -2,7 +2,7 @@
 name: assessor
 description: Runs every plan-review round. Reads the full review log, counts finding recurrence by area, defers churning reversible areas to test obligations at K=3, and decides whether the plan has converged. Cold to any bias toward finishing. Returns a verdict and structured data, never edits files.
 tools: Read, Glob, Grep
-model: sonnet
+model: opus
 maxTurns: 12
 ---
 

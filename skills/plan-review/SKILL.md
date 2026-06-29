@@ -81,7 +81,8 @@ Each round is: three cold lenses, each immediately graded, with you fixing after
 1. **Junior** reviews (cold) -> **grader** grades + tags the junior's findings -> **you** fix them -> **self-consistency pass**.
 2. **Senior** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 3. **Red-team** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
-4. **Assessor** runs: reads the full log, updates per-area recurrence counts, applies the tier -> behavior rules, decides converge or another round, and (on convergence) produces the test-obligation list for you to write into the plan.
+4. **Quality and conformance pass** (you): `/simplify` plus a self-check for repetition smell, test coverage, and CLAUDE.md conformance; route anything substantive through the grader.
+5. **Assessor** runs: reads the full log, updates per-area recurrence counts, applies the tier -> behavior rules, decides converge or another round, and (on convergence) produces the test-obligation list for you to write into the plan.
 
 You do not gate whether the assessor runs. **It runs every round**, because the recurrence count must be maintained even on rounds with top-tier items: a churning area keeps top items present, so an assessor that only ran on quiet rounds would never count or defer it, which is the exact failure this design exists to fix.
 
@@ -138,6 +139,14 @@ The junior and senior are cooperative and evaluative; neither's job is to *break
 > Try to break this plan. Find the wrong assumption, the unhandled failure or partial-failure path, the edge/boundary case, the scale reality at real row counts, the race or data-integrity gap, and above all what the plan is *silent* about. Ground every attack in a `file:line` or quoted plan line, be concrete (a specific scenario, not "what if it's slow"), and don't fabricate weaknesses to look thorough. If you can't break it, say so and name the one or two most fragile spots. Rank by likelihood × blast radius and end with whether the plan has an unaddressed critical failure mode.
 
 Then grade its findings, fix them, self-consistency.
+
+## Quality and conformance (each round, before the assessor)
+
+After the red-team stage and its fixes, run a quality pass on the plan before handing the round to the assessor:
+
+- Run `/simplify` on the plan to surface unnecessary complexity.
+- Verify yourself, do not rely solely on the senior: does any phase describe near-identical work differing only by a literal/key/separator/metadata (repetition smell)? Does every phase that adds logic name its tests, and are critical Verification flows automated rather than manual-only? Does the plan violate any CLAUDE.md rule (DRY, error handling, hardcoded values, scope creep)?
+- Anything substantive you surface here, route it through the **grader** like a reviewer finding so it gets a tier and an area and counts toward convergence. Trivial conformance tidy-ups can be applied directly; either way, run the self-consistency pass on what you changed.
 
 ## The assessor (runs every round)
 
