@@ -30,16 +30,17 @@ This drafts a phased implementation plan based on the approved PRD. The plan is 
 
 ## Stage 2: Plan Review (run to convergence)
 
-Run `/plan-review context/[Feature]/implementation-plan.md` and let it run to convergence. Do not pick a round count. plan-review loops internally: it runs review rounds (clarifying-questions, deep-critique, red-team, quality) until a round produces no Critical/High findings and applies no fixes, then reports **Converged**. The exit condition decides when to stop, not a fixed "4 rounds".
+Run `/plan-review context/[Feature]/implementation-plan.md` and let it run to convergence. Do not pick a round count. plan-review loops internally: each round runs the cold lenses, a grader rates every finding by reversibility (One-way / Significant / Medium / Minor), the orchestrator fixes everything, and a cold assessor decides when the plan has converged. The exit condition decides when to stop, not a fixed round count.
 
-Why convergence beats a fixed number: a round that applies any fix is never the last round, those fixes are themselves unreviewed, and a fix made to satisfy one round routinely becomes the next round's regression. The loop stops only on a clean, no-op round, so the plan you carry into implementation has survived a cold pass that changed nothing.
+Why convergence beats a fixed number: a one-way door or significant change is never the last round (it must be settled, then verified), while a reversible bug that keeps recurring in one area is pulled out of prose review and handed to code+tests instead of being looped on forever. The loop stops only when no one-way door, no significant change, and no live reversible defect remain.
 
 What to rely on (plan-review owns the mechanics):
-- **Cold start every round.** The `review-log.md` sidecar is withheld from reviewers, so a late round scrutinizes the plan as hard as the first instead of deferring to prior "Reviewed" stamps.
+- **Cold start every round.** The `review-log.md` sidecar is withheld from reviewers, so a late round scrutinizes the plan as hard as the first.
 - **Trade-offs carry to the Stage 3 gate.** This pipeline runs unattended, so genuine user-owned trade-offs surfaced during the loop are accumulated for `/tradeoff-review` at Stage 3, not blocked on mid-loop. Clear, best-practice-resolved decisions are applied in-loop with their citation.
-- **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md`; the plan status is set to "Reviewed" once converged.
+- **Test obligations land in the plan.** At convergence, everything review deferred to code+tests is written into `implementation-plan.md` as a `## Test Obligations` section plus per-phase references. Stage 4 (`/implement-plan`) is required to fulfil them, so nothing deferred is silently lost.
+- **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md` with the round's graded findings and the assessor's verdict; the plan status is set to "Reviewed" once converged.
 
-If Critical/High findings are still emerging after several rounds (the loop isn't converging), that is a signal the plan needs more fundamental rework, not more rounds. Flag it to the user rather than looping indefinitely.
+If the same area keeps producing one-way or significant findings round after round (the assessor raises a "design unstable" flag), that is a signal the plan needs fundamental rework, not more rounds. Surface it to the user rather than looping indefinitely.
 
 ---
 

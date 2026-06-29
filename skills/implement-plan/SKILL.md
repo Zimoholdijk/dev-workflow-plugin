@@ -19,7 +19,8 @@ These rules are non-negotiable:
 4. **Research in-flight trade-offs, then surface only the genuine ones.** If you hit a decision not covered by the plan, research it first with `/research` (grounded in the project's stack) when it has a technical or best-practice dimension. If documented best practice or the project's own conventions clearly resolve it, apply that, record the decision and citation in `progress.md`, and don't stop the user for a settled question. Surface to the user only the genuinely contested choices, and bring the researched points with them. Document the user's decision in `progress.md`.
 5. **No commits unless asked.** The user manages git.
 6. **No dev server restarts.** The user manages dev servers.
-7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy and that phase's "Testable" section, unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
+7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy, that phase's "Testable" section, and that phase's referenced **Test Obligations** (see rule 7a), unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
+7a. **Test Obligations are mandatory, not optional.** If the plan carries a `## Test Obligations` section (plan-review writes one at convergence for everything review deferred to code+tests), every obligation must be fulfilled by a real test in the phase that references it. An obligation that came with a **simplification note** flags an area that churned in review: before re-implementing it as-is, consider the simpler structure the note points at, then cover it with the obligated test either way. A phase that references an obligation is not "Done" until that obligation's test exists and passes.
 8. **You are the only writer; delegate only reads.** Do every file edit yourself, in the main session. Never spawn sub-agents to write code in parallel: parallel writers make conflicting implicit decisions the orchestrator can't reconcile. You may delegate read-only work (locating code, researching an idiom, reviewing a diff) to a sub-agent so its file-reading stays out of your context, but only when the reads are large enough to be worth the token cost. Don't spin up an agent for a trivial single-file lookup.
 9. **Don't thrash.** After about two failed attempts at the same issue, stop. Re-anchor from `progress.md` and the plan phase with fresh framing, and `/research` the actual error instead of guessing again. If still stuck, surface it to the user with what you tried. Never loop on the same broken approach.
 
@@ -34,6 +35,7 @@ Before writing any code, read:
 5. `~/.claude/CLAUDE.md`: global rules
 6. `prisma/schema.prisma`: current schema
 7. The feature's `progress.md` if it exists (may have work from a previous session)
+8. The plan's `## Test Obligations` section if present (what plan-review deferred to code+tests), and note which phase each obligation is referenced from
 
 Check what has already been implemented. If a progress doc exists with phases marked "Done", skip those phases.
 
@@ -134,17 +136,18 @@ For each phase (in order):
 1. Follow the plan's sub-steps in order
 2. Use existing shared code: check the Shared Utilities table in `overview.md`
 3. If you create a new shared utility, note it for the overview update
-4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, plus an e2e test for any user-facing flow (use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
+4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, **plus every Test Obligation this phase references** (per rule 7a), plus an e2e test for any user-facing flow (use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
 5. If you deviate from the plan (different approach, extra file, skipped step), document why in `progress.md` under "Deviations from Plan"
 6. If you encounter a trade-off not covered by the plan, stop and research it first (`/research`). If the evidence settles it, apply it and record the decision + citation; otherwise surface it to the user with the researched points. Record the decision in `progress.md` under "Trade-off Decisions"
 
 ### After completing the phase:
 1. **Verify with evidence.** Run the test suite (the new tests plus the full existing suite) and paste the actual command and its output, never a bare "tests pass" claim. If the phase exposed a user-facing flow, also observe it working (`/verify` or `/run`): a green suite is not proof the UX works. For a phase with no user-facing surface that can't yet be checked end-to-end, mark it `Test` rather than `Done`. If a test fails, fix it before marking Done; never weaken an assertion just to pass, and never mark Done with the suite red.
-2. **Optional self-review.** For a non-trivial phase, run `/code-review` on just this phase's diff before moving on. Tell it to flag only correctness and requirement gaps, not style or speculative hardening (a reviewer told to "find problems" invents them). Catching a bug now is cheaper than at the final full review.
-3. Update the progress doc: set the phase status to "Done" (or "Test" per above)
-4. Add a changelog entry describing what the phase produced, the tests added, and any surprises
-5. Tell the user what's testable (per the plan's "Testable" section for that phase) and the test result
-6. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
+2. **Self-consistency re-check.** If this phase changed shared or existing code (a helper, a state machine, a schema field, an ordering rule, an interface), re-check its non-local effects before closing: trace what else depends on the thing you changed and confirm each dependant still holds. A fix that is locally correct but breaks a caller or a sibling change is the most common regression; catch it now, not in the final review.
+3. **Optional self-review.** For a non-trivial phase, run `/code-review` on just this phase's diff before moving on. Tell it to flag only correctness and requirement gaps, not style or speculative hardening (a reviewer told to "find problems" invents them). Catching a bug now is cheaper than at the final full review.
+4. Update the progress doc: set the phase status to "Done" (or "Test" per above)
+5. Add a changelog entry describing what the phase produced, the tests added, and any surprises
+6. Tell the user what's testable (per the plan's "Testable" section for that phase) and the test result
+7. Wait for the user to confirm before moving to the next phase, unless they've told you to proceed through all phases
 
 ## Step 4: After all phases are complete
 

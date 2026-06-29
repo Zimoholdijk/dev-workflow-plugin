@@ -12,7 +12,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `discuss-feature` | Pre-PRD discussion in plain language: one topic per message, collects decisions, creates a backlog ticket, hands off to `write-prd` |
 | `write-prd` | Draft a PRD for a new feature |
 | `write-plan` | Draft a phased implementation plan from an approved PRD |
-| `plan-review` | Multi-lens plan review: clarifying-questions pass, deep-critique pass (factoring, framework-idiom, implicit-deletion, test-coverage, operational failure modes, with cited findings), adversarial red-team pass, then a conformance check |
+| `plan-review` | Multi-lens plan review that loops to convergence: cold reviewers (clarifying-questions, deep-critique, red-team) find issues, a cold grader rates each by reversibility/blast-radius (One-way / Significant / Medium / Minor), the orchestrator fixes everything, and a cold assessor (every round) counts recurrence by area, defers churning reversible items to test obligations at K=3, and decides when the plan has converged |
 | `junior-review` | Spawn the junior-reviewer sub-agent for the clarifying-questions pass |
 | `senior-review` | Spawn the senior-reviewer sub-agent for the deep-critique pass |
 | `red-team-review` | Spawn the red-team-reviewer sub-agent to adversarially stress-test a plan or design |
@@ -32,6 +32,8 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `junior-reviewer` | Clarifying-questions pass: surfaces ambiguity, gaps, and missing tests |
 | `senior-reviewer` | Deep-critique pass: grades fit, scope, operational failure modes, and test coverage, with cited findings |
 | `red-team-reviewer` | Adversarial pass: tries to break the plan and returns ranked, cited failure scenarios |
+| `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor and tags it with an area. Cold to the cost of fixing |
+| `assessor` | Runs every round, holds the full review log, counts recurrence by area, defers churning reversible areas to test obligations at K=3, and makes the converge / another-round call |
 
 ### Bundled MCP servers
 
