@@ -290,6 +290,14 @@ Prompt the agent:
 >
 > End with a summary: total coverage findings by severity, the test-run result, and an overall testing verdict (Pass / Pass with concerns / Fail). Fail if new logic ships untested, if the suite is red because of this branch, or if there is no runnable suite.
 
+## Step 2b: Quality cleanup lens (`/simplify`)
+
+Alongside the seven bug-focused reviewers, run `/simplify` on the same diff (the Step 1 base) as the **quality-cleanup lens**. The reviewers hunt for what is wrong; `/simplify` finds what is needlessly complex: reuse opportunities, hand-rolled stdlib, single-caller abstractions, dead code, and altitude/verbosity cleanups. It complements the bug lenses (it does not hunt for correctness bugs, that is `/code-review`'s and the reviewers' job).
+
+`/simplify` reviews and applies in one pass, so treat its changes like any other finding: review the cleanups it makes, present them in the consolidation (Step 3) under a Simplification heading, and fold them into the single sign-off-and-apply pass (Step 4). Do not ship a cleanup the user has not seen; if a cleanup is actually a behavior change or load-bearing, pull it back out and surface it as a trade-off instead.
+
+For **full** scope, run `/simplify` over the directories in scope rather than a diff.
+
 ## Full scope adjustments
 
 When the argument is `full`, keep the same seven reviewers and output formats but adapt each brief:
@@ -306,7 +314,7 @@ When the argument is `full`, keep the same seven reviewers and output formats bu
 
 ## Step 3: Consolidate and present
 
-Once all 7 reviewers complete, present the results to the user in this format:
+Once all 7 reviewers and the `/simplify` lens complete, present the results to the user in this format:
 
 ```
 ## Full Code Review Results
@@ -332,6 +340,10 @@ Once all 7 reviewers complete, present the results to the user in this format:
 ### Testing Review: [verdict]
 [List coverage findings by severity, highest first. Then the test-run result: command,
 pass/fail counts, any failing tests, and whether each failure is a branch regression.]
+
+### Simplification (`/simplify`)
+[Reuse, over-engineering, dead-code, and verbosity cleanups it surfaced/applied, each with
+the line saving. Flag any that are actually behavior changes for the trade-off walk.]
 
 ---
 
