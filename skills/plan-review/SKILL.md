@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Multi-stage plan review that loops to convergence. Cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor; the orchestrator fixes everything; a cold assessor runs every round, counts recurrence by area, defers churning reversible items to test obligations, and decides when the plan has converged. Use when an implementation or refactoring plan needs rigorous review before execution.
+description: Multi-stage plan review that loops to convergence. Cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor; the orchestrator fixes everything; a cold assessor runs every round, defers reversible items to test obligations, and decides when the plan has converged (only One-way/Significant gate). Use when an implementation or refactoring plan needs rigorous review before execution.
 disable-model-invocation: false
 argument-hint: "[path to plan file]"
 ---
@@ -20,7 +20,7 @@ You are the **orchestrator**. You run the loop and you fix the plan, but you do 
 | **Reviewers** (junior, senior, red-team) | Find issues, one cold lens at a time. | The review history (never see the sidecar). |
 | **Grader** | After each reviewer, rate every finding into a tier and tag it with an area, by the rubric below. | The cost of fixing. Does not decide fix-vs-defer; everything gets fixed. |
 | **Orchestrator (you)** | Fix everything surfaced, run the self-consistency pass, write the sidecar, and on convergence write the test obligations into the plan. | Severity and stopping. You may *escalate* a grade or record a disagreement, but never silently *downgrade* a finding to make it stop mattering. |
-| **Assessor** | Runs **every round**. The only agent holding the full log. Counts recurrence by area, defers churning reversible items to tests, makes the converge / another-round call. | A bias toward finishing (it made no fixes). History-aware by design. |
+| **Assessor** | Runs **every round**. The only agent holding the full log. Defers reversible items to tests, makes the converge / another-round call (only One-way/Significant gate). | A bias toward finishing (it made no fixes). History-aware by design. |
 
 ## Cold-start every reviewer (non-negotiable)
 
@@ -159,7 +159,16 @@ After the red-team stage and its fixes, self-check the plan before handing the r
 
 ## The assessor (runs every round)
 
-After the three stages, spawn the `assessor` sub-agent. Give it the **full `review-log.md` sidecar plus this round's graded findings** (tiers + area tags) and the rubric. It does three things:
+After the three stages, spawn the `assessor` sub-agent. Give it **a pointer to the `review-log.md` sidecar** (its path, for it to read), this round's **raw graded findings** (each as `{tier, area, one-line reason}`, exactly as the grader emitted them), and the rubric.
+
+**Hand it inputs, not conclusions (anti-priming).** The assessor is history-aware on purpose, but it must reach the verdict *itself*. Do **not** pre-digest the round for it, and in particular do **not**:
+
+- state, suggest, or "expect" a verdict ("the expected verdict is Another round — confirm" makes it a rubber stamp; let it decide and tell *you*),
+- pre-judge the design-unstable question for it (don't assert "postMessage was a different area than logo-render, so no flag" — hand it the area-tagged findings and let it compare across rounds),
+- replace the sidecar with your own summary of "what happened in rounds 1-N" (point it at the file; reading the log is its job and yours might shade it),
+- re-state which tiers gate as if instructing it (the rubric and its own agent prompt already carry that; repeating it as "the rules for this round are…" invites you to mis-state them).
+
+Pass the round's findings and the path; ask for the verdict. Your job is to give it complete, unspun inputs, not to walk it to your answer. It does three things:
 
 1. **Apply the tier -> behavior rules** (below) to decide: another round, or converged. Only **One-way and Significant** findings gate convergence; Medium and Minor do not.
 2. **Watch for instability.** If the same area keeps producing One-way or Significant findings round after round, raise an advisory **"design unstable, needs rework"** flag to the user (those tiers are never deferred to tests).

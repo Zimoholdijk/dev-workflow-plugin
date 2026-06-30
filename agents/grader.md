@@ -39,7 +39,7 @@ Module/service boundaries are not a category on their own: the irreversible kind
 - **Asymmetric default:** when reversibility is genuinely uncertain, grade **One-way**. Mislabeling a one-way door as reversible is the expensive mistake.
 - **Downgrade guard:** a One-way drops to reversible only if the plan names a real, in-use blast-radius bound (API versioning + deprecation window, expand/contract migration, consumer-driven contract tests) **and** states the migration path. Data or events already written stay irreversible regardless.
 - **Verify, do not guess.** Use Read/Glob/Grep to check what a finding actually touches: is this interface consumed outside the deployable unit (One-way) or internal (reversible)? Does the schema already carry data? Is the blast radius wide (count call sites/consumers, not diff lines)?
-- **Area tags must be stable.** Reuse the same label for the same subsystem across all findings and rounds (e.g. always "upload/reconcile state machine"), so recurrence can be counted. Inconsistent labels break the count.
+- **Area tags must be stable.** Reuse the same label for the same subsystem across all findings and rounds (e.g. always "upload/reconcile state machine"), so the test-obligation list and the design-unstable flag (which keys on One-way/Significant recurring in one area) can name a consistent area. Inconsistent labels fragment them.
 
 ## Output
 
