@@ -65,7 +65,7 @@ Module/service boundaries are **not** a category: the irreversible kind is alrea
 - **Production-data input:** item 2 is One-way **only if production data already exists**. Pre-launch / empty store, schema changes are reversible (grade lower). Establish this from project context; if you cannot tell, **assume data exists** (the safe direction).
 - **Asymmetric default:** when reversibility is genuinely uncertain, grade it **One-way**. Mislabeling a one-way door as reversible costs a migration project; the reverse costs a little deliberation.
 - **Downgrade guard:** a One-way drops to reversible **only if** the plan names a real, in-use blast-radius bound (API versioning + deprecation window, expand/contract migration, consumer-driven contract tests) **and** states the migration path. Data or events already written stay irreversible even then.
-- **Area tag:** label each finding with an area/topic (e.g. "upload/reconcile state machine", "share-token contract") so the assessor's recurrence count is a mechanical tally over labels, not a re-clustering of prose each round. Use stable, consistent labels across rounds.
+- **Area tag:** label each finding with an area/topic (e.g. "upload/reconcile state machine", "share-token contract") so the test-obligation list and the design-unstable flag can name a consistent area. Use stable, consistent labels across rounds.
 
 ## Before starting
 
@@ -84,9 +84,9 @@ Each round is: three cold lenses, each immediately graded, with you fixing after
 2. **Senior** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 3. **Red-team** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 4. **Quality and conformance pass** (you): a self-check for repetition smell, test coverage, and CLAUDE.md conformance; route anything substantive through the grader.
-5. **Assessor** runs: reads the full log, updates per-area recurrence counts, applies the tier -> behavior rules, decides converge or another round, and (on convergence) produces the test-obligation list for you to write into the plan.
+5. **Assessor** runs: reads the full log, applies the tier -> behavior rules, decides converge or another round, and (on convergence) produces the test-obligation list for you to write into the plan.
 
-You do not gate whether the assessor runs. **It runs every round**, because the recurrence count must be maintained even on rounds with top-tier items: a churning area keeps top items present, so an assessor that only ran on quiet rounds would never count or defer it, which is the exact failure this design exists to fix.
+You do not gate whether the assessor runs. **It runs every round**: it owns the convergence decision and is the only holder of the full log, so it is also where recurring One-way/Significant findings in one area get noticed (the "design unstable, needs rework" signal).
 
 ## Self-consistency: consolidate fixes before the next lens
 
