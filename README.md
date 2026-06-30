@@ -1,6 +1,6 @@
 # dev-workflow
 
-A Claude Code plugin packaging a PRD-first development workflow: write PRDs, draft phased implementation plans, run multi-lens plan reviews (clarifying-questions, deep-critique, and adversarial red-team passes), implement plans phase-by-phase with progress tracking, run parallel code reviews, collect tradeoff decisions, and audit documentation against the codebase. Testing is treated as a first-class part of the workflow: plans must carry a testing strategy, every phase ships its own tests, a dedicated review agent runs the suite, and a bundled Playwright MCP drives real-browser end-to-end tests.
+A Claude Code plugin packaging a PRD-first development workflow: write PRDs, settle architecture in a plain-language design discussion before any plan is phased, draft phased implementation plans, run multi-lens plan reviews (clarifying-questions, deep-critique, and adversarial red-team passes), implement plans phase-by-phase with progress tracking, run parallel code reviews, collect tradeoff decisions, and audit documentation against the codebase. Testing is treated as a first-class part of the workflow: plans must carry a testing strategy, every phase ships its own tests, a dedicated review agent runs the suite, and a bundled Playwright MCP drives real-browser end-to-end tests.
 
 ## What's included
 
@@ -11,7 +11,8 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 | `project-setup` | Bootstrap a new project with context docs, CLAUDE.md, and workflow conventions |
 | `discuss-feature` | Pre-PRD discussion in plain language: one topic per message, collects decisions, creates a backlog ticket, hands off to `write-prd` |
 | `write-prd` | Draft a PRD for a new feature |
-| `write-plan` | Draft a phased implementation plan from an approved PRD |
+| `discuss-plan` | Pre-plan architecture discussion in plain language: settles the design decisions (one-way doors first) grounded in the PRD and the actual code, researches technical trade-offs before surfacing them, asks you to run SQL or check production where a decision needs facts, writes `design-decisions.md`, and hands off to `write-plan` |
+| `write-plan` | Draft a phased implementation plan from an approved PRD (consuming `design-decisions.md` if present) |
 | `plan-review` | Multi-lens plan review that loops to convergence: cold reviewers (clarifying-questions, deep-critique, red-team) find issues, a cold grader rates each by reversibility/blast-radius (One-way / Significant / Medium / Minor), the orchestrator fixes everything, and a cold assessor (every round) defers reversible items to test obligations and decides when the plan has converged (only One-way/Significant gate) |
 | `junior-review` | Spawn the junior-reviewer sub-agent for the clarifying-questions pass |
 | `senior-review` | Spawn the senior-reviewer sub-agent for the deep-critique pass |
@@ -116,4 +117,4 @@ Why this split: project-specific values differ per repo and should not leak into
 
 - When installed as a plugin, skills are namespaced: `/dev-workflow:write-prd` instead of `/write-prd`. Skill bodies reference each other by their short names (e.g. "Run /plan-review"); Claude resolves these to the namespaced versions.
 - Some skills read `~/.claude/CLAUDE.md` for global rules. If that file doesn't exist in the environment (e.g. a fresh Cowork session), the skills proceed without it.
-- The typical flow: `project-setup` once per repo, then per feature: `discuss-feature` → `write-prd` → `write-plan` → `plan-review` → `tradeoff-review` → `implement-plan` (tests ship with each phase, `write-e2e-tests` for browser flows) → `full-code-review` → `doc-audit`. `overnight-delivery` chains the per-feature steps end-to-end.
+- The typical flow: `project-setup` once per repo, then per feature: `discuss-feature` → `write-prd` → `discuss-plan` → `write-plan` → `plan-review` → `tradeoff-review` → `implement-plan` (tests ship with each phase, `write-e2e-tests` for browser flows) → `full-code-review` → `doc-audit`. `discuss-plan` is an interactive design gate that settles architecture before phasing, so `plan-review` has less to raise; it sits outside the unattended `overnight-delivery`, which chains the rest end-to-end from an approved PRD.

@@ -28,14 +28,15 @@ These rules are non-negotiable:
 Before writing anything, read:
 
 1. The approved PRD for this feature
-2. `context/overview.md`: project overview, tech stack, existing features, shared utilities
-3. `.claude/CLAUDE.md`: project rules
-4. `~/.claude/CLAUDE.md`: global rules
-5. Any existing feature docs that this feature depends on or interacts with
-6. The current schema (`prisma/schema.prisma`)
-7. Relevant existing code files that will be modified (middleware, routes, pages, components)
+2. `context/[Feature]/design-decisions.md` if it exists: the architecture decisions already agreed in `/discuss-plan`, each with its basis (a research citation, an established fact, or a product call) and reversibility. **These are settled inputs**, carry each one into the Architecture Decisions section (preserving its citation), do not silently reopen or contradict them. If implementation reveals one is wrong, flag it to the user rather than quietly overriding it.
+3. `context/overview.md`: project overview, tech stack, existing features, shared utilities
+4. `.claude/CLAUDE.md`: project rules
+5. `~/.claude/CLAUDE.md`: global rules
+6. Any existing feature docs that this feature depends on or interacts with
+7. The current schema (`prisma/schema.prisma`)
+8. Relevant existing code files that will be modified (middleware, routes, pages, components)
 
-Understand the current state of the codebase before proposing changes. Check what already exists in shared utilities before creating new ones.
+Understand the current state of the codebase before proposing changes. Check what already exists in shared utilities before creating new ones. If a `design-decisions.md` is present, the big trade-offs are largely settled; Step 2.6 then only needs to research trade-offs that surface fresh during planning, not re-litigate the agreed ones.
 
 ## Step 2: Draft the plan
 
