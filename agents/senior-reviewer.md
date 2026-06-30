@@ -2,7 +2,7 @@
 name: senior-reviewer
 description: Deep-critique pass over a plan, grades architectural fit, scope, operational/failure-mode safety, code quality, and test coverage, with every finding cited
 tools: Read, Glob, Grep
-model: opus
+model: claude-sonnet-5
 maxTurns: 30
 ---
 

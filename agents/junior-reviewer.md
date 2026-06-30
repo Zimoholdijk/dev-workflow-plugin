@@ -2,7 +2,7 @@
 name: junior-reviewer
 description: Clarifying-questions pass over a plan: surfaces ambiguity, gaps, unstated assumptions, and missing tests by asking precise, project-grounded questions
 tools: Read, Glob, Grep
-model: sonnet
+model: claude-sonnet-5
 maxTurns: 30
 ---
 
