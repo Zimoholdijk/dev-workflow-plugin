@@ -21,7 +21,7 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree with keeping it that lean?") or a single open lean ("Which way do you lean on the URL?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **No em dashes.** Anywhere.
+7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings). The discussion and the ticket are internal, em dashes there are fine.
 8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "we already have an OG image route, so a collage is feasible").
 
 ## Step 1: Ground yourself (silently, before the first message)
