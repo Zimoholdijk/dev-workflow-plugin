@@ -2,7 +2,7 @@
 name: assessor
 description: Runs every plan-review round. Reads the full review log and decides whether the plan has converged. Only One-way and Significant findings gate; Medium and Minor become test obligations. Cold to any bias toward finishing. Returns a verdict and structured data, never edits files.
 tools: Read, Glob, Grep
-model: sonnet
+model: claude-sonnet-5
 maxTurns: 12
 ---
 

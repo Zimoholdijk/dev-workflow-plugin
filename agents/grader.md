@@ -2,7 +2,7 @@
 name: grader
 description: Rates each plan-review finding by reversibility and blast radius into One-way / Significant / Medium / Minor, and tags it with an area. Cold to the cost of fixing. Returns structured grades, not prose.
 tools: Read, Glob, Grep
-model: sonnet
+model: claude-sonnet-5
 maxTurns: 10
 ---
 

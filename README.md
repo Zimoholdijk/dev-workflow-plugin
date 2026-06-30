@@ -29,7 +29,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, dra
 
 All defined roles live in `agents/`, so skills spawn named sub-agents (consistent prompt, explicit model, restricted tools) rather than ad-hoc inline ones.
 
-**Plan-review** (red-team-reviewer on Opus; junior-reviewer and senior-reviewer on Sonnet 5; grader and assessor on Sonnet):
+**Plan-review** (red-team-reviewer on Opus; junior-reviewer, senior-reviewer, grader, and assessor on Sonnet 5):
 
 | Agent | Purpose |
 |-------|---------|
