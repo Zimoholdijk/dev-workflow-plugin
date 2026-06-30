@@ -155,31 +155,30 @@ Then grade its findings, fix them, self-consistency.
 After the red-team stage and its fixes, self-check the plan before handing the round to the assessor (the plan is prose, so this is a read-through, not a code tool):
 
 - Verify yourself, do not rely solely on the senior: does any phase describe near-identical work differing only by a literal/key/separator/metadata (repetition smell)? Does every phase that adds logic name its tests, and are critical Verification flows automated rather than manual-only? Does the plan violate any CLAUDE.md rule (DRY, error handling, hardcoded values, scope creep)?
-- Anything substantive you surface here, route it through the **grader** like a reviewer finding so it gets a tier and an area and counts toward convergence. Trivial conformance tidy-ups can be applied directly; either way, run the self-consistency pass on what you changed.
+- Anything substantive you surface here, route it through the **grader** like a reviewer finding so it gets a tier and an area (One-way/Significant gate convergence; Medium/Minor become test obligations). Trivial conformance tidy-ups can be applied directly; either way, run the self-consistency pass on what you changed.
 
 ## The assessor (runs every round)
 
-After the three stages, spawn the `assessor` sub-agent. Give it the **full `review-log.md` sidecar plus this round's graded findings** (tiers + area tags) and the rubric. It does four things:
+After the three stages, spawn the `assessor` sub-agent. Give it the **full `review-log.md` sidecar plus this round's graded findings** (tiers + area tags) and the rubric. It does three things:
 
-1. **Update per-area recurrence counts.** For each area tag, how many rounds has a Medium (or Minor) in that area now been fixed.
-2. **Apply the tier -> behavior rules** (below) to decide: another round, or converged.
-3. **Defer at K=3.** Any area whose Medium/Minor has now been fixed in **three** rounds: stop looping it. Mark the whole area a **test obligation** and raise a **simplification flag** (recurring self-introduced defects in one subsystem is a design smell, not a coverage gap).
-4. **On convergence, produce the test-obligation list**: every deferred Medium/Minor and every simplification-flagged area, each with the behavior a test must pin and the area it belongs to.
+1. **Apply the tier -> behavior rules** (below) to decide: another round, or converged. Only **One-way and Significant** findings gate convergence; Medium and Minor do not.
+2. **Watch for instability.** If the same area keeps producing One-way or Significant findings round after round, raise an advisory **"design unstable, needs rework"** flag to the user (those tiers are never deferred to tests).
+3. **On convergence, produce the test-obligation list**: every Medium and Minor from the run, each with the behavior a test must pin and the area it belongs to. Reversible findings are closed by code + tests, not by more rounds.
 
-The assessor returns: the verdict (`Another round` or `Converged`), the updated counts, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log.
+The assessor returns: the verdict (`Another round` or `Converged`), any flags, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log.
 
 ### Tier -> behavior
 
-- **One-way:** always another round until settled. No count, never deferred (you cannot push an irreversible decision to "fix in code later"). If it will not stay settled, the assessor raises an advisory **"design unstable"** flag to the user, but still never auto-defers it.
-- **Significant:** always another round (big enough to verify in the plan). No count, never deferred. Self-limiting in practice; persistent churn raises the same advisory flag.
-- **Medium:** counted per area. 1st and 2nd appearance in an area force another round. **3rd appearance in the same area -> defer that area to a test obligation + simplification flag.**
-- **Minor:** never forces a round on its own. Counted only so a recurring nit is deferred to backlog/test on its 3rd appearance instead of being re-fixed forever.
+- **One-way:** always another round until settled. Never deferred (you cannot push an irreversible decision to "fix in code later"). If it will not stay settled across rounds, the assessor raises an advisory **"design unstable, needs rework"** flag, but still never auto-defers it.
+- **Significant:** always another round (big enough to verify in the plan). Never deferred. Self-limiting in practice; persistent recurrence in one area raises the same advisory flag.
+- **Medium:** does **not** gate convergence. Fix it in the plan if the fix is cheap and local, and add it to the **test obligations** regardless, a reversible correctness bug is closed by a deterministic test at implementation, not by looping the plan. A round whose only findings are Mediums converges.
+- **Minor:** does not gate. Fix if trivial, otherwise note it; it also goes on the test-obligation / backlog list. Never forces a round.
 
-**Recurrence threshold K = 3** (fixed in prose up to twice; the third recurrence in the same area is a defer).
+There is **no recurrence count and no K threshold.** Mediums and Minors never extend the loop. (A per-area count was an endless-loop vector: a stream of new Mediums in fresh areas never reaches a threshold, so the loop never converges. Reversible findings belong in tests, not in another prose round.)
 
 ### Convergence
 
-A plan is **converged** on a round with **no open One-way, no Significant, and no live (un-deferred) Medium**, only Minors and already-deferred items remain. A round that made any One-way or Significant change, or that still has a live Medium below K=3, is never the last round.
+A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums and Minors remain, and those do not gate (they become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass.
 
 State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live) or `Converged`.
 
@@ -189,7 +188,7 @@ This is an internal loop with a deterministic exit condition, **not** the Claude
 
 When the assessor returns `Converged`:
 
-1. **Write the test obligations into `implementation-plan.md`** (you are the only writer). Append a consolidated `## Test Obligations` section listing each deferred item (the behavior a test must pin, its area, and any simplification note), **and** add a reference in each relevant phase to the obligations that phase must fulfil, so the test lands in the same phase as the code. This is the last edit before the plan is marked `Reviewed`; it is finalising the plan, not editing a frozen one. The obligations live in the plan (forward-looking spec), not the sidecar; a cold reviewer seeing them on a later re-invocation is not primed (spec, not an approval stamp).
+1. **Write the test obligations into `implementation-plan.md`** (you are the only writer). Append a consolidated `## Test Obligations` section listing every Medium and Minor from the run (the behavior a test must pin and its area), **and** add a reference in each relevant phase to the obligations that phase must fulfil, so the test lands in the same phase as the code. This is the last edit before the plan is marked `Reviewed`; it is finalising the plan, not editing a frozen one. The obligations live in the plan (forward-looking spec), not the sidecar; a cold reviewer seeing them on a later re-invocation is not primed (spec, not an approval stamp).
 2. **Set the plan's `Status` to `Reviewed`** (a one-word header stamp is fine; detailed history stays in the sidecar).
 
 Every round (converged or not), append a numbered entry to the **sidecar** at `context/[Feature]/review-log.md` (create it if absent). Never add review history to the plan. Structure:
@@ -202,16 +201,13 @@ Every round (converged or not), append a numbered entry to the **sidecar** at `c
 ## Round [N], [date]
 
 ### Findings (graded)
-- [Each finding: tier, area, one-line reason, and how it was fixed]
-
-### Area recurrence counts
-- [area: count] for any Medium/Minor area in play
+- [Each finding: tier, area, one-line reason, and how it was fixed or deferred to a test]
 
 ### Assessor verdict
-- Converged / Another round. [If converged, the test-obligation list. If another round, what is still live.]
-- [Any "design unstable" or simplification flags]
+- Converged / Another round. [If converged, the test-obligation list. If another round, which One-way/Significant items are still live.]
+- [Any "design unstable, needs rework" flag and its area]
 ```
 
 ## Re-invocation
 
-This workflow runs review rounds in an internal loop until the assessor returns `Converged`. There is no cap and no diagnostic gate. If the user later asks for another pass on an already-converged plan, run it; never argue that prior reviews should be sufficient or propose skipping ahead. Each round appends a numbered entry to the sidecar, and the recurrence counts carry across re-invocations (the assessor reads them from the sidecar).
+This workflow runs review rounds in an internal loop until the assessor returns `Converged`. There is no cap and no diagnostic gate. If the user later asks for another pass on an already-converged plan, run it; never argue that prior reviews should be sufficient or propose skipping ahead. Each round appends a numbered entry to the sidecar.

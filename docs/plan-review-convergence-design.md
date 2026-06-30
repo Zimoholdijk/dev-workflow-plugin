@@ -41,7 +41,7 @@ Each role is cold where it needs to be, so no one grades or stops their own work
 | **Reviewers** (junior, senior, red-team) | Find issues. Run sequentially, each on the current plan. | The review history. They never see the `review-log.md` sidecar, so a late round scrutinizes as hard as the first. |
 | **Grader** | After each reviewer, grade every one of that reviewer's findings into a tier, and tag each with an area/topic label. | The cost of fixing. It rates by reversibility/significance, not by how annoying the fix is. It does **not** decide fix-vs-defer. |
 | **Orchestrator** | Fix everything the graders surfaced, regardless of tier. Run the inline self-consistency pass. Write the round to the sidecar. | Severity and stopping. It cannot grade, and it cannot decide convergence. |
-| **Assessor** | Runs **every round**. The only agent holding the full log. Cluster findings by area, keep recurrence counts, apply the defer rule, raise the simplification flag, make the converge/another-round call, and compile the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
+| **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge/another-round call (One-way and Significant gate; Medium and Minor become test obligations), raises the design-unstable flag when One-way/Significant findings recur in one area, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
 
 The orchestrator can **escalate** a grade (treat a lower tier as higher) or record a
 disagreement for the user, but can **never silently downgrade** a finding to make it stop
@@ -105,8 +105,8 @@ magnitude under Significant.
   expand/contract migration, consumer-driven contract tests) **and** states the migration
   path. Data or events already written stay irreversible even then.
 - **Area tag:** the grader labels each finding with an area/topic (e.g. "upload/reconcile
-  state machine", "share-token contract") so the assessor's recurrence count is a
-  mechanical tally over labels rather than re-clustering prose each round.
+  state machine", "share-token contract") so the test-obligation list and the
+  design-unstable flag can name a consistent area. Use stable labels across rounds.
 
 ## 5. The per-round flow
 
@@ -118,33 +118,38 @@ magnitude under Significant.
    tool) for repetition smell, test coverage, and CLAUDE.md conformance; anything
    substantive is routed through the grader like a reviewer finding. (`/simplify` belongs
    on code, not the plan, so it lives in `full-code-review` and `implement-plan`.)
-5. **Assessor** runs (every round): reads the full log, updates per-area recurrence counts,
-   applies the tier -> behavior rules (section 6), decides converge or another round, and
-   compiles the test-obligation list.
+5. **Assessor** runs (every round): reads the full log, applies the tier -> behavior rules
+   (section 6), decides converge or another round, and on convergence compiles the
+   test-obligation list.
 
-The orchestrator no longer gates whether the assessor runs. The assessor runs every round,
-because the recurrence count must be maintained even on rounds that have top-tier items,
-otherwise a churning area (which keeps top items present) would never be counted or
-deferred, which is the exact failure mode this design exists to fix.
+The assessor runs every round because it owns the convergence decision and is the only
+holder of the full log, so it is also the place that notices whether One-way/Significant
+findings keep recurring in one area (the "design unstable, needs rework" signal).
 
 ## 6. Tier -> behavior (the gate logic, owned by the assessor)
 
-- **One-way door:** **always another round** until settled. No count, never deferred (you
-  cannot push an irreversible decision to "fix in code later"). If it will not stay
-  settled, the assessor raises an advisory **"design unstable"** flag to the user, but
+Only **One-way and Significant** findings gate convergence. Medium and Minor do not.
+
+- **One-way door:** **always another round** until settled. Never deferred (you cannot
+  push an irreversible decision to "fix in code later"). If it will not stay settled across
+  rounds, the assessor raises an advisory **"design unstable, needs rework"** flag, but
   still never auto-defers it.
 - **Significant:** **always another round** (the change is big enough to verify in the
-  plan). No count, never deferred. Self-limiting in practice; persistent churn raises the
-  same advisory flag.
-- **Medium:** **counted per area.** 1st and 2nd appearance in an area force another round.
-  On the **3rd appearance in the same area**, the assessor stops looping it: it **defers
-  the whole area to a test obligation** and raises the **simplification flag** (recurring
-  self-introduced bugs in one subsystem is a design smell, not a review-coverage gap).
-- **Minor:** never forces a round on its own. Counted only so a recurring nit is deferred
-  to backlog/test on its 3rd appearance instead of being re-fixed forever.
+  plan). Never deferred. Self-limiting in practice; persistent recurrence in one area
+  raises the same advisory flag.
+- **Medium:** **does not gate convergence.** Fix it in the plan if the fix is cheap and
+  local, and add it to the **test obligations** regardless. A reversible correctness bug is
+  closed by a deterministic test at implementation, not by looping the plan. A round whose
+  only findings are Mediums converges.
+- **Minor:** does not gate. Fix if trivial, otherwise note it; it also goes on the
+  obligation/backlog list.
 
-**Recurrence threshold K = 3** (fixed in prose up to twice; the third recurrence in the
-same area is a defer).
+**No recurrence count and no K threshold.** An earlier design counted Medium recurrence
+per area and deferred at K=3, but that was an **endless-loop vector**: convergence required
+"no live Medium below K=3", and a stream of *new* Mediums in fresh areas never reaches the
+threshold, so a thorough cold reviewer that finds one more reversible bug each round keeps
+the loop alive forever. Reversible findings belong in tests, not in another prose round, so
+they simply do not gate.
 
 ## 6b. Who decides: trade-offs by tier
 
@@ -159,15 +164,12 @@ This is the long-standing "ask me about the things that need my input" rule, now
 
 ## 7. Convergence definition
 
-A plan is **converged** on a round that has:
-- no open one-way door,
-- no Significant change, and
-- no live (un-deferred) Medium.
-
-i.e. only Minors and already-deferred items remain. The assessor then emits the
-**test-obligation list**, the orchestrator writes it into the plan (section 9), and the
-plan is marked Reviewed. A round that made any one-way/significant change, or that still
-has a live Medium below the K=3 threshold, is never the last round.
+A plan is **converged** on a round that has **no open one-way door and no Significant
+change**. Mediums and Minors may remain; they do not gate (they become test obligations).
+The assessor then emits the **test-obligation list**, the orchestrator writes it into the
+plan (section 9), and the plan is marked Reviewed. A round that made any one-way or
+significant change is never the last round: that change must be verified by a clean cold
+pass first.
 
 ## 8. Self-consistency pass (inline, orchestrator)
 
@@ -189,12 +191,11 @@ fixes the contradictions it finds, and re-checks those follow-on fixes.
 
 The test-obligation list is not a loose handoff. It is **written into the implementation
 plan itself at convergence**, before `implement-plan` is ever invoked. The assessor
-produces the list (deferred Mediums/Minors, plus any simplification-flagged area); the
+produces the list (every Medium and Minor from the run); the
 orchestrator (the only writer) then does two things to `implementation-plan.md`:
 
-1. **Appends a consolidated `## Test Obligations` section** listing every deferred item:
-   the behavior that must be pinned by a test, the area it belongs to, and, for K=3
-   area-defers, the simplification note.
+1. **Appends a consolidated `## Test Obligations` section** listing every Medium and
+   Minor from the run: the behavior that must be pinned by a test and the area it belongs to.
 2. **Adds a reference in each relevant phase** pointing to the obligations that phase must
    fulfil, so the test lands in the same phase as the code, matching `implement-plan`'s
    "tests ship with the code, in the same phase" rule.
@@ -235,7 +236,6 @@ deterministic exit condition.
 
 ## 12. Open calibration knobs
 
-- **K = 3** (recurrence threshold for Medium/Minor area-defer). Tunable with loop telemetry.
 - **"Production data exists?"** input for item 2, read from project context, default assume yes.
 - **Area-tag granularity**, how finely the grader labels areas (too coarse hides churn, too
   fine never accumulates a count).
