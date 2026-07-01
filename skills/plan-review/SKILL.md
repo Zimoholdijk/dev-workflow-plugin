@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Multi-stage plan review that loops to convergence. Cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor; the orchestrator fixes everything; a cold assessor runs every round, defers reversible items to test obligations, and decides when the plan has converged (only One-way/Significant gate). Use when an implementation or refactoring plan needs rigorous review before execution.
+description: Multi-stage plan review that loops to convergence. Establishes the plan's load-bearing premises first; cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor (only an irreversible decision is One-way, not every bug near auth); the orchestrator fixes everything; a cold assessor runs every round, defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / escalate (a structurally unstable area goes to the user as an architecture decision instead of looping). Use when an implementation or refactoring plan needs rigorous review before execution.
 disable-model-invocation: false
 argument-hint: "[path to plan file]"
 ---
@@ -39,12 +39,14 @@ Why it matters: letting a reviewer learn that part of the plan was "already addr
 
 The grader assigns exactly one **tier** to each finding, plus an **area tag**, plus a one-line reason.
 
+**First, decision or defect?** Before reversibility, classify the finding. A **decision** is a choice that could legitimately go more than one way and that a person should own ("*which* trust model / data shape / contract?"). A **defect** is the plan being wrong, unsafe, or incomplete, with a correct fix ("is this right?", no). **Only a decision can be One-way.** A defect is graded by reversibility and blast radius, *even in security, auth, or data code*, because severity is not irreversibility: a serious security bug whose fix ships in one atomic deploy (redeploy a function, tighten a policy pre-prod-data, add a gate) is a reversible defect graded Significant, not One-way. One-way is reserved for the irreversible *decision* underneath (e.g. "role in a user-writable table?"), not for every bug near auth.
+
 **The reversibility test (the spine):** *"Can I change this and every dependant in one atomic deploy?"* If yes, it is reversible (two-way door). If no (there are consumers you cannot update in lockstep), it is a one-way door.
 
 **The four tiers:**
 
-- **One-way** (irreversible): touches a trigger-list category below. Must be settled in the plan before building. Reason names which category.
-- **Significant** (reversible but large): big blast radius, OR large magnitude (e.g. a 600-line file split), OR touches important parts. Reason names which driver.
+- **One-way** (irreversible *decision*): a design choice touching a trigger-list category below that cannot be changed with every dependant in one atomic deploy. Must be settled in the plan before building. Reason names the category and why it is a decision, not a defect.
+- **Significant** (reversible but consequential): big blast radius, OR large magnitude (e.g. a 600-line file split), OR a serious *defect* in important code (cross-tenant leak, auth gap) whose fix is reversible. Reason names which driver.
 - **Medium** (reversible, modest size, but a real correctness/behavior defect): data loss, wrong state, a race, an infinite loop, a broken flow. Not big, not cosmetic.
 - **Minor** (cosmetic): clarity, naming, small-local-low-stakes.
 
@@ -54,6 +56,7 @@ The grader assigns exactly one **tier** to each finding, plus an **area tag**, p
 2. **Persisted data, once production data exists** (schema, stored formats, enum raw values, the meaning/format of IDs and keys). Data outlives code.
 3. **Event/message schemas on an append-only or async channel** (once published you cannot recall it; consumers and replays depend on it).
 4. **Security and trust posture** (authorization model, identity/tenancy model, where trust boundaries sit, secret/credential handling).
+4b. (Category 4, restated) **Security and trust posture** means the trust-boundary *model* itself, who is allowed to reach what, the identity/tenancy model, where trust sits, secret handling. This is the decision about the boundary, not every implementation detail near auth code: a missing ownership check in a redeployable function is a defect graded by reversibility, not a posture decision.
 5. **Publicly observable behavior that becomes a de-facto contract** (URL/permalink structure, externally visible IDs, error shapes, anything third parties script against).
 6. **Foundational platform commitments with broad lock-in** (primary datastore, language/runtime, cloud-proprietary primitives).
 7. **Distributed-correctness commitments** (consistency model, ordering/idempotency/delivery semantics, the partition/sharding key).
@@ -63,7 +66,7 @@ Module/service boundaries are **not** a category: the irreversible kind is alrea
 **Nuances:**
 
 - **Production-data input:** item 2 is One-way **only if production data already exists**. Pre-launch / empty store, schema changes are reversible (grade lower). Establish this from project context; if you cannot tell, **assume data exists** (the safe direction).
-- **Asymmetric default:** when reversibility is genuinely uncertain, grade it **One-way**. Mislabeling a one-way door as reversible costs a migration project; the reverse costs a little deliberation.
+- **Asymmetric default (decisions only):** when a genuine *decision's* reversibility is uncertain, grade it **One-way**, mislabeling a one-way door as reversible costs a migration project; the reverse costs a little deliberation. This tie-breaks decisions; it is not a licence to inflate a reversible *defect* to One-way because it sits in a sensitive category. Size a defect by its actual blast radius.
 - **Downgrade guard:** a One-way drops to reversible **only if** the plan names a real, in-use blast-radius bound (API versioning + deprecation window, expand/contract migration, consumer-driven contract tests) **and** states the migration path. Data or events already written stay irreversible even then.
 - **Area tag:** label each finding with an area/topic (e.g. "upload/reconcile state machine", "share-token contract") so the test-obligation list and the design-unstable flag can name a consistent area. Use stable, consistent labels across rounds.
 
@@ -75,6 +78,17 @@ Read and hold this context to pass to every sub-agent (they have no prior knowle
 - `.claude/CLAUDE.md` (project rules, if it exists)
 - `context/overview.md` (project overview, if it exists)
 - Any PRD or feature docs referenced in the plan
+
+### Establish the plan's load-bearing premises first
+
+Before round 1, verify the facts the plan's correctness rests on, against the code and, where you cannot tell, against the user. The failure this prevents: whole rounds spent reviewing a false premise (one real case reviewed four rounds against the wrong object store, inferred from an MCP connector that happened to be in the session; another spent rounds on installed-base and versioning concerns for a feature that was not even live). Cold reviewers inherit a bad premise every round and cannot fix it, only you can, up front. Check at least:
+
+- **Is this live?** Are there installed clients, published surfaces, or real usage whose compatibility must be preserved, or is it pre-launch (which moots a whole class of migration / versioning / regression concerns)?
+- **Does production data already exist?** This is the exact input the grader needs for trigger-category 2; establish it once, here.
+- **What is the real infrastructure?** The actual datastore, object store, runtime, and deploy target, read from the repo (`package.json` / lockfiles, `docker-compose`, config, env), never assumed from what an MCP connector happens to expose in the session.
+- **Installed versions** of anything the plan leans on.
+
+Record these as a short **Premises** note and pass them to every reviewer and the grader as project facts. Facts are project context, not review history, so this does not prime cold-start. If a load-bearing premise cannot be verified from the code, ask the user before spending a round on it.
 
 ## The loop (per-round flow)
 
@@ -180,16 +194,17 @@ After the three stages, spawn the `assessor` sub-agent. Give it **a pointer to t
 
 Pass the round's findings and the path; ask for the verdict. Your job is to give it complete, unspun inputs, not to walk it to your answer. It does three things:
 
-1. **Apply the tier -> behavior rules** (below) to decide: another round, or converged. Only **One-way and Significant** findings gate convergence; Medium and Minor do not.
-2. **Watch for instability.** If the same area keeps producing One-way or Significant findings round after round, raise an advisory **"design unstable, needs rework"** flag to the user (those tiers are never deferred to tests).
-3. **On convergence, produce the test-obligation list**: every Medium and Minor from the run, each with the behavior a test must pin and the area it belongs to. Reversible findings are closed by code + tests, not by more rounds.
+1. **Apply the tier -> behavior rules** (below) to decide the verdict: another round, converged, or escalate. Only **One-way and Significant** findings gate convergence; Medium and Minor do not.
+2. **Escalate a structurally unstable area (hard stop).** If the same area produces a **second** One-way *decision*, or a One-way in it will not stay settled across two rounds, the area's problem is its design, not the individual findings, and more point-fix rounds cannot converge it. The assessor returns **`Escalate`**, naming the area, the root cause, and the architecture decision the user must make (redesign vs documented risk-acceptance). This replaces the old advisory-only "design unstable" flag: repeated irreversible findings in one area now **stop the loop and go to the user**, they do not silently license another round. (This is the endless-loop trap made visible: in a real run the same identity/role cluster produced a One-way almost every round for nine rounds because each was point-fixed instead of escalating the one architecture decision underneath.)
+3. **Bank cold-verified areas (so the loop can end).** An area whose One-way/Significant was fixed and then survived one **fully-cold** round with no new finding in it is **settled**, it stops gating. A genuinely *new, different* finding in that area later is graded fresh on its own merits, not counted as recurrence. This is the loop's memory at the judge layer: the reviewers stay cold (no memory, so they re-scrutinize), but the assessor remembers what has already been hammered and held, so a settled subsystem does not re-gate forever.
+4. **On convergence, produce the test-obligation list**: every Medium and Minor from the run, each with the behavior a test must pin and the area it belongs to. Reversible findings are closed by code + tests, not by more rounds.
 
-The assessor returns: the verdict (`Another round` or `Converged`), any flags, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log.
+The assessor returns: the verdict (`Another round`, `Converged`, or `Escalate`), any escalation (area + root cause + the decision for the user), the areas banked settled this round, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log. On `Escalate`, **you stop the loop** and put that architecture decision to the user per the trade-off rule, you do not run another point-fix round hoping the area settles itself.
 
 ### Tier -> behavior
 
-- **One-way:** always another round until settled. Never deferred (you cannot push an irreversible decision to "fix in code later"). If it will not stay settled across rounds, the assessor raises an advisory **"design unstable, needs rework"** flag, but still never auto-defers it.
-- **Significant:** always another round (big enough to verify in the plan). Never deferred. Self-limiting in practice; persistent recurrence in one area raises the same advisory flag.
+- **One-way:** always another round until settled; never deferred (you cannot push an irreversible decision to "fix in code later"). But a **second** One-way in the same area, or one that will not stay settled across two rounds, is no longer "just another round", the assessor returns **`Escalate`** and the loop stops for a user architecture decision (assessor item 2). A One-way fixed once and then clean through a fully-cold round is settled (item 3) and stops gating.
+- **Significant:** always another round (big enough to verify in the plan), then settled once a fully-cold round finds nothing new in that area (item 3). Never deferred. Repeated Significant *defects* in one area (roughly a third recurrence) mean stop re-fixing in prose, pin the behavior with a test obligation and note a simplification; repeated One-way *decisions* in one area escalate (item 2).
 - **Medium:** does **not** gate convergence. Fix it in the plan if the fix is cheap and local, and add it to the **test obligations** regardless, a reversible correctness bug is closed by a deterministic test at implementation, not by looping the plan. A round whose only findings are Mediums converges.
 - **Minor:** does not gate. Fix if trivial, otherwise note it; it also goes on the test-obligation / backlog list. Never forces a round.
 
@@ -197,9 +212,9 @@ There is **no recurrence count and no K threshold.** Mediums and Minors never ex
 
 ### Convergence
 
-A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums and Minors remain, and those do not gate (they become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass.
+A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums and Minors remain, and those do not gate (they become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass (which, if clean, also banks the area as settled per assessor item 3).
 
-State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live) or `Converged`.
+State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live), `Converged`, or `Escalate` (with the area, root cause, and the architecture decision for the user). On `Escalate`, stop the loop and put that decision to the user per the trade-off rule, do not run another point-fix round in the hope the area settles itself.
 
 This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it does not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the assessor owns the exit decision directly, and cold-start holds across rounds because each round spawns fresh reviewer sub-agents fed only the plan, with the sidecar withheld.
 

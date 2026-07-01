@@ -26,9 +26,12 @@ Two failures to fix:
 
 Grade a finding by **reversibility and blast radius/magnitude, not by "is it a bug."**
 
+- **Decision vs defect first.** Only an irreversible *decision* (a design choice a person must own) can be One-way. A *defect* (the plan is wrong, with a correct fix) is graded by reversibility and blast radius even when it lives in security/auth/data code, severity is not irreversibility. A serious security bug fixed in one atomic deploy is a Significant defect, not a One-way; One-way is reserved for the decision underneath it. (This is the fix for the observed "everything near auth grades One-way" failure: the category-4 shortcut was mislabeling reversible defects as irreversible, so the loop never ran out of One-ways.)
 - Irreversible or expensive-and-broad to undo (a **one-way door**) must be settled in the
   plan before building.
 - Reversible things are closed by **code plus a test obligation**, not by more review rounds.
+- **When one area keeps producing irreversible decisions, escalate, don't loop.** A second One-way in the same area means its *design* is the problem; the assessor stops the loop and puts the architecture decision to the user rather than point-fixing symptoms forever.
+- **The assessor banks settled areas.** Reviewers stay cold (they re-scrutinize), but the assessor remembers what has been fixed and held through a fully-cold pass, so a settled subsystem stops gating and the loop can end.
 - **Convergence is the signal that the plan is stable, never the target.** Optimizing for
   the stop corrupts it.
 
@@ -41,7 +44,7 @@ Each role is cold where it needs to be, so no one grades or stops their own work
 | **Reviewers** (junior, senior, red-team) | Find issues. Run sequentially, each on the current plan. | The review history. They never see the `review-log.md` sidecar, so a late round scrutinizes as hard as the first. |
 | **Grader** | After each reviewer, grade every one of that reviewer's findings into a tier, and tag each with an area/topic label. | The cost of fixing. It rates by reversibility/significance, not by how annoying the fix is. It does **not** decide fix-vs-defer. |
 | **Orchestrator** | Fix everything the graders surfaced, regardless of tier. Run the inline self-consistency pass. Write the round to the sidecar. | Severity and stopping. It cannot grade, and it cannot decide convergence. |
-| **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge/another-round call (One-way and Significant gate; Medium and Minor become test obligations), raises the design-unstable flag when One-way/Significant findings recur in one area, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
+| **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge / another-round / **escalate** call (One-way and Significant gate; Medium and Minor become test obligations), **escalates to the user** when a One-way decision recurs or won't settle in one area, **banks areas fixed and held through a fully-cold pass** so they stop gating, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
 
 The orchestrator can **escalate** a grade (treat a lower tier as higher) or record a
 disagreement for the user, but can **never silently downgrade** a finding to make it stop
@@ -56,10 +59,20 @@ cannot update in lockstep), it is a one-way door.
 
 ### 4.1 The four tiers
 
-- **One-way door** (irreversible): touches a trigger-list category (4.2). Must be settled
-  in the plan.
-- **Significant** (reversible but large): big blast radius, OR large magnitude (e.g. a
-  600-line file split), OR touches important parts.
+**Gate first, decision or defect.** A **decision** is a design choice that could legitimately
+go more than one way and that a person should own; a **defect** is the plan being
+wrong/unsafe/incomplete with a correct fix. **Only a decision can be One-way.** A defect is
+graded by reversibility and blast radius even in security/auth/data code, a serious security
+bug whose fix ships in one atomic deploy (redeploy a function, tighten a policy
+pre-prod-data, add a gate) is a reversible Significant defect, not a One-way. This is the fix
+for the "everything near auth grades One-way" failure: the category-4 shortcut was
+mislabeling reversible defects as irreversible.
+
+- **One-way door** (irreversible *decision*): a choice touching a trigger-list category (4.2)
+  that cannot be changed with every dependant in one atomic deploy. Must be settled in the plan.
+- **Significant** (reversible but consequential): big blast radius, OR large magnitude (e.g. a
+  600-line file split), OR a serious *defect* in important code (cross-tenant leak, auth gap)
+  whose fix is reversible.
 - **Medium** (reversible, modest size, but a real correctness/behavior defect): data loss,
   wrong state, a race, an infinite loop, a broken flow. Not big, not cosmetic.
 - **Minor** (cosmetic): clarity, naming, small-local-low-stakes.
@@ -78,8 +91,11 @@ A finding touching any of these is a one-way door **by default**:
    values, the meaning/format of IDs and keys). Data outlives code.
 3. **Event/message schemas on an append-only or async channel** (once published to a
    log/queue/stream you cannot recall it; consumers and replays depend on it).
-4. **Security and trust posture** (the authorization model, identity/tenancy model, where
-   trust boundaries sit, secret/credential handling).
+4. **Security and trust posture**, the trust-boundary *model* itself (the authorization
+   model, identity/tenancy model, where trust boundaries sit, secret/credential handling).
+   This is the decision about the boundary, not every implementation detail near auth code:
+   a missing ownership check in a redeployable function is a defect graded by reversibility,
+   not a posture decision.
 5. **Publicly observable behavior that becomes a de-facto contract** (URL/permalink
    structure, externally visible IDs, error shapes, anything third parties script against).
 6. **Foundational platform commitments with broad lock-in** (primary datastore,
@@ -97,9 +113,11 @@ magnitude under Significant.
   exists**. Pre-launch / empty store, schema changes are reversible (grade lower). The
   grader establishes this from project context; if it cannot tell, it **assumes data
   exists** (the safe direction).
-- **Asymmetric default:** when reversibility is genuinely uncertain, grade it **one-way
-  door**. Mislabeling a one-way door as reversible costs a migration project; the reverse
-  costs a little extra deliberation.
+- **Asymmetric default (decisions only):** when a genuine *decision's* reversibility is
+  uncertain, grade it **one-way door**, mislabeling a one-way door as reversible costs a
+  migration project; the reverse costs a little extra deliberation. This tie-breaks
+  decisions; it is not a licence to inflate a reversible *defect* to One-way because it sits
+  in a sensitive category.
 - **Downgrade guard:** a one-way door drops to two-way **only if** the plan names a real,
   in-use mechanism that bounds the blast radius (API versioning + deprecation window,
   expand/contract migration, consumer-driven contract tests) **and** states the migration
@@ -109,6 +127,15 @@ magnitude under Significant.
   design-unstable flag can name a consistent area. Use stable labels across rounds.
 
 ## 5. The per-round flow
+
+**Round 0 (once, before the loop): establish load-bearing premises.** The orchestrator
+verifies the facts the plan rests on, is it live, does prod data exist, what is the real
+infrastructure (read from the repo, not inferred from a connector that happens to be in the
+session), what versions, against the code and, where it cannot tell, the user. These become
+project facts passed to every reviewer and the grader (facts, not history, so cold-start
+holds). This prevents whole rounds spent on a false premise, a failure seen in real runs
+(four rounds against the wrong object store; rounds of installed-base concern on a
+not-yet-live feature).
 
 1. **Junior** reviews (cold) -> **grader** grades + tags the junior's findings ->
    **orchestrator** fixes them, then runs the **self-consistency pass**.
@@ -131,12 +158,18 @@ findings keep recurring in one area (the "design unstable, needs rework" signal)
 Only **One-way and Significant** findings gate convergence. Medium and Minor do not.
 
 - **One-way door:** **always another round** until settled. Never deferred (you cannot
-  push an irreversible decision to "fix in code later"). If it will not stay settled across
-  rounds, the assessor raises an advisory **"design unstable, needs rework"** flag, but
-  still never auto-defers it.
+  push an irreversible decision to "fix in code later"). But a **second** One-way in the
+  same area, or one that will not stay settled across two rounds, **escalates**: the
+  assessor returns `Escalate` and the loop stops for a user architecture decision, rather
+  than point-fixing symptoms forever. (The old design only raised an advisory flag here and
+  kept looping, which is how a real run reached nine rounds on one identity/role cluster,
+  each round point-fixing a new symptom of the one architecture decision underneath.) A
+  One-way fixed once and then clean through a fully-cold round is **settled** and stops gating.
 - **Significant:** **always another round** (the change is big enough to verify in the
-  plan). Never deferred. Self-limiting in practice; persistent recurrence in one area
-  raises the same advisory flag.
+  plan), then **settled** once a fully-cold round finds nothing new in that area. Never
+  deferred. Repeated Significant *defects* in one area (~3rd recurrence) are pinned with a
+  test obligation and a simplification note rather than re-fixed in prose; repeated One-way
+  *decisions* escalate.
 - **Medium:** **does not gate convergence.** Fix it in the plan if the fix is cheap and
   local, and add it to the **test obligations** regardless. A reversible correctness bug is
   closed by a deterministic test at implementation, not by looping the plan. A round whose
@@ -169,7 +202,9 @@ change**. Mediums and Minors may remain; they do not gate (they become test obli
 The assessor then emits the **test-obligation list**, the orchestrator writes it into the
 plan (section 9), and the plan is marked Reviewed. A round that made any one-way or
 significant change is never the last round: that change must be verified by a clean cold
-pass first.
+pass first. A third exit exists: if an area meets the escalation test (a recurring or
+unsettleable one-way *decision*), the assessor returns `Escalate` and the loop stops for a
+user architecture decision instead of converging or looping.
 
 ## 8. Self-consistency pass (inline, orchestrator)
 

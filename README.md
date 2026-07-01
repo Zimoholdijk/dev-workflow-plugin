@@ -13,7 +13,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, set
 | `write-prd` | Draft a PRD for a new feature |
 | `discuss-plan` | Pre-plan architecture discussion in plain language: settles the design decisions (one-way doors first) grounded in the PRD and the actual code, researches technical trade-offs before surfacing them, asks you to run SQL or check production where a decision needs facts, writes `design-decisions.md`, and hands off to `write-plan` |
 | `write-plan` | Draft a phased implementation plan from an approved PRD (consuming `design-decisions.md` if present) |
-| `plan-review` | Multi-lens plan review that loops to convergence: cold reviewers (clarifying-questions, deep-critique, red-team) find issues, a cold grader rates each by reversibility/blast-radius (One-way / Significant / Medium / Minor), the orchestrator fixes everything, and a cold assessor (every round) defers reversible items to test obligations and decides when the plan has converged (only One-way/Significant gate) |
+| `plan-review` | Multi-lens plan review that loops to convergence: it first establishes the plan's load-bearing premises (is it live, prod data, real infra) so rounds aren't spent on false premises, then cold reviewers (clarifying-questions, deep-critique, red-team) find issues, a cold grader rates each by reversibility/blast-radius (One-way / Significant / Medium / Minor, where only an irreversible *decision* is One-way, a serious bug with a reversible fix is graded by blast radius not by touching auth), the orchestrator fixes everything, and a cold assessor (every round) defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / **escalate** (a structurally unstable area stops the loop and goes to the user as an architecture decision instead of looping forever) |
 | `junior-review` | Spawn the junior-reviewer sub-agent for the clarifying-questions pass |
 | `senior-review` | Spawn the senior-reviewer sub-agent for the deep-critique pass |
 | `red-team-review` | Spawn the red-team-reviewer sub-agent to adversarially stress-test a plan or design |
@@ -37,8 +37,8 @@ All defined roles live in `agents/`, so skills spawn named sub-agents (consisten
 | `junior-reviewer` | Clarifying-questions pass: surfaces ambiguity, gaps, and missing tests |
 | `senior-reviewer` | Deep-critique pass: grades fit, scope, operational failure modes, and test coverage, with cited findings |
 | `red-team-reviewer` | Adversarial pass: tries to break the plan and returns ranked, cited failure scenarios |
-| `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor and tags it with an area. Cold to the cost of fixing |
-| `assessor` | Runs every round, holds the full review log, defers reversible items to test obligations, and makes the converge / another-round call (only One-way/Significant gate) |
+| `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor and tags it with an area. Decision-vs-defect gate: only an irreversible *decision* is One-way; a serious bug with a reversible fix (redeploy, tighten a policy) is Significant, not One-way, even in auth code. Cold to the cost of fixing |
+| `assessor` | Runs every round, holds the full review log, defers reversible items to test obligations, banks areas fixed-and-held through a cold pass, and makes the converge / another-round / **escalate** call (only One-way/Significant gate; a recurring or unsettleable One-way decision in one area escalates to the user as an architecture decision rather than looping) |
 
 **Code-review** (Opus), the seven lenses `full-code-review` runs in parallel:
 
