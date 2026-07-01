@@ -103,6 +103,16 @@ Fix the contradictions you find, then re-check those follow-on fixes. The domina
 
 After each reviewer returns, spawn the `grader` sub-agent. Give it: the reviewer's findings, the current plan, the project context, the **severity rubric above** (verbatim), and whether **production data exists** for this project. It returns each finding tagged with `{tier, area, one-line reason}`.
 
+**Spawning the grader is non-negotiable, and you never grade in its place.** After *every* reviewer that returned at least one finding, in *every* round, the grader runs. You are **cold to severity** (see the roles table): assigning a tier yourself, eyeballing a finding as "probably Minor" and skipping the grader, or grading in your head to move faster, all collapse the separation of powers that stops you from quietly downgrading findings to finish sooner. The only case where you skip the grader is a reviewer that returned no findings (nothing to grade). **Self-check before you fix anything: every finding must carry a tier the *grader* assigned. If any finding has a tier that came from you, you skipped or overrode the grader, stop and spawn it on that reviewer's findings.**
+
+**Hand it inputs, not conclusions (anti-priming).** Pass the reviewer's findings as they came, the plan, the context, the rubric, and the production-data fact, then let the grader rate them. Do **not**:
+
+- suggest, pre-state, or hint a tier ("this one's probably One-way, grade accordingly") — anchoring the grader to a tier defeats the reason grading is a separate cold role, exactly as it would for the assessor;
+- pre-sort, rank, or group the findings by how serious they look to you (hand them in the reviewer's order);
+- drop or withhold a finding you personally judge trivial — whether it's Minor is the grader's call, not yours; every finding the reviewer surfaced goes in.
+
+The grader assigns the tiers and returns `{tier, area, reason}`; you consume its output, you do not walk it to your answer.
+
 You then **address every finding it surfaced**, regardless of tier. How you address it depends on the tier: **Medium and Minor you fix autonomously**; **One-way and Significant you treat as the user's call** per the trade-off rule below, they are the irreversible or consequential decisions, and the point of grading by reversibility is that a person, not the loop, owns them. The tier also governs convergence later. You may **escalate** the grader's tier (treat a Minor as Medium) or record a disagreement in the sidecar, but you may **never downgrade** a tier to avoid a round, a fix, or a question to the user: severity is the grader's call, not yours.
 
 ## Trade-offs: ask the user about One-way and Significant decisions
