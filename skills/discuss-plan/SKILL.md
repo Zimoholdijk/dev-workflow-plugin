@@ -1,6 +1,6 @@
 ---
 name: discuss-plan
-description: Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, collects the agreed decisions, and hands off to /write-plan. Sits between /write-prd and /write-plan to settle architecture before phasing, heading off later plan-review rounds. Takes a feature name or PRD path as argument.
+description: Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, collects the agreed decisions, and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Sits between /write-prd and /write-plan to settle architecture before phasing, heading off later plan-review rounds. Takes a feature name or PRD path as argument.
 disable-model-invocation: false
 argument-hint: "[feature name or path to PRD, e.g. 'Claiming' or 'context/Claiming/ClaimingPRD.md']"
 ---
@@ -80,6 +80,26 @@ Open with the shape topic: state in one or two plain sentences how you'd build t
 - If the user proposes something, evaluate it honestly: agree and build on it, or push back with the concrete cost.
 - If the user seems lost in your phrasing, restate concretely (name the two or three real artifacts: the table, the endpoint, the boundary) rather than re-explaining abstractly.
 - Make reversibility explicit when it matters ("this one is hard to undo once we ship data in that shape, so it's worth getting right now") so the user weights the decision correctly.
+
+## Adaptive depth (tutor mode)
+
+The Response Rules assume a user who can already parse "schema", "contract", and "trust boundary". Not every user can, and some are here to learn. Adapt the discussion's depth to the user in front of you, without derailing the design work:
+
+1. **Watch for the signal.** If the user says anything like "I don't understand half of that", "explain it simply", "act like my tutor", or answers with visible uncertainty, drop immediately to first-principles teaching. Do not wait to be asked twice. Conversely, if they answer fluently and push back with real insight, raise the altitude again. The depth is a dial, not a mode: keep adjusting it message by message.
+
+2. **One concept per message, plain English first.** When teaching, explain a single concept in everyday language with a concrete analogy (object storage as a coat-check locker; a presigned URL as a temporary skeleton key; a transaction as an all-or-nothing bundle) BEFORE using any technical term. Number them ("Concept 7: ...") so the user can track the build-up. Never stack two concepts in one message.
+
+3. **Explain, then name.** Once the plain explanation lands, tie the idea to its real jargon in a short glossary block: map each everyday phrase to the exact industry term (client, endpoint, contract, DTO, idempotent, 409 Conflict, foreign key, atomicity) so the user can later read technical descriptions and decode them. The goal is fluency, not just comprehension. Offer the mapping proactively; a learning user often won't know to ask. (This glossary block is the one case that may extend the 150-word cap, and only when the user has explicitly asked to be taught the jargon.)
+
+4. **Build sequentially.** Teach concepts in dependency order: what a server is before what an endpoint is before what a contract is. Each new concept should lean on the ones already established. End each teaching message with one check-for-understanding question, and only advance when the user confirms. This is the teaching form of "every message ends with exactly one question".
+
+5. **Treat pushback as signal, and be honest.** When the user pokes a hole in an explanation, do not defend the tidy version. If they're right, say so plainly, correct the record, and give the more accurate (even if messier) model. A user who finds a real flaw has understood deeply; reward that with honesty, not reassurance. Never smooth over a genuine trade-off or oversell a design's safety.
+
+6. **Fold decisions and tangents in, don't lose them.** Surface each design trade-off with a plain-language framing, 2-3 options, and a recommendation with a lean, one at a time (never a bare "A or B?", same as Response Rule 5). When the user decides, acknowledge it crisply ("Decision: A locked") and move on. When a user tangent surfaces genuine new scope, capture it (a deferred note in the design doc, or a tracker ticket) rather than absorbing it silently or dropping it.
+
+7. **Stay at architecture altitude even while teaching.** Tutor mode explains the *concepts behind* the design decisions; it does not descend into code, file paths, or phase breakdowns (those remain out of scope for this skill, per Response Rule 8). Teach just enough for the user to own the decision.
+
+All other Response Rules hold while teaching: the 150-word cap (except the glossary case above), one question per message, plain prose, no em dashes in customer-facing copy, and research before surfacing a technical trade-off.
 
 ## Step 6: Wrap up
 
