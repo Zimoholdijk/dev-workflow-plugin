@@ -45,20 +45,22 @@ Branch scope only; full scope always runs the full roster minus regression. Deri
 
 Classify mechanically from `git diff <base>...HEAD --stat` and fixed-string/regex greps over `git diff <base>...HEAD` output. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
 
+First split the changed files into **code** and **non-code**. Non-code: markdown and docs (`*.md`, `docs/`, `context/`, plans, PRDs), lockfiles (`package-lock.json`, `yarn.lock`, etc.), and images/other assets. Everything else is code — including config, migrations, and scripts. All size thresholds below count **code lines only**: a 400-line plan committed alongside a 12-line code tweak is a 12-line diff for roster purposes. If the diff contains **no code files at all** (a plans/docs-only commit), spawn only `documentation-reviewer` and say so; there is nothing for the other lenses to review.
+
 | Reviewer | Include when |
 |----------|--------------|
-| `testing-reviewer` | **Always.** Every change gets its coverage checked and the suite run. Not skippable. |
-| `regression-reviewer` | The diff contains deleted lines beyond pure whitespace/formatting/renames. |
+| `testing-reviewer` | **Always, whenever any code file changed.** Every code change gets its coverage checked and the suite run. Not skippable (except in a docs-only diff). |
+| `regression-reviewer` | A **code** file contains deleted lines beyond pure whitespace/formatting/renames. Deletions in plans/docs don't count. |
 | `frontend-reviewer` | Client-side files changed: components, pages, styles, client hooks (`.tsx`/`.jsx`/`.vue`/`.svelte`, `.css`/`.scss`, `app/`/`pages/`/`components/` client code). |
 | `backend-reviewer` | Server-side files changed: API routes/handlers, services, db/schema/migrations, background jobs, middleware, server config. |
-| `security-reviewer` | Risk greps hit anywhere in the diff: auth, session, token, password, secret, key, permission, role, policy, RLS, payment, price, upload, deserialize, exec, raw SQL, `fetch(`/HTTP calls with user input, redirect, CORS, cookie. Or any new/changed endpoint. |
+| `security-reviewer` | Risk greps hit in a **code** file's hunks (a plan *discussing* auth is not a signal; auth code is): auth, session, token, password, secret, key, permission, role, policy, RLS, payment, price, upload, deserialize, exec, raw SQL, `fetch(`/HTTP calls with user input, redirect, CORS, cookie. Or any new/changed endpoint. |
 | `architecture-reviewer` | The diff adds new files, touches 2+ modules/layers, or moves code between layers. |
 | `documentation-reviewer` | The diff touches docs (`*.md`, `docs/`, `context/`) or adds a route, exported utility, env var, or other documented surface. |
 
 **Escape hatches — run all seven whenever any of these hold:**
 
-- The diff is roughly ≥ 150 changed lines or ≥ 10 files (past that size, single-surface claims stop being credible).
-- Any changed file doesn't classify cleanly (unknown extension, generated code, vendored deps, mixed client/server file).
+- The diff is roughly ≥ 150 changed **code** lines or ≥ 10 **code** files (past that size, single-surface claims stop being credible). Docs, plans, and lockfiles never count toward size.
+- Any changed **code** file doesn't classify cleanly (unknown extension, generated code, vendored deps, mixed client/server file). Non-code files never trigger this.
 - The user asked for it (`depth:full` or words to that effect).
 - You are uncertain for any reason. Ambiguity always resolves toward the full roster, never away from it.
 
