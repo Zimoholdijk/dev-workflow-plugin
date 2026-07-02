@@ -82,7 +82,8 @@ driver) so it is auditable, not vibes.
 
 ### 4.2 One-way-door trigger list (stack-agnostic reference)
 
-A finding touching any of these is a one-way door **by default**:
+A *decision* touching any of these is a one-way door; a defect near them is still graded
+by reversibility per the decision-vs-defect gate (4.1):
 
 1. **A published contract** any party you cannot atomically update depends on (a
    versioned/public API, wire or RPC protocol, webhook payload, a library's public
@@ -123,8 +124,13 @@ magnitude under Significant.
   expand/contract migration, consumer-driven contract tests) **and** states the migration
   path. Data or events already written stay irreversible even then.
 - **Area tag:** the grader labels each finding with an area/topic (e.g. "upload/reconcile
-  state machine", "share-token contract") so the test-obligation list and the
-  design-unstable flag can name a consistent area. Use stable labels across rounds.
+  state machine", "share-token contract") so the test-obligation list, the assessor's
+  banking, and its escalation test can name a consistent area. Use stable labels across rounds.
+- **Not-an-issue (discard disposition):** a finding that is factually wrong, already
+  handled, or moot given the premises is graded Not-an-issue with cited refuting evidence
+  and exits the pipeline (not fixed, not a test obligation, sidecar record only). This is
+  the subtractive false-positive stage every production review system converged on
+  (find-then-filter); without it, refutable findings consume fix cycles and cause churn.
 
 ## 5. The per-round flow
 
@@ -137,21 +143,27 @@ holds). This prevents whole rounds spent on a false premise, a failure seen in r
 (four rounds against the wrong object store; rounds of installed-base concern on a
 not-yet-live feature).
 
-1. **Junior** reviews (cold) -> **grader** grades + tags the junior's findings ->
-   **orchestrator** fixes them, then runs the **self-consistency pass**.
-2. **Senior** reviews (cold) -> grader grades + tags -> orchestrator fixes + self-consistency.
-3. **Red-team** reviews (cold) -> grader grades + tags -> orchestrator fixes + self-consistency.
+1. **Junior** reviews (cold) -> **quote check** (orchestrator, mechanical: every finding's
+   cited quote/line must actually exist in the plan or file; unverifiable citations are
+   dropped as unsubstantiated, the cheapest hallucination filter) -> **grader** grades +
+   tags -> **orchestrator** fixes them with **scoped, surgical edits** (never wholesale
+   rewrites, which drop mid-document constraints and undo prior rounds' fixes), then runs
+   the **self-consistency pass**.
+2. **Senior** reviews (cold) -> quote check -> grader -> orchestrator fixes + self-consistency.
+3. **Red-team** reviews (cold) -> quote check -> grader -> orchestrator fixes + self-consistency.
 4. **Quality and conformance pass** (orchestrator): a self-check (plan prose, not a code
    tool) for repetition smell, test coverage, and CLAUDE.md conformance; anything
    substantive is routed through the grader like a reviewer finding. (`/simplify` belongs
    on code, not the plan, so it lives in `full-code-review` and `implement-plan`.)
 5. **Assessor** runs (every round): reads the full log, applies the tier -> behavior rules
-   (section 6), decides converge or another round, and on convergence compiles the
-   test-obligation list.
+   (section 6), tracks the dry signal (new unique gated findings this round), decides
+   converge / another round / escalate, and on convergence compiles the test-obligation list.
 
 The assessor runs every round because it owns the convergence decision and is the only
-holder of the full log, so it is also the place that notices whether One-way/Significant
-findings keep recurring in one area (the "design unstable, needs rework" signal).
+holder of the full log, so it is also the place that notices whether One-way findings keep
+recurring in one area and turns that into an escalation. Its cross-round state (banked
+areas, per-area One-way counts, dry-signal counts) is written into each round's sidecar
+entry, each round's assessor is a fresh spawn whose memory is that file.
 
 ## 6. Tier -> behavior (the gate logic, owned by the assessor)
 
@@ -164,7 +176,11 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
   than point-fixing symptoms forever. (The old design only raised an advisory flag here and
   kept looping, which is how a real run reached nine rounds on one identity/role cluster,
   each round point-fixing a new symptom of the one architecture decision underneath.) A
-  One-way fixed once and then clean through a fully-cold round is **settled** and stops gating.
+  One-way fixed once and then clean through a fully-cold round is **settled** and stops
+  gating, **but its area's One-way count persists across banking**: banking suspends
+  gating, it does not erase history, so a second One-way in a previously-banked area still
+  escalates (otherwise a hard subsystem oscillates fix/clean/bank/new-One-way forever,
+  which a real run's identity cluster did, clearing twice and re-arming twice).
 - **Significant:** **always another round** (the change is big enough to verify in the
   plan), then **settled** once a fully-cold round finds nothing new in that area. Never
   deferred. Repeated Significant *defects* in one area (~3rd recurrence) are pinned with a
@@ -177,12 +193,27 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
 - **Minor:** does not gate. Fix if trivial, otherwise note it; it also goes on the
   obligation/backlog list.
 
-**No recurrence count and no K threshold.** An earlier design counted Medium recurrence
-per area and deferred at K=3, but that was an **endless-loop vector**: convergence required
-"no live Medium below K=3", and a stream of *new* Mediums in fresh areas never reaches the
-threshold, so a thorough cold reviewer that finds one more reversible bug each round keeps
-the loop alive forever. Reversible findings belong in tests, not in another prose round, so
-they simply do not gate.
+**Mediums and Minors carry no recurrence count and no K threshold.** An earlier design
+counted Medium recurrence per area and deferred at K=3, but that was an **endless-loop
+vector**: convergence required "no live Medium below K=3", and a stream of *new* Mediums in
+fresh areas never reaches the threshold, so a thorough cold reviewer that finds one more
+reversible bug each round keeps the loop alive forever. Reversible findings belong in
+tests, not in another prose round, so they simply do not gate. The only counted things are
+One-way recurrence per area and the round number, both of which trigger `Escalate` (a hard
+stop to the user), never another automatic round.
+
+**The round cap (escalate at round 5).** The 2023-2026 evidence on iterative LLM review is
+consistent: gains concentrate in the first 2-3 passes and plateau by 3-4; past the plateau,
+revision without an external verifier degrades more than it repairs (intrinsic
+self-correction flips more correct content wrong than the reverse, measured across models);
+and per-round new-finding counts in real audits decay toward zero rather than staying
+productive. Engineering practice layers an adaptive completion signal with a hard iteration
+cap as a guardrail (framework defaults: 10-25). So: the primary stop is the tier gate plus
+the dry signal (new unique gated findings per round, tracked by the assessor); the guardrail
+is a cap at round 5, at which the assessor returns `Escalate` and the user decides (rework,
+accept the residual, or knowingly authorize more rounds). Two 8-11-round production runs of
+the previous uncapped design showed exactly the predicted late-round profile: churn,
+re-broken fixes, and noise, with the real architecture decision surfacing at round 3.
 
 ## 6b. Who decides: trade-offs by tier
 
@@ -288,3 +319,25 @@ deterministic exit condition.
   review (they close in tests, not rounds).
 - Stopping on saturation rather than a fixed count: defect-detection saturation and
   review-rate ceilings (Fagan, Wiegers, SmartBear/Cisco).
+- The round cap and dry signal (2026-07 calibration): iterative-refinement gains
+  concentrate in passes 1-3 (Self-Refine, arXiv:2303.17651; debate saturates by 2-3 rounds,
+  arXiv:2305.14325); intrinsic self-correction degrades monotonically past ~2 rounds
+  (arXiv:2310.01798, ICLR 2024; survey arXiv:2406.01297, TACL); more calls has an interior
+  optimum (arXiv:2403.02419, NeurIPS 2024); practice layers adaptive stop + hard cap
+  (Anthropic "Building effective agents"; LangGraph/OpenAI SDK defaults).
+- The Not-an-issue filter: production systems beat review noise with a subtractive stage,
+  not more reviewers (BitsAI-CR ReviewFilter, FSE 2025, arXiv:2501.15134; ICLR 2025 review
+  feedback agent's critic gate, arXiv:2504.09737; Greptile's 79%-nit telemetry).
+- Quote check: grounding-in-verbatim-source reduces fabricated claims (Anthropic long-context
+  guidance and Citations API; "According to..." prompting, arXiv:2305.13252); fabricated
+  citations are mechanically checkable.
+- Scoped edits: whole-document rewrites drop mid-context constraints (arXiv:2307.03172) and
+  lose ~3x more settled content than diff-scoped edits (Aider unified-diff benchmark);
+  instruction drift sets in within ~8 turns (arXiv:2402.10962).
+- Separate grader / cold reviewers: anchoring and conformity in LLM judges are large and
+  replicated (arXiv:2503.13879 meta-review anchoring; CoBBLEr, arXiv:2309.17012;
+  panels-over-single-judge, PoLL arXiv:2404.18796); decompose-then-verify beats holistic
+  judging; classical 2-4-inspector optimum (Porter/Siy/Toman/Votta, IEEE TSE 1997).
+- Known limitation, accepted: all roles run one model family, so reviewer overlap signals
+  are biased optimistic (correlated blind spots) and are used ordinally, never as remaining-
+  defect estimates (capture-recapture needs >=4 independent reviewers, Petersson et al. 2004).

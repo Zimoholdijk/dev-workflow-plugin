@@ -30,9 +30,9 @@ This drafts a phased implementation plan based on the approved PRD. The plan is 
 
 ## Stage 2: Plan Review (run to convergence)
 
-Run `/plan-review context/[Feature]/implementation-plan.md` and let it run to convergence. Do not pick a round count. plan-review loops internally: each round runs the cold lenses, a grader rates every finding by reversibility (One-way / Significant / Medium / Minor), the orchestrator fixes everything, and a cold assessor decides when the plan has converged. The exit condition decides when to stop, not a fixed round count.
+Run `/plan-review context/[Feature]/implementation-plan.md` and let it run to convergence. Do not pick a round count. plan-review loops internally: each round runs the cold lenses, a grader rates every finding by reversibility (One-way / Significant / Medium / Minor, or discards it as Not-an-issue with evidence), the orchestrator fixes everything, and a cold assessor decides each round: converged, another round, or escalate. The exit condition decides when to stop, and the loop is bounded (the assessor escalates at round 5 rather than running on).
 
-Why convergence beats a fixed number: a one-way door or significant change is never the last round (it must be settled, then verified), while a reversible bug that keeps recurring in one area is pulled out of prose review and handed to code+tests instead of being looped on forever. The loop stops only when no one-way door, no significant change, and no live reversible defect remain.
+Why convergence beats a fixed number: a one-way door or significant change is never the last round (it must be settled, then verified by a clean cold pass), while reversible defects (Mediums/Minors) never gate at all, they are handed to code+tests as test obligations instead of being looped on. The loop stops when a round has no open one-way door and no significant change.
 
 What to rely on (plan-review owns the mechanics):
 - **Cold start every round.** The `review-log.md` sidecar is withheld from reviewers, so a late round scrutinizes the plan as hard as the first.
@@ -40,7 +40,7 @@ What to rely on (plan-review owns the mechanics):
 - **Test obligations land in the plan.** At convergence, everything review deferred to code+tests is written into `implementation-plan.md` as a `## Test Obligations` section plus per-phase references. Stage 4 (`/implement-plan`) is required to fulfil them, so nothing deferred is silently lost.
 - **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md` with the round's graded findings and the assessor's verdict; the plan status is set to "Reviewed" once converged.
 
-If the same area keeps producing one-way or significant findings round after round (the assessor raises a "design unstable" flag), that is a signal the plan needs fundamental rework, not more rounds. Surface it to the user rather than looping indefinitely.
+**If the assessor returns `Escalate`** (a recurring One-way area, an unsettleable One-way, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds).
 
 ---
 

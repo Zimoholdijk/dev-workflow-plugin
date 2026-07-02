@@ -28,4 +28,6 @@ Format your output as a numbered list of questions, grouped by the section of th
 
 Read any files referenced in the plan to verify that the plan's description of them is accurate.
 
+**A short list, or no questions at all, is a valid and good outcome.** If orientation answers everything and the plan is internally consistent and implementation-ready, say so plainly. Do not manufacture questions to look thorough: before emitting each question, check whether the plan or the code already answers it, and drop it if so. Cite the plan line or file that makes each surviving question real. A reviewer who pads the list with answerable questions costs a fix cycle per question and buries the real ones.
+
 **Orientation is bounded; the list is the deliverable.** Reading files is how you ground your questions, not the goal. Open the files the plan actually touches, then stop reading and write. Do **not** narrate orientation and trail off ("let me check a few more items…") without returning anything — you must deliver your **complete** numbered list in a **single** response. Plan your file reads so you keep budget in reserve for writing the list; if you find yourself running low, deliver the questions you already have rather than opening one more file. A delivered list that is slightly less thorough always beats a thorough pass that never arrives.

@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Multi-stage plan review that loops to convergence. Establishes the plan's load-bearing premises first; cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor (only an irreversible decision is One-way, not every bug near auth); the orchestrator fixes everything; a cold assessor runs every round, defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / escalate (a structurally unstable area goes to the user as an architecture decision instead of looping). Use when an implementation or refactoring plan needs rigorous review before execution.
+description: Multi-stage plan review that loops to convergence, bounded at 5 rounds. Establishes the plan's load-bearing premises first; cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues, each mechanically quote-checked; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor or discards it as Not-an-issue with evidence (only an irreversible decision is One-way, not every bug near auth); the orchestrator fixes everything surgically; a cold assessor runs every round, tracks the dry signal, defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / escalate (a structurally unstable area or the round cap goes to the user instead of looping). Use when an implementation or refactoring plan needs rigorous review before execution.
 disable-model-invocation: false
 argument-hint: "[path to plan file]"
 ---
@@ -20,7 +20,7 @@ You are the **orchestrator**. You run the loop and you fix the plan, but you do 
 | **Reviewers** (junior, senior, red-team) | Find issues, one cold lens at a time. | The review history (never see the sidecar). |
 | **Grader** | After each reviewer, rate every finding into a tier and tag it with an area, by the rubric below. | The cost of fixing. Does not decide fix-vs-defer; everything gets fixed. |
 | **Orchestrator (you)** | Fix everything surfaced, run the self-consistency pass, write the sidecar, and on convergence write the test obligations into the plan. | Severity and stopping. You may *escalate* a grade or record a disagreement, but never silently *downgrade* a finding to make it stop mattering. |
-| **Assessor** | Runs **every round**. The only agent holding the full log. Defers reversible items to tests, makes the converge / another-round call (only One-way/Significant gate). | A bias toward finishing (it made no fixes). History-aware by design. |
+| **Assessor** | Runs **every round**. The only agent holding the full log. Defers reversible items to tests, banks areas that held through a cold pass, tracks new-unique findings per round, makes the converge / another-round / escalate call (only One-way/Significant gate; a recurring One-way area or the round cap escalates to the user). | A bias toward finishing (it made no fixes). History-aware by design. |
 
 ## Cold-start every reviewer (non-negotiable)
 
@@ -50,13 +50,14 @@ The grader assigns exactly one **tier** to each finding, plus an **area tag**, p
 - **Medium** (reversible, modest size, but a real correctness/behavior defect): data loss, wrong state, a race, an infinite loop, a broken flow. Not big, not cosmetic.
 - **Minor** (cosmetic): clarity, naming, small-local-low-stakes.
 
-**One-way-door trigger list** (a finding touching any of these is One-way by default):
+**Plus one discard disposition — Not-an-issue:** the finding is factually wrong, already handled by the plan, or moot given the established premises. The grader must cite the evidence (the plan line or file that refutes it). A Not-an-issue finding **exits the pipeline**: it is not fixed, does not become a test obligation, and does not gate; it is recorded in the sidecar with the refutation so the round's record is complete. This is the false-positive filter, every production review system that beat noise added a subtractive stage, and reviewers under pressure to find something do produce refutable findings (real runs logged "CSP concern refuted", "email-change attack refuted via GoTrue source"). Use it only with evidence; when in doubt between Not-an-issue and Minor, grade Minor.
+
+**One-way-door trigger list** (a *decision* touching any of these is One-way; a defect near them is still graded by reversibility per Gate 1):
 
 1. **A published contract** any party you cannot atomically update depends on (versioned/public API, wire or RPC protocol, webhook payload, a library's public surface, a CLI's flags/output).
 2. **Persisted data, once production data exists** (schema, stored formats, enum raw values, the meaning/format of IDs and keys). Data outlives code.
 3. **Event/message schemas on an append-only or async channel** (once published you cannot recall it; consumers and replays depend on it).
-4. **Security and trust posture** (authorization model, identity/tenancy model, where trust boundaries sit, secret/credential handling).
-4b. (Category 4, restated) **Security and trust posture** means the trust-boundary *model* itself, who is allowed to reach what, the identity/tenancy model, where trust sits, secret handling. This is the decision about the boundary, not every implementation detail near auth code: a missing ownership check in a redeployable function is a defect graded by reversibility, not a posture decision.
+4. **Security and trust posture**, meaning the trust-boundary *model* itself: who is allowed to reach what, the identity/tenancy model, where trust sits, secret/credential handling. This is the decision about the boundary, not every implementation detail near auth code, a missing ownership check in a redeployable function is a defect graded by reversibility, not a posture decision.
 5. **Publicly observable behavior that becomes a de-facto contract** (URL/permalink structure, externally visible IDs, error shapes, anything third parties script against).
 6. **Foundational platform commitments with broad lock-in** (primary datastore, language/runtime, cloud-proprietary primitives).
 7. **Distributed-correctness commitments** (consistency model, ordering/idempotency/delivery semantics, the partition/sharding key).
@@ -68,7 +69,7 @@ Module/service boundaries are **not** a category: the irreversible kind is alrea
 - **Production-data input:** item 2 is One-way **only if production data already exists**. Pre-launch / empty store, schema changes are reversible (grade lower). Establish this from project context; if you cannot tell, **assume data exists** (the safe direction).
 - **Asymmetric default (decisions only):** when a genuine *decision's* reversibility is uncertain, grade it **One-way**, mislabeling a one-way door as reversible costs a migration project; the reverse costs a little deliberation. This tie-breaks decisions; it is not a licence to inflate a reversible *defect* to One-way because it sits in a sensitive category. Size a defect by its actual blast radius.
 - **Downgrade guard:** a One-way drops to reversible **only if** the plan names a real, in-use blast-radius bound (API versioning + deprecation window, expand/contract migration, consumer-driven contract tests) **and** states the migration path. Data or events already written stay irreversible even then.
-- **Area tag:** label each finding with an area/topic (e.g. "upload/reconcile state machine", "share-token contract") so the test-obligation list and the design-unstable flag can name a consistent area. Use stable, consistent labels across rounds.
+- **Area tag:** label each finding with an area/topic (e.g. "upload/reconcile state machine", "share-token contract") so the test-obligation list, the assessor's banking, and its escalation test can name a consistent area. Use stable, consistent labels across rounds.
 
 ## Before starting
 
@@ -98,11 +99,13 @@ Each round is: three cold lenses, each immediately graded, with you fixing after
 2. **Senior** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 3. **Red-team** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 4. **Quality and conformance pass** (you): a self-check for repetition smell, test coverage, and CLAUDE.md conformance; route anything substantive through the grader.
-5. **Assessor** runs: reads the full log, applies the tier -> behavior rules, decides converge or another round, and (on convergence) produces the test-obligation list for you to write into the plan.
+5. **Assessor** runs: reads the full log, applies the tier -> behavior rules, decides converge, another round, or escalate, and (on convergence) produces the test-obligation list for you to write into the plan.
 
-You do not gate whether the assessor runs. **It runs every round**: it owns the convergence decision and is the only holder of the full log, so it is also where recurring One-way/Significant findings in one area get noticed (the "design unstable, needs rework" signal).
+You do not gate whether the assessor runs. **It runs every round**: it owns the convergence decision and is the only holder of the full log, so it is also where recurring One-way findings in one area get noticed and turned into an escalation instead of another round.
 
 ## Self-consistency: consolidate fixes before the next lens
+
+**Edit surgically, never rewrite wholesale.** Apply each fix as a targeted edit to the specific section it concerns; do not regenerate whole sections or the whole plan to "clean it up". Wholesale rewrites silently drop constraints that live mid-document and undo earlier rounds' fixes (measured: whole-document regeneration loses roughly 3x more previously-settled content than scoped edits, and models progressively violate earlier constraints as turns accumulate). The churn where a fix re-breaks a prior fix is this failure mode.
 
 After **every** stage's fixes and before the next lens, re-check what you just changed (you, inline, not a sub-agent: the next cold reviewer is the real un-biased catch; this just gets the obvious self-contradiction one step earlier and cheaper). Re-read each edited section against:
 
@@ -115,7 +118,11 @@ Fix the contradictions you find, then re-check those follow-on fixes. The domina
 
 ## Grading a reviewer's findings (the grader)
 
-After each reviewer returns, spawn the `grader` sub-agent. Give it: the reviewer's findings, the current plan, the project context, the **severity rubric above** (verbatim), and whether **production data exists** for this project. It returns each finding tagged with `{tier, area, one-line reason}`.
+After each reviewer returns, first run the **quote check**, then spawn the `grader` sub-agent.
+
+**Quote check (mechanical, before grading).** Every finding must cite its evidence: a quoted plan line, a `file:line`, or a named rule. Verify each citation actually exists, grep the quoted text in the plan or the cited file. A finding whose citation cannot be found is unsubstantiated: do not silently fix it and do not grade it; note it in the sidecar as "citation not found" and drop it (if it *sounds* important, re-ask that reviewer to substantiate it once). This is the cheapest hallucination filter available, fabricated citations are a documented reviewer failure mode, and a quote's existence is mechanically checkable.
+
+Give the grader: the reviewer's findings (quote-checked), the current plan, the project context, the **severity rubric above** (verbatim), and whether **production data exists** for this project. It returns each finding tagged with `{tier, area, one-line reason}`, where tier may also be **Not-an-issue** (with the refuting evidence).
 
 **Spawning the grader is non-negotiable, and you never grade in its place.** After *every* reviewer that returned at least one finding, in *every* round, the grader runs. You are **cold to severity** (see the roles table): assigning a tier yourself, eyeballing a finding as "probably Minor" and skipping the grader, or grading in your head to move faster, all collapse the separation of powers that stops you from quietly downgrading findings to finish sooner. The only case where you skip the grader is a reviewer that returned no findings (nothing to grade). **Self-check before you fix anything: every finding must carry a tier the *grader* assigned. If any finding has a tier that came from you, you skipped or overrode the grader, stop and spawn it on that reviewer's findings.**
 
@@ -127,7 +134,7 @@ After each reviewer returns, spawn the `grader` sub-agent. Give it: the reviewer
 
 The grader assigns the tiers and returns `{tier, area, reason}`; you consume its output, you do not walk it to your answer.
 
-You then **address every finding it surfaced**, regardless of tier. How you address it depends on the tier: **Medium and Minor you fix autonomously**; **One-way and Significant you treat as the user's call** per the trade-off rule below, they are the irreversible or consequential decisions, and the point of grading by reversibility is that a person, not the loop, owns them. The tier also governs convergence later. You may **escalate** the grader's tier (treat a Minor as Medium) or record a disagreement in the sidecar, but you may **never downgrade** a tier to avoid a round, a fix, or a question to the user: severity is the grader's call, not yours.
+You then **address every finding it surfaced**. How depends on the disposition: **Not-an-issue is recorded in the sidecar with its refutation and nothing else happens** (do not fix a refuted finding "to be safe", that is churn). **Medium and Minor you fix autonomously.** **One-way and Significant go through the trade-off rule below**: the ones that involve a *genuine choice* are the user's call; a Significant *defect* with one unambiguous correct fix (a completeness gap, a missing phase, a contradiction) has no choice in it, fix it autonomously and surface it FYI, do not manufacture a question. The tier also governs convergence later. You may **escalate** the grader's tier (treat a Minor as Medium) or record a disagreement in the sidecar, but you may **never downgrade** a tier (including to Not-an-issue) to avoid a round, a fix, or a question to the user: severity is the grader's call, not yours.
 
 ## Trade-offs: ask the user about One-way and Significant decisions
 
@@ -188,33 +195,40 @@ After the three stages, spawn the `assessor` sub-agent. Give it **a pointer to t
 **Hand it inputs, not conclusions (anti-priming).** The assessor is history-aware on purpose, but it must reach the verdict *itself*. Do **not** pre-digest the round for it, and in particular do **not**:
 
 - state, suggest, or "expect" a verdict ("the expected verdict is Another round — confirm" makes it a rubber stamp; let it decide and tell *you*),
-- pre-judge the design-unstable question for it (don't assert "postMessage was a different area than logo-render, so no flag" — hand it the area-tagged findings and let it compare across rounds),
+- pre-judge the escalation question for it (don't assert "postMessage was a different area than logo-render, so no escalation" — hand it the area-tagged findings and let it compare across rounds),
 - replace the sidecar with your own summary of "what happened in rounds 1-N" (point it at the file; reading the log is its job and yours might shade it),
 - re-state which tiers gate as if instructing it (the rubric and its own agent prompt already carry that; repeating it as "the rules for this round are…" invites you to mis-state them).
 
-Pass the round's findings and the path; ask for the verdict. Your job is to give it complete, unspun inputs, not to walk it to your answer. It does three things:
+Pass the round's findings and the path; ask for the verdict. Your job is to give it complete, unspun inputs, not to walk it to your answer. It does five things:
 
-1. **Apply the tier -> behavior rules** (below) to decide the verdict: another round, converged, or escalate. Only **One-way and Significant** findings gate convergence; Medium and Minor do not.
-2. **Escalate a structurally unstable area (hard stop).** If the same area produces a **second** One-way *decision*, or a One-way in it will not stay settled across two rounds, the area's problem is its design, not the individual findings, and more point-fix rounds cannot converge it. The assessor returns **`Escalate`**, naming the area, the root cause, and the architecture decision the user must make (redesign vs documented risk-acceptance). This replaces the old advisory-only "design unstable" flag: repeated irreversible findings in one area now **stop the loop and go to the user**, they do not silently license another round. (This is the endless-loop trap made visible: in a real run the same identity/role cluster produced a One-way almost every round for nine rounds because each was point-fixed instead of escalating the one architecture decision underneath.)
-3. **Bank cold-verified areas (so the loop can end).** An area whose One-way/Significant was fixed and then survived one **fully-cold** round with no new finding in it is **settled**, it stops gating. A genuinely *new, different* finding in that area later is graded fresh on its own merits, not counted as recurrence. This is the loop's memory at the judge layer: the reviewers stay cold (no memory, so they re-scrutinize), but the assessor remembers what has already been hammered and held, so a settled subsystem does not re-gate forever.
-4. **On convergence, produce the test-obligation list**: every Medium and Minor from the run, each with the behavior a test must pin and the area it belongs to. Reversible findings are closed by code + tests, not by more rounds.
+1. **Apply the tier -> behavior rules** (below) to decide the verdict: another round, converged, or escalate. Only **One-way and Significant** findings gate convergence; Medium, Minor, and Not-an-issue do not.
+2. **Track the dry signal.** Deduplicate this round's gated findings against the full log and count the **new unique** ones. A round whose gated findings are all repeats of already-addressed items (or which has none) is a **dry round**, the strongest convergence evidence there is; per-round new-finding counts decaying to zero is how real audits end. Record the count in the sidecar every round.
+3. **Escalate a structurally unstable area, or a loop out of budget (hard stop).** Two triggers, same verdict:
+   - **Area instability:** the same area produces a **second** One-way *decision*, or a One-way in it will not stay settled across two rounds. The problem is that area's design; point-fix rounds cannot converge it.
+   - **Round cap:** the run reaches **round 5** without converging. The evidence on iterative review is unambiguous: gains concentrate in the first 2-3 passes, and past the plateau revision degrades more than it repairs, so a loop still finding gated issues at round 5 is not converging, something structural is wrong (an unstable design, a false premise, or reviewer noise), and burning rounds 6-10 point-fixing is the documented failure mode. The cap is a guardrail, not a target; most plans should converge in 2-3 rounds.
+   The assessor returns **`Escalate`**, naming the trigger (area + root cause, or cap-hit + what is still churning) and the decision the user must make (redesign vs documented risk-acceptance; or for a cap-hit: rework the plan, accept the residual explicitly, or authorize more rounds knowingly). Repeated irreversible findings or an exhausted budget **stop the loop and go to the user**, they do not silently license another round.
+4. **Bank cold-verified areas (so the loop can end).** An area whose One-way/Significant was fixed and then survived one **fully-cold** round with no new finding in it is **settled**, it stops gating. A genuinely *new, different* finding in that area later is graded fresh for *gating* purposes, **but the area's One-way count for the escalation test persists across banking**: banking stops an area from gating, it does not erase its history. (Without this, a hard subsystem oscillates forever: fix, clean round, bank, new One-way with the counter reset, repeat, a real run's identity cluster did exactly that, clearing twice and re-arming twice across nine rounds. The second One-way in an area escalates whether or not the area was banked in between.)
+5. **On convergence, produce the test-obligation list**: every Medium and Minor from the run, each with the behavior a test must pin and the area it belongs to. Reversible findings are closed by code + tests, not by more rounds.
 
-The assessor returns: the verdict (`Another round`, `Converged`, or `Escalate`), any escalation (area + root cause + the decision for the user), the areas banked settled this round, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log. On `Escalate`, **you stop the loop** and put that architecture decision to the user per the trade-off rule, you do not run another point-fix round hoping the area settles itself.
+The assessor returns: the verdict (`Another round`, `Converged`, or `Escalate`), the round's new-unique-gated-findings count, any escalation (trigger + root cause + the decision for the user), the areas banked settled this round, and (if converged) the test-obligation list. It is cold (made no fixes) and is the only role permitted to read the whole log. On `Escalate`, **you stop the loop** and put that decision to the user per the trade-off rule, you do not run another point-fix round hoping the area settles itself.
 
 ### Tier -> behavior
 
-- **One-way:** always another round until settled; never deferred (you cannot push an irreversible decision to "fix in code later"). But a **second** One-way in the same area, or one that will not stay settled across two rounds, is no longer "just another round", the assessor returns **`Escalate`** and the loop stops for a user architecture decision (assessor item 2). A One-way fixed once and then clean through a fully-cold round is settled (item 3) and stops gating.
-- **Significant:** always another round (big enough to verify in the plan), then settled once a fully-cold round finds nothing new in that area (item 3). Never deferred. Repeated Significant *defects* in one area (roughly a third recurrence) mean stop re-fixing in prose, pin the behavior with a test obligation and note a simplification; repeated One-way *decisions* in one area escalate (item 2).
+- **One-way:** always another round until settled; never deferred (you cannot push an irreversible decision to "fix in code later"). But a **second** One-way in the same area, or one that will not stay settled across two rounds, is no longer "just another round", the assessor returns **`Escalate`** and the loop stops for a user architecture decision (assessor item 3). A One-way fixed once and then clean through a fully-cold round is settled (item 4) and stops gating, though its area keeps its escalation count.
+- **Significant:** always another round (big enough to verify in the plan), then settled once a fully-cold round finds nothing new in that area (item 4). Never deferred. Repeated Significant *defects* in one area (roughly a third recurrence) mean stop re-fixing in prose, pin the behavior with a test obligation and note a simplification; repeated One-way *decisions* in one area escalate (item 3).
 - **Medium:** does **not** gate convergence. Fix it in the plan if the fix is cheap and local, and add it to the **test obligations** regardless, a reversible correctness bug is closed by a deterministic test at implementation, not by looping the plan. A round whose only findings are Mediums converges.
 - **Minor:** does not gate. Fix if trivial, otherwise note it; it also goes on the test-obligation / backlog list. Never forces a round.
+- **Not-an-issue:** does not gate, is not fixed, is not a test obligation. Sidecar record only.
 
-There is **no recurrence count and no K threshold.** Mediums and Minors never extend the loop. (A per-area count was an endless-loop vector: a stream of new Mediums in fresh areas never reaches a threshold, so the loop never converges. Reversible findings belong in tests, not in another prose round.)
+**Mediums and Minors carry no recurrence count and no K threshold**, they never extend the loop, no matter how many accumulate or recur (a per-area Medium count was an endless-loop vector: a stream of new Mediums in fresh areas never reaches a threshold, so the loop never converges; reversible findings belong in tests, not in another prose round). The **only** counted things are One-way recurrence per area and the round number, both of which trigger `Escalate`, a hard stop to the user, never another automatic round.
 
 ### Convergence
 
-A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums and Minors remain, and those do not gate (they become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass (which, if clean, also banks the area as settled per assessor item 3).
+A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums, Minors, and Not-an-issues remain, and those do not gate (Mediums/Minors become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass (which, if clean, also banks the area as settled per assessor item 4). A dry round (no new unique gated findings) that is also clean of open One-way/Significant is the ideal convergence: the loop ended because the finding stream ran dry, not because anyone got tired.
 
-State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live), `Converged`, or `Escalate` (with the area, root cause, and the architecture decision for the user). On `Escalate`, stop the loop and put that decision to the user per the trade-off rule, do not run another point-fix round in the hope the area settles itself.
+The whole loop is bounded: expect convergence in **2-3 rounds** (that is where iterative review's gains concentrate); the assessor escalates at **round 5** if the loop is still open (its item 3). There is no silent round 6.
+
+State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live), `Converged`, or `Escalate` (with the trigger, root cause, and the decision for the user). On `Escalate`, stop the loop and put that decision to the user per the trade-off rule, do not run another point-fix round in the hope the area settles itself.
 
 This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it does not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the assessor owns the exit decision directly, and cold-start holds across rounds because each round spawns fresh reviewer sub-agents fed only the plan, with the sidecar withheld.
 
@@ -235,13 +249,16 @@ Every round (converged or not), append a numbered entry to the **sidecar** at `c
 ## Round [N], [date]
 
 ### Findings (graded)
-- [Each finding: tier, area, one-line reason, and how it was fixed or deferred to a test]
+- [Each finding: tier, area, one-line reason, and how it was fixed, deferred to a test, or refuted (Not-an-issue, with the refuting evidence). Note any finding dropped at the quote check.]
 
 ### Assessor verdict
-- Converged / Another round. [If converged, the test-obligation list. If another round, which One-way/Significant items are still live.]
-- [Any "design unstable, needs rework" flag and its area]
+- Converged / Another round / Escalate. [If converged, the test-obligation list. If another round, which One-way/Significant items are still live. If escalate, the trigger (area recurrence or round cap), root cause, and the decision put to the user.]
+- New unique gated findings this round: [N] (the dry signal; 0 across a clean round is the strongest convergence evidence)
+- Areas banked settled this round: [list, or none] · Per-area One-way counts so far: [area: N, ...]
 ```
+
+The verdict block is the assessor's memory across rounds (each round's assessor is a fresh spawn reading this file), so the banked areas, per-area One-way counts, and dry-signal counts **must** be recorded every round, they are state, not commentary.
 
 ## Re-invocation
 
-This workflow runs review rounds in an internal loop until the assessor returns `Converged`. There is no cap and no diagnostic gate. If the user later asks for another pass on an already-converged plan, run it; never argue that prior reviews should be sufficient or propose skipping ahead. Each round appends a numbered entry to the sidecar.
+This workflow runs review rounds in an internal loop until the assessor returns `Converged` or `Escalate` (the round-5 cap is one of Escalate's triggers, so the loop cannot run silently past its budget). If the user later asks for another pass on an already-converged plan, run it; never argue that prior reviews should be sufficient or propose skipping ahead. A user-requested extra pass starts a fresh budget. Each round appends a numbered entry to the sidecar.
