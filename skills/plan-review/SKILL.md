@@ -107,6 +107,8 @@ You do not gate whether the assessor runs. **It runs every round**: it owns the 
 
 **Edit surgically, never rewrite wholesale.** Apply each fix as a targeted edit to the specific section it concerns; do not regenerate whole sections or the whole plan to "clean it up". Wholesale rewrites silently drop constraints that live mid-document and undo earlier rounds' fixes (measured: whole-document regeneration loses roughly 3x more previously-settled content than scoped edits, and models progressively violate earlier constraints as turns accumulate). The churn where a fix re-breaks a prior fix is this failure mode.
 
+**The plan must read as a plan, never as a review artifact.** Write every fix as if the plan had always said it. No "Round 2 addition", no "(added per red-team finding)", no reviewer names, severity tiers, finding numbers, or changelog markers anywhere in the plan text — a reader of the finished plan must not be able to tell which parts came from review. All provenance (which round, which finding, which reviewer, why) belongs exclusively in the sidecar; that is what it is for. This is not just cleanliness: reviewers read the plan cold each round, so inline round markers leak the review history straight past the sidecar quarantine and prime the next pass. The only review-derived content the plan may ever carry is the consolidated `## Test Obligations` section and the one-word `Status` stamp written at convergence.
+
 After **every** stage's fixes and before the next lens, re-check what you just changed (you, inline, not a sub-agent: the next cold reviewer is the real un-biased catch; this just gets the obvious self-contradiction one step earlier and cheaper). Re-read each edited section against:
 
 - the other phases,
