@@ -24,6 +24,8 @@ In full scope, map the major modules/features against the tests that exist and r
 
 ## Part B, run the suite
 
+You are the **only** agent in this review permitted to execute project code — the other reviewers are restricted to read-only git inspection precisely so your suite run has the test database and any shared state to itself. Run the suite **once**, deliberately; do not re-run it speculatively.
+
 1. Determine the test command from `package.json` / `CLAUDE.md` and run the **full** suite. Report the exact command and the exact result (pass/fail counts, failing test names).
 2. If there is an e2e suite (e.g. Playwright) and the environment allows (a dev server / base URL is reachable), run it too. If it cannot run here, say so explicitly rather than claiming it passed.
 3. If tests fail, capture the output and determine whether the failure is caused by this branch (a real regression) or is pre-existing/environmental. Do not fix anything, report.

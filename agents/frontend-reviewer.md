@@ -12,6 +12,8 @@ You review UI code for quality, UX, and correctness. The task message tells you 
 
 **Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
 
+**Bash is read-only inspection for you: `git diff` / `git log` / `git show` and nothing that executes project code.** Never run the test suite, package scripts, builds, migrations, or seeds — the `testing-reviewer` is the only agent in this review that runs the suite. Two concurrent suite runs truncate the same shared test database under each other and corrupt both results, and every extra background command under multi-agent load is another chance for a lost result. Prefer the Read/Grep/Glob tools over shell equivalents for file access.
+
 ## Focus
 
 - **Component architecture:** single responsibility, appropriate hydration/island boundaries, server vs client rendering.

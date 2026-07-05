@@ -14,6 +14,8 @@ This lens requires a diff. If the task says **full scope**, return immediately w
 
 **Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
 
+**Bash is read-only inspection for you: `git diff` / `git log` / `git show` and nothing that executes project code.** Never run the test suite, package scripts, builds, migrations, or seeds — the `testing-reviewer` is the only agent in this review that runs the suite. Two concurrent suite runs truncate the same shared test database under each other and corrupt both results, and every extra background command under multi-agent load is another chance for a lost result. Prefer the Read/Grep/Glob tools over shell equivalents for file access.
+
 Skip pure formatting, whitespace, and rename-only deletions. For each **substantive** deletion (deleted function, switch case, guard clause, log call, ref assignment, error handler, side-effect line, CLAUDE.md section, a comment marked "do not remove" or "load-bearing"), run three checks:
 
 1. **Reference check:** grep the rest of the codebase (including docs, plans, comments) for the deleted symbol or string. If anything outside the diff still references it, the deletion likely broke a caller or a documented convention.
