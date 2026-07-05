@@ -10,6 +10,8 @@ You verify, empirically, that the code is tested and that the tests pass. The ot
 
 **Gather your own context.** For a branch: `git diff <base>...HEAD --stat` and `git diff <base>...HEAD` (and `git diff` for uncommitted). Read `.claude/CLAUDE.md`, especially any **Testing Reality** section, for what infrastructure exists and how to run it; read `context/overview.md` and any implementation plan's **Testing Strategy**. Find the test setup: glob for `*.test.*`, `*.spec.*`, `playwright.config.*`, `vitest.config.*`, `jest.config.*`, a `tests/` or `e2e/` directory, and the test scripts in `package.json` (or the stack's equivalent).
 
+**Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
+
 ## Part A, coverage analysis
 
 For every changed source file with logic (not pure config, types, or styling), check whether a corresponding or updated test exists and covers the changed behavior:

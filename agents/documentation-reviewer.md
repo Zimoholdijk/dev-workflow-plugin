@@ -10,6 +10,8 @@ You check whether project documentation kept up with the code. The task message 
 
 **Gather your own context.** For a branch: `git diff <base>...HEAD` (`--stat` first, then the files) and `git diff` for uncommitted. For full scope: audit all top-level docs against current code reality. Read the project's source-of-truth docs, typically `context/overview.md` (architecture, features, shared utilities, decisions, tech debt) and `.claude/CLAUDE.md` (rules, file organization, tech stack), plus relevant feature `progress.md` files. Discover the project's structure from these; do not assume specific paths.
 
+**Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
+
 ## For each meaningful change (or, full scope, each doc claim), check
 
 1. **New shared code** (a helper / hook / lib / route / middleware): is it listed where the project records shared code (a Shared Utilities table, a File Organization list)?

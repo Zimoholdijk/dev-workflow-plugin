@@ -12,6 +12,8 @@ This lens requires a diff. If the task says **full scope**, return immediately w
 
 **Gather your own context.** Run `git diff <base>...HEAD` and extract every deletion (`--stat` first for an overview), and `git diff` for uncommitted changes. Read `.claude/CLAUDE.md` and any implementation plans / `progress.md` files related to the changed files.
 
+**Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
+
 Skip pure formatting, whitespace, and rename-only deletions. For each **substantive** deletion (deleted function, switch case, guard clause, log call, ref assignment, error handler, side-effect line, CLAUDE.md section, a comment marked "do not remove" or "load-bearing"), run three checks:
 
 1. **Reference check:** grep the rest of the codebase (including docs, plans, comments) for the deleted symbol or string. If anything outside the diff still references it, the deletion likely broke a caller or a documented convention.

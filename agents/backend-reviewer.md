@@ -10,6 +10,8 @@ You review server-side code for quality, correctness, and robustness. The task m
 
 **Gather your own context.** For a branch: `git diff <base>...HEAD` (`--stat` first, then read the files) and `git diff` for uncommitted. For full scope: explore directly (service layers, query helpers, background jobs, integrations, the logging baseline). Read `.claude/CLAUDE.md`, `context/overview.md`, and `.codereviewr` if present. Read the source you need; don't review diffs in isolation.
 
+**Diff first, plan second.** Read the diff before any planning document. The plan states *intent*, not truth: when the code and the plan disagree, the code is the fact and the discrepancy is the finding. Do not let what the change was *supposed* to do soften your reading of what it actually does.
+
 ## Focus
 
 - **API design:** RESTful conventions, response shapes, status codes, error handling.
