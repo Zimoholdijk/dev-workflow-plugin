@@ -40,6 +40,8 @@ What to rely on (plan-review owns the mechanics):
 - **Test obligations land in the plan.** At convergence, everything review deferred to code+tests is written into `implementation-plan.md` as a `## Test Obligations` section plus per-phase references. Stage 4 (`/implement-plan`) is required to fulfil them, so nothing deferred is silently lost.
 - **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md` with the round's graded findings and the assessor's verdict; the plan status is set to "Reviewed" once converged.
 
+plan-review's interactive round-3 design checkpoint does not fire here (there is no user to discuss with overnight); a loop still open after round 3 runs straight on toward the cap, and any design question arrives via the escalation path below.
+
 **If the assessor returns `Escalate`** (a recurring One-way area, an unsettleable One-way, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds).
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Multi-stage plan review that loops to convergence, bounded at 5 rounds. Establishes the plan's load-bearing premises first; cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues, each mechanically quote-checked; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor or discards it as Not-an-issue with evidence (only an irreversible decision is One-way, not every bug near auth); the orchestrator fixes everything surgically; a cold assessor runs every round, tracks the dry signal, defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / escalate (a structurally unstable area or the round cap goes to the user instead of looping). Use when an implementation or refactoring plan needs rigorous review before execution.
+description: Multi-stage plan review that loops to convergence, bounded at 5 rounds. Establishes the plan's load-bearing premises first; cold reviewers (clarifying-questions, deep-critique, adversarial red-team) find issues, each mechanically quote-checked; a cold grader rates each by reversibility and blast radius into One-way / Significant / Medium / Minor or discards it as Not-an-issue with evidence (only an irreversible decision is One-way, not every bug near auth); the orchestrator fixes everything surgically; a cold assessor runs every round, tracks the dry signal, defers reversible items to test obligations, banks areas that held through a cold pass, and decides converge / another-round / escalate (a structurally unstable area or the round cap goes to the user instead of looping). In interactive runs, a loop still open after round 3 pauses for a plain-language design checkpoint (recurring churn usually means an over-complicated design; one simplification conversation beats two more point-fix rounds). Use when an implementation or refactoring plan needs rigorous review before execution.
 disable-model-invocation: false
 argument-hint: "[path to plan file]"
 ---
@@ -228,11 +228,24 @@ The assessor returns: the verdict (`Another round`, `Converged`, or `Escalate`),
 
 A plan is **converged** on a round with **no open One-way and no Significant**, only Mediums, Minors, and Not-an-issues remain, and those do not gate (Mediums/Minors become test obligations). A round that made any One-way or Significant change is never the last round: that change must be verified by a clean cold pass (which, if clean, also banks the area as settled per assessor item 4). A dry round (no new unique gated findings) that is also clean of open One-way/Significant is the ideal convergence: the loop ended because the finding stream ran dry, not because anyone got tired.
 
-The whole loop is bounded: expect convergence in **2-3 rounds** (that is where iterative review's gains concentrate); the assessor escalates at **round 5** if the loop is still open (its item 3). There is no silent round 6.
+The whole loop is bounded: expect convergence in **2-3 rounds** (that is where iterative review's gains concentrate); the assessor escalates at **round 5** if the loop is still open (its item 3). There is no silent round 6. In interactive runs, a loop still open after round 3 first pauses for the design checkpoint below before spending rounds 4-5.
 
 State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live), `Converged`, or `Escalate` (with the trigger, root cause, and the decision for the user). On `Escalate`, stop the loop and put that decision to the user per the trade-off rule, do not run another point-fix round in the hope the area settles itself.
 
 This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it does not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the assessor owns the exit decision directly, and cold-start holds across rounds because each round spawns fresh reviewer sub-agents fed only the plan, with the sidecar withheld.
+
+## The round-3 design checkpoint (interactive runs)
+
+If the assessor returns `Another round` at the end of **round 3**, do not spawn round 4 yet. The first three rounds are where iterative review's gains live; a loop that still has gated findings after them is usually churning on a *design* problem — something over-complicated whose consequences the reviewers keep re-finding — and one plain-language conversation resolves that faster than two more point-fix rounds.
+
+Pause and run a `/discuss-plan`-style design checkpoint with the user:
+
+1. **Distill the pattern, not the findings list.** Read the sidecar (you are its writer; this breaks no reviewer cold-start) and work out which areas keep producing findings, what single design choice sits underneath them, and what a simpler shape would look like. Present it in plain language per the discuss-plan conventions: short, jargon glossed, one question at a time.
+2. **Put the simplification question directly:** "rounds 1-3 keep circling [area]; the root looks like [design choice]. Options: [simpler alternative] / [cut the scope] / [keep it and continue reviewing]." Genuine choices only — if round 3 was nearly dry and round 4 is plain mop-up, say exactly that and continue the loop without a discussion; the checkpoint is a circuit-breaker, not a ritual.
+3. **Record and apply.** Decisions go to `context/[Feature]/design-decisions.md` (the same file `discuss-plan` and `write-plan` use, so later rounds treat them as settled), the resulting plan edits are applied surgically and written as if the plan always said so (per the provenance rule), and the checkpoint itself is logged in the sidecar.
+4. **Resume at round 4 on the same budget** — the round-5 escalation cap still stands. If the redesign was substantial enough that the plan is effectively new, say so; the user can order a fresh review pass on the reshaped plan (a fresh budget, per the re-invocation rule) instead of spending rounds 4-5 re-reviewing a rewrite.
+
+**Unattended runs skip the checkpoint** — there is no user to discuss with. Under `overnight-delivery`, the loop proceeds straight to rounds 4-5 and the existing `Escalate` path carries any design question into the blocking tradeoff gate instead.
 
 ## On convergence: write obligations into the plan, then the sidecar
 
