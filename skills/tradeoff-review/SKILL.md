@@ -94,6 +94,7 @@ Which option?
 - If the user says "accept" or picks option 1, record it and move on.
 - If the user says "fix" or picks option 2+, note it as an action item.
 - If the user asks a clarifying question, answer it, then re-present the options.
+- If the user says "explain this", asks what a term means, or their answer suggests they are guessing rather than deciding, run `/explain-decision` on this tradeoff: it teaches the prerequisite concepts one confirmed message at a time and only then re-asks the decision. Resume the walk-through where you left off afterwards.
 - If the user says "skip" or "later", mark it as unresolved and move on.
 
 ## Step 4: Summary and action items
