@@ -155,8 +155,8 @@ not pre-commit fixes]
 [Your critical judgment on the surviving findings:
 - Which findings should definitely be fixed before committing?
 - Which are valid but acceptable for now (document why)?
-- Which contradict an explicit decision in the plan, CLAUDE.md, or a design-decisions
-  record (the reviewer missed existing context)?]
+- Which contradict an explicit decision in the plan's Architecture Decisions,
+  CLAUDE.md, or the tradeoff log (the reviewer missed existing context)?]
 
 ### Recommended actions
 [Numbered list of concrete changes to make, ordered by priority]

@@ -1,6 +1,6 @@
 ---
 name: discuss-plan
-description: Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, collects the agreed decisions, and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Sits between /write-prd and /write-plan to settle architecture before phasing, heading off later plan-review rounds. Takes a feature name or PRD path as argument.
+description: Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, writes the agreed decisions directly into the plan file's Architecture Decisions section (no separate design doc), and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Sits between /write-prd and /write-plan to settle architecture before phasing, heading off later plan-review rounds. Takes a feature name or PRD path as argument.
 disable-model-invocation: false
 argument-hint: "[feature name or path to PRD, e.g. 'Claiming' or 'context/Claiming/ClaimingPRD.md']"
 ---
@@ -25,7 +25,7 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree we key off the existing tenant id?") or a single open lean ("Which way do you lean on storing the snapshot?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation, researched first.** Describe 2-3 realistic options in flowing sentences, say which you lean toward and why, then let the user decide. But research the technical ones before you surface them (see Step 3): documented best practice often settles a trade-off outright, and the user should only adjudicate genuinely open choices. Never decide silently; never hand over a bare "A or B?" you could have researched.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **No em dashes in customer-facing copy** you draft. The discussion and the design doc are internal, em dashes there are fine.
+7. **No em dashes in customer-facing copy** you draft. The discussion and the plan file are internal, em dashes there are fine.
 8. **Architecture-decision altitude.** Discuss the shape of the solution: data model, contracts and API surface, auth and trust boundaries, how it integrates with existing code, error and edge-case strategy, performance at real data volumes, migration and rollback. Stay above the plan: no phase breakdown, no file-by-file list, no code (those are `/write-plan`'s job). Stay above the PRD too: do not reopen what or why; if a requirement seems wrong, flag it as a PRD question, do not redesign around it silently.
 
 ## Step 1: Ground yourself (silently, before the first message)
@@ -95,7 +95,7 @@ The Response Rules assume a user who can already parse "schema", "contract", and
 
 5. **Treat pushback as signal, and be honest.** When the user pokes a hole in an explanation, do not defend the tidy version. If they're right, say so plainly, correct the record, and give the more accurate (even if messier) model. A user who finds a real flaw has understood deeply; reward that with honesty, not reassurance. Never smooth over a genuine trade-off or oversell a design's safety.
 
-6. **Fold decisions and tangents in, don't lose them.** Surface each design trade-off with a plain-language framing, 2-3 options, and a recommendation with a lean, one at a time (never a bare "A or B?", same as Response Rule 5). When the user decides, acknowledge it crisply ("Decision: A locked") and move on. When a user tangent surfaces genuine new scope, capture it (a deferred note in the design doc, or a tracker ticket) rather than absorbing it silently or dropping it.
+6. **Fold decisions and tangents in, don't lose them.** Surface each design trade-off with a plain-language framing, 2-3 options, and a recommendation with a lean, one at a time (never a bare "A or B?", same as Response Rule 5). When the user decides, acknowledge it crisply ("Decision: A locked") and move on. When a user tangent surfaces genuine new scope, capture it (a deferred note under the plan's "Open / deferred to planning", or a tracker ticket) rather than absorbing it silently or dropping it.
 
 7. **Stay at architecture altitude even while teaching.** Tutor mode explains the *concepts behind* the design decisions; it does not descend into code, file paths, or phase breakdowns (those remain out of scope for this skill, per Response Rule 8). Teach just enough for the user to own the decision.
 
@@ -106,42 +106,36 @@ All other Response Rules hold while teaching: the 150-word cap (except the gloss
 When the topic list is exhausted, ask whether there is anything else to settle before planning. Then:
 
 1. **Decision summary.** One short table: Decision area | Choice | Basis (research citation, an established fact, or "product call"). This is the one place structure is allowed.
-2. **Write the design doc.** Save the agreed decisions to `context/[Feature]/design-decisions.md` (structure below). Create the feature directory if needed; it usually exists from PRD writing.
-3. **Handoff.** Suggest `/write-plan [Feature]` as the next step, noting that these decisions pre-fill the plan's Architecture Decisions already researched and grounded, so the plan-review rounds have less to raise.
+2. **Write the decisions into the plan file itself.** Seed `context/[Feature]/implementation-plan.md` with the agreed decisions as its `## Architecture Decisions` section (structure below); create the file if it doesn't exist, with `Status: Design settled — awaiting /write-plan` in its header. **No separate design-decisions file**: the decisions live in the one document the whole workflow reads, so `/write-plan` phases around them, reviewers see them as spec, and nothing needs syncing between two records. If a plan file already exists (a re-discussion, or a mid-review interlude), fold the decisions into its existing Architecture Decisions section — update superseded ADs in place, written as if the plan always said so.
+3. **Handoff.** Suggest `/write-plan [Feature]` as the next step, noting that the plan's Architecture Decisions are now pre-filled, researched, and grounded, so the plan-review rounds have less to raise.
 
-Do not write the implementation plan inside this skill. The discussion ends at the design doc.
+Do not write phases, file changes, or testing strategy inside this skill. The discussion ends at the seeded Architecture Decisions.
 
-## Output: the design-decisions doc
+## Output: the Architecture Decisions seed
 
-Save to `context/[Feature]/design-decisions.md`:
+Written into `context/[Feature]/implementation-plan.md` (created if absent):
 
 ```markdown
-# [Feature]: Design Decisions
+# [Feature] — Implementation Plan
 
-> Pre-plan architecture decisions agreed before `/write-plan`. Feeds the plan's
-> Architecture Decisions. PRD: `context/[Feature]/[Feature]PRD.md`. Internal record.
+**Status:** Design settled — awaiting /write-plan · **PRD:** `context/[Feature]/[Feature]PRD.md`
 
-## Decisions
+## Architecture Decisions
 
-| # | Decision area | Choice | Basis | Reversibility |
-|---|---------------|--------|-------|---------------|
-| 1 | [e.g. claim storage] | [the choice agreed] | [citation / fact / product call] | [One-way / Reversible] |
-| ... | ... | ... | ... | ... |
+### AD-1: [decision area] ([one-way door / reversible])
 
-## Resolved by research
+[The choice agreed, in two or three sentences of prose. Basis: a research
+citation, an established fact (code / SQL / production, and how it was
+confirmed), or "product call".]
 
-- [decision]: [choice] per [official source]. [one line on why it's settled]
+### AD-2: ...
 
-## Facts established (code / SQL / production)
+## Open / deferred to planning
 
-- [fact the design relies on, and how it was confirmed]
-
-## Open / deferred to the plan
-
-- [anything intentionally left for `/write-plan` to detail, or out of scope for this feature]
+- [anything intentionally left for `/write-plan` to detail, or out of scope]
 ```
 
-Keep it prose and tables, no code. It is a decisions record, not a plan.
+Keep it prose, no code. The ADs are decisions records, not phase specs; `/write-plan` keeps their numbering and builds the rest of the plan around them.
 
 ## Notes
 

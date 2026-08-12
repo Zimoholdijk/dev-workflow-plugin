@@ -55,7 +55,7 @@ Present the decision as a single question with numbered options. Use the AskUser
 
 ## Step 7: Record
 
-Record the outcome wherever the surrounding workflow records decisions: inside `/tradeoff-review`, that is `progress.md` under "Trade-off Decisions" (with the decision and one-line rationale); inside a plan review or discuss-plan flow, the file that flow already writes (`design-decisions.md`, the plan's AD section). Standalone, state the decision back in one line so it exists in the conversation record.
+Record the outcome wherever the surrounding workflow records decisions: inside `/tradeoff-review`, that is `progress.md` under "Trade-off Decisions" (with the decision and one-line rationale); inside a plan review or discuss-plan flow, the plan's own Architecture Decisions section (the file those flows already write). Standalone, state the decision back in one line so it exists in the conversation record.
 
 ## Forbidden (anti-patterns, each observed in real transcripts)
 

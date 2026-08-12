@@ -43,7 +43,7 @@ Report only what you can defend:
 - **Every finding must carry Evidence: a short verbatim quote of the offending line(s), copied exactly from the diff or the file.** The orchestrator mechanically greps your quote; if it does not match, the finding is dropped. Paraphrases and line numbers alone do not survive.
 - **Do not report speculative findings.** If you cannot point to concrete evidence that the issue is real in *this* code, leave it out; better to miss a theoretical issue than flood the report. Style opinions and theoretical concerns with no demonstrated impact are not findings.
 - **Mark Pre-existing: yes on any finding the diff did not introduce** (branch scope). It is routed to a separate bucket, not mixed in with the branch findings.
-- **Do not re-litigate recorded decisions.** If `context/*/design-decisions.md`, a tradeoff log, or CLAUDE.md records the team already deciding this exact trade-off, it is not a finding.
+- **Do not re-litigate recorded decisions.** If the plan's Architecture Decisions, a tradeoff log, or CLAUDE.md records the team already deciding this exact trade-off, it is not a finding.
 
 **Orientation is bounded; the findings are the deliverable.** Reading the code is how you ground the review, not the goal. Read what the scope touches, then stop reading and write. Do **not** narrate orientation and trail off ("let me check a few more items…") without returning anything — deliver your **complete** review in a **single** response, and keep turn budget in reserve for writing it. A delivered review that is slightly less thorough beats a thorough pass that never arrives.
 
