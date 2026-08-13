@@ -1,6 +1,6 @@
 ---
-name: junior-review
-description: Spawn the junior-reviewer sub-agent to ask clarifying questions about a plan, PR, or piece of work. Use when you want to surface ambiguity, missing steps, and edge cases before implementation.
+name: clarifying-review
+description: Spawn the clarifying-reviewer sub-agent to ask clarifying questions about a plan, PR, or piece of work. Use when you want to surface ambiguity, missing steps, and edge cases before implementation.
 disable-model-invocation: false
 argument-hint: "[path to plan or file to review]"
 ---
@@ -20,7 +20,7 @@ Gather context that the reviewer will need. Read:
 
 ## Run the review
 
-Spawn the `junior-reviewer` sub-agent. In your prompt, include:
+Spawn the `clarifying-reviewer` sub-agent. In your prompt, include:
 1. The full text of the file to review (if it carries a Review Log or prior-review section, strip it, the reviewer evaluates the work cold, not the history of how it was reviewed)
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
@@ -29,4 +29,4 @@ Spawn the `junior-reviewer` sub-agent. In your prompt, include:
 
 ## After the review
 
-Present the junior reviewer's questions to the user. For each question, briefly note whether you think it's a valid concern or not, and suggest how to address it if applicable. Let the user decide what to act on.
+Present the reviewer's questions to the user. For each question, briefly note whether you think it's a valid concern or not, and suggest how to address it if applicable. Let the user decide what to act on.

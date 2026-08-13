@@ -1,6 +1,6 @@
 ---
-name: senior-review
-description: Spawn the senior-reviewer sub-agent to review a plan, PR, or architecture decision for architectural fit, scope creep, risk, and alignment with project goals.
+name: deep-critique-review
+description: Spawn the deep-critique-reviewer sub-agent to review a plan, PR, or architecture decision for architectural fit, scope creep, risk, and alignment with project goals.
 disable-model-invocation: false
 argument-hint: "[path to plan or file to review]"
 ---
@@ -20,7 +20,7 @@ Gather context that the reviewer will need. Read:
 
 ## Run the review
 
-Spawn the `senior-reviewer` sub-agent. In your prompt, include:
+Spawn the `deep-critique-reviewer` sub-agent. In your prompt, include:
 1. The full text of the file to review (if it carries a Review Log or prior-review section, strip it, the reviewer evaluates the work cold, not the history of how it was reviewed)
 2. The full text of the project overview
 3. The full text of the project CLAUDE.md rules
@@ -29,7 +29,7 @@ Spawn the `senior-reviewer` sub-agent. In your prompt, include:
 
 ## After the review
 
-Present the senior reviewer's feedback to the user, structured as:
+Present the reviewer's feedback to the user, structured as:
 1. **Strongest reason to reject** (stated before the verdict, per the reviewer's format)
 2. **Verdict** (Approve / Approve with changes / Request changes)
 3. **Critical issues**: with your take on each (each should carry a `file:line` or quoted-line citation)

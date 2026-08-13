@@ -17,7 +17,7 @@ You are the **orchestrator**. You run the loop and you fix the plan, but you do 
 
 | Role | Job | Cold to |
 |------|-----|---------|
-| **Reviewers** (junior, senior, red-team) | Find issues, one cold lens at a time. | The review history (never see the sidecar). |
+| **Reviewers** (clarifying, deep-critique, red-team) | Find issues, one cold lens at a time. | The review history (never see the sidecar). |
 | **Grader** | After each reviewer, rate every finding into a tier and tag it with an area, by the rubric below. | The cost of fixing. Does not decide fix-vs-defer; everything gets fixed. |
 | **Orchestrator (you)** | Fix everything surfaced, run the self-consistency pass, write the sidecar, and on convergence write the test obligations into the plan. | Severity and stopping. You may *escalate* a grade or record a disagreement, but never silently *downgrade* a finding to make it stop mattering. |
 | **Assessor** | Runs **every round**. The only agent holding the full log. Defers reversible items to tests, banks areas that held through a cold pass, tracks new-unique findings per round, makes the converge / another-round / escalate call (only One-way/Significant gate; a recurring One-way area or the round cap escalates to the user). | A bias toward finishing (it made no fixes). History-aware by design. |
@@ -33,7 +33,7 @@ Every reviewer, in every stage and every round, reviews the plan **cold**. Pass 
 
 **The review log lives in a sidecar file, not in the plan.** All review history is written to `context/[Feature]/review-log.md`, never appended to `implementation-plan.md`. This is structural: reviewers have Read/Glob/Grep and are told to orient in the codebase, so if the log lived in the plan they could read last round's conclusions even when you don't hand them the log. The reviewer agents are also instructed never to open a `review-log` or prior-review file, and you must not point them at one.
 
-Why it matters: letting a reviewer learn that part of the plan was "already addressed" anchors it to treat that part as settled, so it stops scrutinizing exactly where prior rounds drew their conclusions. A cold reviewer re-examines those conclusions and routinely finds issues a primed reviewer rubber-stamps. This holds **within** a run (senior and red-team do not see the junior's exchange) and **across** re-invocations (round 2+ sees the plan, not the history). The **grader** and the **assessor** are different: the grader sees one reviewer's findings + the plan (no history); the assessor is the designated holder of the log and reads all of it, that is its job, not a leak.
+Why it matters: letting a reviewer learn that part of the plan was "already addressed" anchors it to treat that part as settled, so it stops scrutinizing exactly where prior rounds drew their conclusions. A cold reviewer re-examines those conclusions and routinely finds issues a primed reviewer rubber-stamps. This holds **within** a run (deep-critique and red-team do not see the clarifying stage's exchange) and **across** re-invocations (round 2+ sees the plan, not the history). The **grader** and the **assessor** are different: the grader sees one reviewer's findings + the plan (no history); the assessor is the designated holder of the log and reads all of it, that is its job, not a leak.
 
 ## Severity rubric (the grader's reference)
 
@@ -98,8 +98,8 @@ Record these as a short **Premises** note and pass them to every reviewer and th
 
 Each round is: three cold lenses, each immediately graded, with you fixing after each; then the assessor. Concretely:
 
-1. **Junior** reviews (cold) -> **grader** grades + tags the junior's findings -> **you** fix them -> **self-consistency pass**.
-2. **Senior** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
+1. **Clarifying-questions** lens reviews (cold) -> **grader** grades + tags its findings -> **you** fix them -> **self-consistency pass**.
+2. **Deep-critique** lens reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 3. **Red-team** reviews (cold) -> grader grades + tags -> you fix -> self-consistency.
 4. **Quality and conformance pass** (you): a self-check for repetition smell, test coverage, and CLAUDE.md conformance; route anything substantive through the grader.
 5. **Assessor** runs: reads the full log, applies the tier -> behavior rules, decides converge, another round, or escalate, and (on convergence) produces the test-obligation list for you to write into the plan.
@@ -119,7 +119,7 @@ After **every** stage's fixes and before the next lens, re-check what you just c
 - the Architecture Decisions,
 - any invariant stated elsewhere in the plan.
 
-Fix the contradictions you find, then re-check those follow-on fixes. The dominant source of churn is a fix that introduces a regression the next cold lens then spends a whole round catching; catching your own contradiction here is cheaper. After the red-team stage (no lens follows it that round), next round's cold junior is the backstop.
+Fix the contradictions you find, then re-check those follow-on fixes. The dominant source of churn is a fix that introduces a regression the next cold lens then spends a whole round catching; catching your own contradiction here is cheaper. After the red-team stage (no lens follows it that round), next round's cold clarifying pass is the backstop.
 
 ## Grading a reviewer's findings (the grader)
 
@@ -158,18 +158,18 @@ So as you address each finding:
 
 **Unattended exception.** When this loop runs inside an unattended pipeline (e.g. `/overnight-delivery`), you cannot stop for each answer. There, apply only the evidence-resolved One-way/Significant calls in-loop (with citations), and accumulate the genuine choices for that pipeline's trade-off gate instead of blocking mid-loop.
 
-## Stage 1: Clarifying-Questions Review (junior-reviewer)
+## Stage 1: Clarifying-Questions Review (clarifying-reviewer)
 
-Spawn the `junior-reviewer` sub-agent. In your prompt include the plan, overview, project CLAUDE.md, any PRD, a summary of the relevant codebase state, and:
+Spawn the `clarifying-reviewer` sub-agent. In your prompt include the plan, overview, project CLAUDE.md, any PRD, a summary of the relevant codebase state, and:
 
-- **Orientation instruction.** The junior has Read, Glob, Grep. Tell it: before asking anything, orient like a day-one engineer, open the files and directories the plan touches and the patterns it references. A question the orientation would answer ("what props does X take?") is noise; a question that survives it is signal ("the plan reuses pattern X from `routeZ.tsx:42`, but X is inline-defined and not exported, export, move, or duplicate?"). Cite file paths.
+- **Orientation instruction.** The reviewer has Read, Glob, Grep. Tell it: before asking anything, orient like a day-one engineer, open the files and directories the plan touches and the patterns it references. A question the orientation would answer ("what props does X take?") is noise; a question that survives it is signal ("the plan reuses pattern X from `routeZ.tsx:42`, but X is inline-defined and not exported, export, move, or duplicate?"). Cite file paths.
 - **Testing instruction.** As part of orientation, check how the project tests today (`*.test.*`, `*.spec.*`, `playwright.config.*`, a `tests/`/`e2e/` dir, test scripts in `package.json`). For each phase adding logic, ask "how will I know this works, and what test proves it?" Flag any phase adding non-trivial logic with no named test, any critical flow with only a manual check, and any assumed-but-absent test infrastructure.
 
 Then grade its findings (the grader), fix them, self-consistency.
 
-## Stage 2: Deep-Critique Review (senior-reviewer)
+## Stage 2: Deep-Critique Review (deep-critique-reviewer)
 
-Spawn the `senior-reviewer` cold (do not include the junior's exchange; an independent re-hit is signal, not waste). Include the plan, overview, CLAUDE.md, PRD, and these required axes:
+Spawn the `deep-critique-reviewer` cold (do not include the clarifying stage's exchange; an independent re-hit is signal, not waste). Include the plan, overview, CLAUDE.md, PRD, and these required axes:
 
 - **Axis 9, repetition/factoring smell.** Grep the plan's prose for near-identical branch descriptions (verb + object recurring with only a literal/key/separator/metadata differing); flag as a structural issue and sketch the unified path. Cannot pass without explicitly grading this.
 - **Axis 10, framework-idiom.** For SQL/RLS/ORM/hooks/middleware or any third-party-governed shape, verify the pattern appears in that tool's **official** docs (the framework's own site, not blogs/SO). A pattern that implements the spec but has no documented analog is a red flag. If unsure, run `/research`.
@@ -182,7 +182,7 @@ Then grade its findings, fix them, self-consistency.
 
 ## Stage 3: Red-Team (Adversarial) Review
 
-The junior and senior are cooperative and evaluative; neither's job is to *break* the plan. Spawn the `red-team-reviewer` cold against the current plan. Include the plan, overview, CLAUDE.md, PRD, a pointer to the real code it touches, and:
+The clarifying and deep-critique lenses are cooperative and evaluative; neither's job is to *break* the plan. Spawn the `red-team-reviewer` cold against the current plan. Include the plan, overview, CLAUDE.md, PRD, a pointer to the real code it touches, and:
 
 > Try to break this plan. Find the wrong assumption, the unhandled failure or partial-failure path, the edge/boundary case, the scale reality at real row counts, the race or data-integrity gap, and above all what the plan is *silent* about. Ground every attack in a `file:line` or quoted plan line, be concrete (a specific scenario, not "what if it's slow"), and don't fabricate weaknesses to look thorough. If you can't break it, say so and name the one or two most fragile spots. Rank by likelihood × blast radius and end with whether the plan has an unaddressed critical failure mode.
 
@@ -192,7 +192,7 @@ Then grade its findings, fix them, self-consistency.
 
 After the red-team stage and its fixes, self-check the plan before handing the round to the assessor (the plan is prose, so this is a read-through, not a code tool):
 
-- Verify yourself, do not rely solely on the senior: does any phase describe near-identical work differing only by a literal/key/separator/metadata (repetition smell)? Does every phase that adds logic name its tests, and are critical Verification flows automated rather than manual-only? Does the plan violate any CLAUDE.md rule (DRY, error handling, hardcoded values, scope creep)?
+- Verify yourself, do not rely solely on the deep-critique reviewer: does any phase describe near-identical work differing only by a literal/key/separator/metadata (repetition smell)? Does every phase that adds logic name its tests, and are critical Verification flows automated rather than manual-only? Does the plan violate any CLAUDE.md rule (DRY, error handling, hardcoded values, scope creep)?
 - Anything substantive you surface here, route it through the **grader** like a reviewer finding so it gets a tier and an area (One-way/Significant gate convergence; Medium/Minor become test obligations). Trivial conformance tidy-ups can be applied directly; either way, run the self-consistency pass on what you changed.
 
 ## The assessor (runs every round)

@@ -6,7 +6,7 @@
 
 ## 1. The problem this solves
 
-Iterative cold review (junior, senior, red-team, re-run each round) is excellent at
+Iterative cold review (clarifying, deep-critique, red-team, re-run each round) is excellent at
 *finding* issues but had no principled *stop*. On a real plan (artvintory CaptureCore)
 it ran 11 rounds: the architecture survived from round 7 on, but a single tightly
 coupled subsystem (the upload/reconcile concurrency state machine) kept producing a
@@ -41,7 +41,7 @@ Each role is cold where it needs to be, so no one grades or stops their own work
 
 | Role | Job | Cold to |
 |------|-----|---------|
-| **Reviewers** (junior, senior, red-team) | Find issues. Run sequentially, each on the current plan. | The review history. They never see the `review-log.md` sidecar, so a late round scrutinizes as hard as the first. |
+| **Reviewers** (clarifying, deep-critique, red-team) | Find issues. Run sequentially, each on the current plan. | The review history. They never see the `review-log.md` sidecar, so a late round scrutinizes as hard as the first. |
 | **Grader** | After each reviewer, grade every one of that reviewer's findings into a tier, and tag each with an area/topic label. | The cost of fixing. It rates by reversibility/significance, not by how annoying the fix is. It does **not** decide fix-vs-defer. |
 | **Orchestrator** | Fix everything the graders surfaced, regardless of tier. Run the inline self-consistency pass. Write the round to the sidecar. | Severity and stopping. It cannot grade, and it cannot decide convergence. |
 | **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge / another-round / **escalate** call (One-way and Significant gate; Medium and Minor become test obligations), **escalates to the user** when a One-way decision recurs or won't settle in one area, **banks areas fixed and held through a fully-cold pass** so they stop gating, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
@@ -243,7 +243,7 @@ Runs **after each stage's fixes**, before the next cold lens (so up to 3 times p
 Not a separate agent: the very next thing each pass precedes is a fresh cold reviewer,
 which is the real un-biased catch; the inline pass just catches the obvious self-
 contradiction one step earlier and cheaper. After the red-team stage (no lens follows it
-that round) the next round's cold junior is the backstop.
+that round) the next round's cold clarifying pass is the backstop.
 
 The orchestrator re-reads each section it just edited against:
 - the other phases,

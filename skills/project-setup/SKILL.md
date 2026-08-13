@@ -299,7 +299,7 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 
 ## Planning Workflow
 - When creating an implementation or refactoring plan, use `/plan-review` to run the multi-stage review workflow after drafting.
-- The workflow runs three reviewer lenses in sequence, a junior-reviewer (clarifying questions), a senior-reviewer (deep critique with cited findings), and a red-team-reviewer (adversarial, tries to break the plan), followed by a quality/conformance check.
+- The workflow runs three reviewer lenses in sequence, a clarifying-reviewer (clarifying questions), a deep-critique-reviewer (deep critique with cited findings), and a red-team-reviewer (adversarial, tries to break the plan), followed by a quality/conformance check.
 - Sub-agents receive full project context (CLAUDE.md, overview, PRDs), treat them as team members with zero prior knowledge of the project.
 - The main agent exercises critical judgement on all feedback: apply it or document why not. Sub-agents are advisory, not authoritative.
 - Use judgement on when to invoke the full workflow. It's valuable for plans spanning 3+ files or involving schema/architecture changes. Skip for trivial changes.
@@ -335,8 +335,8 @@ Check that these companion skills are available (as personal skills in `~/.claud
 | `doc-audit` | Documentation vs. codebase audit | After implementation |
 | `overnight-delivery` | End-to-end PRD-to-code pipeline | Full feature delivery |
 | `tradeoff-review` | Walk through trade-offs one by one | During review gates |
-| `junior-review` | Sub-agent: clarifying-questions pass | Used by plan-review |
-| `senior-review` | Sub-agent: deep-critique pass (cited findings) | Used by plan-review |
+| `clarifying-review` | Sub-agent: clarifying-questions pass | Used by plan-review |
+| `deep-critique-review` | Sub-agent: deep-critique pass (cited findings) | Used by plan-review |
 | `red-team-review` | Sub-agent: adversarial pass that tries to break the plan | Used by plan-review |
 
 If any are missing, inform the user which skills are not installed and what workflow steps will be unavailable.
