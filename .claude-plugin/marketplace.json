@@ -2,7 +2,7 @@
   "name": "dev-workflow-marketplace",
   "description": "Personal marketplace hosting the dev-workflow plugin",
   "owner": {
-    "name": "Abdulazim Holdijk",
+    "name": "Zimo Holdijk",
     "email": "zimoholdijk@gmail.com"
   },
   "plugins": [
