@@ -106,6 +106,8 @@ Each round is: three cold lenses, each immediately graded, with you fixing after
 
 You do not gate whether the assessor runs. **It runs every round**: it owns the convergence decision and is the only holder of the full log, so it is also where recurring One-way findings in one area get noticed and turned into an escalation instead of another round.
 
+**Partial and missing returns.** Any spawned role (a lens, the grader, the assessor) that returns marked partial, or ends on an orientation narrative with no output, has not delivered. Resume that same agent once with "No more reads. Write your complete output, in your output format, from what you have already read." If it cannot be resumed or the resumed message is still empty, re-spawn it cold once. Never grade in the grader's place, assess in the assessor's place, or skip a lens because its run stalled; if the second attempt also fails, stop the round and tell the user which role could not deliver.
+
 ## Self-consistency: consolidate fixes before the next lens
 
 **Edit surgically, never rewrite wholesale.** Apply each fix as a targeted edit to the specific section it concerns; do not regenerate whole sections or the whole plan to "clean it up". Wholesale rewrites silently drop constraints that live mid-document and undo earlier rounds' fixes (measured: whole-document regeneration loses roughly 3x more previously-settled content than scoped edits, and models progressively violate earlier constraints as turns accumulate). The churn where a fix re-breaks a prior fix is this failure mode.

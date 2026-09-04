@@ -31,6 +31,8 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, set
 
 All defined roles live in `agents/`, so skills spawn named sub-agents (consistent prompt, explicit model, restricted tools) rather than ad-hoc inline ones.
 
+Every agent carries a hard `maxTurns` and a shared budget rule: a turn is one message, not one tool call, so independent reads are batched; reading stops at a numeric reserve (five turns before the cap) and the remaining turns go to writing; and the complete result ships in a single final message, because nothing said before it reaches the caller. The spawning skills handle the other side: a run that comes back partial is resumed once with "no more reads, write what you have", then re-spawned once, and only then reported as not delivered, never silently dropped.
+
 **Plan-review** (red-team-reviewer on Opus; clarifying-reviewer, deep-critique-reviewer, grader, and assessor on Sonnet 5):
 
 | Agent | Purpose |
@@ -58,7 +60,7 @@ All defined roles live in `agents/`, so skills spawn named sub-agents (consisten
 
 | Agent | Purpose |
 |-------|---------|
-| `researcher` (Opus) | Docs-first, cited, recommendation-first answer to a technical question, grounded in the project's stack and versions. Used by `research` |
+| `researcher` (Opus) | Docs-first, cited, recommendation-first answer to one objective (at most three questions from one documentation source), grounded in the project's stack and versions. Budgets in tool calls, checkpoints each answered question to a findings file outside the repo so a turn-cap stop still returns the finished work. Used by `research` |
 | `doc-auditor` (Opus) | Audits docs against the code, change-scoped or full. Used by `doc-audit` |
 
 ### Bundled MCP servers

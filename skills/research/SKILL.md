@@ -34,19 +34,21 @@ These are non-negotiable:
 
 Before spawning anything, pin down what's actually being asked and assemble what the sub-agent needs (it has no prior knowledge of this project):
 
-1. **State the question precisely.** If the user's phrasing is broad, narrow it to the decision actually in front of you. Split a compound question into separate questions if they'd be researched differently.
-2. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / `prisma/schema.prisma` to learn exactly which tools and which versions are in play. Name them explicitly; "Supabase" alone is not enough, note the client/library versions and whether it's RLS, Auth, Storage, Edge Functions, etc.
-3. **Read the project context** the answer must fit: `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, and the specific PRD / implementation plan / `progress.md` the question arose from.
-4. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
-5. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a Supabase MCP with a `search_docs` tool, or a docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
+1. **State the question precisely.** If the user's phrasing is broad, narrow it to the decision actually in front of you.
+2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do I deploy an edge function, what can the Deno runtime do, and how do I path-filter the workflow" is Supabase CLI docs, Deno docs, and GitHub Actions docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
+3. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / `prisma/schema.prisma` to learn exactly which tools and which versions are in play. Name them explicitly; "Supabase" alone is not enough, note the client/library versions and whether it's RLS, Auth, Storage, Edge Functions, etc.
+4. **Read the project context** the answer must fit: `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, and the specific PRD / implementation plan / `progress.md` the question arose from.
+5. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
+6. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a Supabase MCP with a `search_docs` tool, or a docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
 
 ## Step 2: Spawn the researcher agent
 
-Spawn the `researcher` sub-agent (it carries the docs-first methodology and output format, and has web search/fetch plus read access to the repo and connected MCP doc tools). For multiple distinct questions, spawn one `researcher` per question in a single message so they run in parallel.
+Spawn the `researcher` sub-agent (it carries the docs-first methodology, its own turn budget, and the output format, and has web search/fetch plus read access to the repo and connected MCP doc tools). For multiple objectives (per the split rule in Step 1), spawn one `researcher` per objective in a single message so they run in parallel.
 
 You do not need to restate the methodology; the agent owns it. Give it only the **task context** from Step 1:
 
-- **The question** (narrowed to the decision actually in front of you).
+- **The objective, as up to three numbered questions** (narrowed to the decision actually in front of you).
+- **A findings file path** the agent checkpoints into after each answered question. Put it outside the project tree, in the OS temp directory or the session scratchpad if one is provided (e.g. `/tmp/research/<slug>.md`), one path per agent. This is the safety net if the agent is cut off; it is not a deliverable and is never committed.
 - **Technologies and versions in play** (from `package.json` / `deno.json` / lockfiles / `prisma/schema.prisma`).
 - **Project stack and architecture** (from `overview.md`).
 - **Project rules and conventions** (relevant `CLAUDE.md` excerpts).
@@ -56,6 +58,8 @@ You do not need to restate the methodology; the agent owns it. Give it only the 
 The agent returns a recommendation-first, cited answer (Recommendation, Why, Tradeoffs, Fit check, Sources, Confidence and open questions).
 
 ## Step 3: Assess and synthesize
+
+**Partial or missing returns come first.** If the agent's result is marked partial (it hit its turn cap), or its final message is an orientation narrative with no answer, do not discard the run: read its findings file, which holds every question it finished, then resume the same agent once with "No more tool calls. Write the complete answer, in the output format, from your findings file and what you already read; list anything unanswered under open questions." If it cannot be resumed, or the resumed message is still empty, spawn a fresh researcher with only the unanswered questions and the findings file as its starting point. If an agent never returns at all, the likely cause is a hung web fetch: re-spawn it with the instruction to use the documentation tool and `WebSearch` only. Never present a stalled run as "no answer found".
 
 The sub-agent is advisory, not authoritative. When it returns:
 

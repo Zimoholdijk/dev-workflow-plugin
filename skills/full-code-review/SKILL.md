@@ -86,6 +86,8 @@ In **full** scope, spawn six: skip `regression-reviewer` (it needs a diff) and n
 
 ## Step 4: Mechanical quote gate and dedup (no judgment)
 
+**Partial and missing returns.** A reviewer that returns marked partial (it hit its turn cap) or ends on an orientation narrative with no findings has not delivered. Resume that same agent once with "No more reads. Write your complete review, in your output format, from what you have already read." Its resumed message is its review. If it cannot be resumed or the resumed message is still empty, re-spawn it once with the scope narrowed to the files it named; if that also fails, report the lens as **not delivered** in the final report rather than silently presenting a review without it. A reviewer that never returns at all is usually stuck on a hung web fetch; treat it the same way.
+
 When the reviewers return, run two purely mechanical filters yourself. These require no code comprehension, so they don't violate the no-pre-digestion rule:
 
 1. **Quote check.** Write `git diff <base>...HEAD` to a temp file once. For each finding, grep its Evidence quote with fixed-string matching (`grep -F`) first in that diff, then (if not found) in the cited file. Whitespace-insensitive matching is fine; paraphrase is not. A finding whose quote matches nothing goes to **Discarded (citation not found)**. Do not repair or reinterpret a failed quote on the reviewer's behalf.

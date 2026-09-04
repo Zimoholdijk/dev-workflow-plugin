@@ -35,6 +35,8 @@ Always run this pass (even for change-scoped, it catches drift that predates the
 
 Run the two passes in one message when both apply so they run in parallel. Each returns categorized findings (Section/File, Category, Finding, Suggested fix) and a verdict.
 
+**Partial and missing returns.** A pass that returns marked partial (turn cap) or ends without findings has not delivered. Resume it once with "No more reads. Write your complete findings, in your output format, from what you have already read." If that also yields nothing, re-spawn the pass once; if it fails again, report the pass as not delivered instead of presenting a consolidated result without it.
+
 ## Step 3: Consolidate and present
 
 Once both passes complete (or just the full pass for full audits), present consolidated results:

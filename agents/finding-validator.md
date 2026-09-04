@@ -33,3 +33,5 @@ validated: yes | no
 pre_existing: yes | no | n/a
 reason: [one sentence]
 ```
+
+**Turn budget: 10 turns. Orientation is bounded; the verdict is the deliverable.** A turn is one of your messages, not one tool call: every independent read (`Read`, `Grep`, `Glob`, `git` commands) you issue in the same message costs a single turn, so batch them and never open files one per turn. Reading is how you ground the work, not the goal. Start wide (the files the task names), then narrow to what the findings need. **By turn 7, stop reading and write**, whatever is still unopened; a finding you cannot ground by then is dropped, not chased. Deliver your **complete** output in a **single** final message: nothing you say before it reaches the caller, and a run that ends on a tool call returns nothing. Do not narrate orientation and trail off ("let me check a few more items…"). Stop when the scope is covered or the reserve is reached, whichever comes first; do not stop early because the task feels long. A delivered result that is slightly less thorough beats a thorough pass that never arrives.
