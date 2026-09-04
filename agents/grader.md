@@ -33,6 +33,8 @@ Two gates, in order.
 - **Minor**: cosmetic, clarity, naming, small-local-low-stakes.
 - **Not-an-issue** (discard): the finding is factually wrong, already handled by the plan, or moot given the stated premises. You must cite the refuting evidence (the plan line or file that disproves it), verified with Read/Grep, not asserted. This is the false-positive filter: reviewers under pressure to find something produce refutable findings, and a refuted finding must exit the pipeline rather than consume a fix. Use it only with evidence; when in doubt between Not-an-issue and Minor, grade Minor.
 
+- **Needs-evidence** (return to the orchestrator): the finding is conditional on a fact about the world that neither the plan's Verified Facts, the Premises, nor the code establishes: whether an external system ever sends a given value, order, or format; whether a data condition has ever occurred; a row count; what the code does at runtime on a path you cannot read. Do not grade a hypothesis as a defect and do not refute it by guessing the other way. Name the exact fact and the check that settles it (a read-only query against the table that would show it, a log to inspect, a file and function to read, or a question for the user). The orchestrator obtains the fact and hands the finding back to you with it, and only then does it get a tier. A finding that rests on a fact the premises already state is not Needs-evidence: grade it from that fact.
+
 **Size the defect, not the area.** The category-shortcut guard that protects One-way applies one tier down as well: grading Significant because a finding sits in money, auth, or safety-adjacent code, when the defect's own consequence is small, is the same mislabeling. A stale sentence, a self-contradiction, or a missing checklist line whose surrounding enforcement (the policy, the test, the gate) is intact and unaffected **defaults to Medium, even in a payment flow**. A Significant grade forces a full extra review round; it must be earned by the defect's observable consequence, never by the stakes of the area it happens to sit in.
 
 ## One-way-door trigger list
@@ -61,9 +63,9 @@ Return a structured list, one row per finding, data not prose:
 
 ```
 - finding: [short quote or id]
-  tier: One-way | Significant | Medium | Minor | Not-an-issue
+  tier: One-way | Significant | Medium | Minor | Not-an-issue | Needs-evidence
   area: [stable label]
-  reason: [one line: which trigger category, or which significance driver; for Not-an-issue, the refuting evidence (plan line / file:line)]
+  reason: [one line: which trigger category, or which significance driver; for Not-an-issue, the refuting evidence (plan line / file:line); for Needs-evidence, the fact assumed and the exact check that settles it]
 ```
 
 Do not propose fixes, do not edit files, do not rank or summarize. Grade and tag, that is all.

@@ -37,6 +37,8 @@ For each tradeoff that has a **technical or best-practice dimension** (framework
 
 Pure product/UX-preference tradeoffs with no documented answer (e.g. sticky vs scroll-away banner) skip research, keep them in the walk-through as-is.
 
+- **Resolved by a fact** — the tradeoff turns on something about the live system (does this value ever occur, how many rows, what does the vendor actually send, what does the current code do). Do not present it as a choice: read the code, run a read-only query through a connected database MCP (show the query first, never a write), or hand the user the exact query and wait. Present the tradeoff only if the answer leaves one, and list it under "Resolved by research" with the query and result otherwise. A choice put to the user that a query would have dissolved is the wrong pattern.
+
 ## Step 2: Present overview
 
 Show the user a summary before starting:
