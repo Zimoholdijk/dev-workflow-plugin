@@ -2,7 +2,7 @@
 name: project-setup
 description: Bootstrap a new project with context docs, CLAUDE.md, overview, and all accumulated best practices. Run in any repo to set up the full development workflow.
 disable-model-invocation: false
-argument-hint: "[project name, e.g. 'ToySwap' or 'my-saas-app']"
+argument-hint: "[project name, e.g. 'task-tracker' or 'my-saas-app']"
 ---
 
 # Project Setup
@@ -74,7 +74,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - ORM: [detected/confirmed]
 - CSS: [detected/confirmed]
 - Auth: [detected/confirmed]
-[Add any project-specific tech notes, e.g. "Prisma v7 with driver adapter"]
+[Add any project-specific tech notes, e.g. "the ORM needs a driver adapter; the default client does not work here"]
 
 ## Architecture
 [Fill in from Step 2: dev server setup, page vs API separation, middleware structure]
@@ -88,14 +88,8 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Fill from Step 2 question 7. Omit this section until something has actually bitten.]
 
 ## File Organization
-[Map the actual project structure. List key directories and what lives where. Example:]
-- `server/routes/`: one file per API domain
-- `server/db/`: database client singleton
-- `server/lib/`: shared server constants and utilities
-- `server/middleware/`: API middleware
-- `src/components/`: UI components
-- `src/lib/`: shared client constants and utilities
-- `src/pages/`: pages/routes
+[Map the actual project structure. List key directories and what lives where, one line each:]
+- `[directory]/`: [what lives there]
 
 ## Database & Migrations
 - Migration files are schema-only. Never add data manipulation (UPDATE, DELETE, INSERT) to migration files. If a migration would fail due to existing data, surface it as a prerequisite for the user to handle (reset DB, seed clean data, etc.).
@@ -107,7 +101,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 
 ## Project-Specific Rules
 [Fill in any that apply:]
-- [API call convention, e.g. "All client-side API calls go through `src/lib/api.ts`"]
+- [API call convention, e.g. "All client-side API calls go through one shared client module"]
 - [Error response format, e.g. "{ error: 'message' } for simple errors, { message: '...', errors: { field: 'reason' } } for 422"]
 - [File storage convention, if applicable]
 [Leave empty if none yet, these accumulate during development.]
@@ -159,7 +153,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
 
 ## Workflow Skills
-The dev-workflow skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
+The plan-first skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
 ```
 
 **Important:** Only include sections that are relevant. If there's no database, omit the Database section. If the tech stack is simple, keep it brief. The CLAUDE.md should grow organically as conventions are established. Don't front-load rules that haven't been tested yet.
@@ -223,7 +217,7 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
 - **Testable phases.** Each phase produces something visible in the browser AND ships its own tests. Pages before components.
 - **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints, Playwright e2e tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
-- **Mobile first.** Desktop is progressive enhancement.
+- **[Primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
 - **No auto-commits.** Claude does not commit unless explicitly asked.
 - **Document freeze.** PRDs and plans are frozen once agreed. Deviations go in `progress.md`, not by editing the plan.
 - **The overview is a summary.** Details live in feature docs. Updated only for stable project-wide decisions.
@@ -293,9 +287,9 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 - Wrap all database calls in try/catch. Return 500 with `{ error: "Internal server error" }` on failure, never leak stack traces.
 - Keep functions under CC=15. If a function has more than ~15 branch points, refactor it.
 - React components should do one thing. If a component manages more than 3 concerns, split it. Target <200 lines per file.
-- All configuration (URLs, ports, reward amounts, feature flags) must come from environment variables, never hardcoded.
+- All configuration (URLs, ports, limits, feature flags) must come from environment variables, never hardcoded.
 - No placeholder, lorem ipsum, or TODO strings as committed UI text. All user-facing strings must be real copy.
-- Mobile first. All UI is mobile-first. Desktop is progressive enhancement.
+- [Primary viewport rule, e.g. mobile first with desktop as progressive enhancement.]
 
 ## Planning Workflow
 - When creating an implementation or refactoring plan, use `/plan-review` to run the multi-stage review workflow after drafting.
@@ -320,7 +314,7 @@ If the file already exists, do NOT overwrite it. Only suggest additions if it's 
 
 ## Step 7: Verify companion skills exist
 
-Check that these companion skills are available (as personal skills in `~/.claude/skills/` or via the dev-workflow plugin, where they appear with a `dev-workflow:` prefix). List any that are missing, they are needed for the full workflow:
+Check that these companion skills are available (as personal skills in `~/.claude/skills/` or via the plan-first plugin, where they appear with a `plan-first:` prefix). List any that are missing, they are needed for the full workflow:
 
 | Skill | Purpose | Required for |
 |-------|---------|-------------|

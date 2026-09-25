@@ -7,10 +7,10 @@
 ## 1. The problem this solves
 
 Iterative cold review (clarifying, deep-critique, red-team, re-run each round) is excellent at
-*finding* issues but had no principled *stop*. On a real plan (artvintory CaptureCore)
-it ran 11 rounds: the architecture survived from round 7 on, but a single tightly
-coupled subsystem (the upload/reconcile concurrency state machine) kept producing a
-new correctness bug every round, often one introduced by the previous round's own fix.
+*finding* issues but had no principled *stop*. A typical long run: the architecture
+settles in the early rounds, but a single tightly coupled subsystem (a concurrency
+state machine, say) keeps producing a new correctness bug every round, often one
+introduced by the previous round's own fix.
 A cold reader will always find "the next seam" in non-deterministic code, so prose
 review of that area never converges. Those bugs are exactly the kind that deterministic
 tests catch and prose review cannot.
@@ -26,7 +26,7 @@ Two failures to fix:
 
 Grade a finding by **reversibility and blast radius/magnitude, not by "is it a bug."**
 
-- **Decision vs defect first.** Only an irreversible *decision* (a design choice a person must own) can be One-way. A *defect* (the plan is wrong, with a correct fix) is graded by reversibility and blast radius even when it lives in security/auth/data code, severity is not irreversibility. A serious security bug fixed in one atomic deploy is a Significant defect, not a One-way; One-way is reserved for the decision underneath it. (This is the fix for the observed "everything near auth grades One-way" failure: the category-4 shortcut was mislabeling reversible defects as irreversible, so the loop never ran out of One-ways.)
+- **Decision vs defect first.** Only an irreversible *decision* (a design choice a person must own) can be One-way. A *defect* (the plan is wrong, with a correct fix) is graded by reversibility and blast radius even when it lives in security/auth/data code, severity is not irreversibility. A serious security bug fixed in one atomic deploy is a Significant defect, not a One-way; One-way is reserved for the decision underneath it. (This is the fix for the common "everything near auth grades One-way" failure: the category-4 shortcut was mislabeling reversible defects as irreversible, so the loop never ran out of One-ways.)
 - Irreversible or expensive-and-broad to undo (a **one-way door**) must be settled in the
   plan before building.
 - Reversible things are closed by **code plus a test obligation**, not by more review rounds.
@@ -123,8 +123,8 @@ magnitude under Significant.
   in-use mechanism that bounds the blast radius (API versioning + deprecation window,
   expand/contract migration, consumer-driven contract tests) **and** states the migration
   path. Data or events already written stay irreversible even then.
-- **Area tag:** the grader labels each finding with an area/topic (e.g. "upload/reconcile
-  state machine", "share-token contract") so the test-obligation list, the assessor's
+- **Area tag:** the grader labels each finding with an area/topic (e.g. "sync state
+  machine", "public API contract") so the test-obligation list, the assessor's
   banking, and its escalation test can name a consistent area. Use stable labels across rounds.
 - **Not-an-issue (discard disposition):** a finding that is factually wrong, already
   handled, or moot given the premises is graded Not-an-issue with cited refuting evidence
@@ -139,17 +139,17 @@ verifies the facts the plan rests on, is it live, does prod data exist, what is 
 infrastructure (read from the repo, not inferred from a connector that happens to be in the
 session), what versions, against the code and, where it cannot tell, the user. These become
 project facts passed to every reviewer and the grader (facts, not history, so cold-start
-holds). This prevents whole rounds spent on a false premise, a failure seen in real runs
-(four rounds against the wrong object store; rounds of installed-base concern on a
-not-yet-live feature).
+holds). This prevents whole rounds spent on a false premise, for example rounds
+reviewed against the wrong datastore, or rounds of installed-base concern on a
+not-yet-live feature.
 
-1. **Junior** reviews (cold) -> **quote check** (orchestrator, mechanical: every finding's
+1. **Clarifying** reviews (cold) -> **quote check** (orchestrator, mechanical: every finding's
    cited quote/line must actually exist in the plan or file; unverifiable citations are
    dropped as unsubstantiated, the cheapest hallucination filter) -> **grader** grades +
    tags -> **orchestrator** fixes them with **scoped, surgical edits** (never wholesale
    rewrites, which drop mid-document constraints and undo prior rounds' fixes), then runs
    the **self-consistency pass**.
-2. **Senior** reviews (cold) -> quote check -> grader -> orchestrator fixes + self-consistency.
+2. **Deep-critique** reviews (cold) -> quote check -> grader -> orchestrator fixes + self-consistency.
 3. **Red-team** reviews (cold) -> quote check -> grader -> orchestrator fixes + self-consistency.
 4. **Quality and conformance pass** (orchestrator): a self-check (plan prose, not a code
    tool) for repetition smell, test coverage, and CLAUDE.md conformance; anything
@@ -174,13 +174,12 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
   same area, or one that will not stay settled across two rounds, **escalates**: the
   assessor returns `Escalate` and the loop stops for a user architecture decision, rather
   than point-fixing symptoms forever. (The old design only raised an advisory flag here and
-  kept looping, which is how a real run reached nine rounds on one identity/role cluster,
+  kept looping, which is how a loop can run many rounds on one cluster,
   each round point-fixing a new symptom of the one architecture decision underneath.) A
   One-way fixed once and then clean through a fully-cold round is **settled** and stops
   gating, **but its area's One-way count persists across banking**: banking suspends
   gating, it does not erase history, so a second One-way in a previously-banked area still
-  escalates (otherwise a hard subsystem oscillates fix/clean/bank/new-One-way forever,
-  which a real run's identity cluster did, clearing twice and re-arming twice).
+  escalates (otherwise a hard subsystem oscillates fix/clean/bank/new-One-way forever).
 - **Significant:** **always another round** (the change is big enough to verify in the
   plan), then **settled** once a fully-cold round finds nothing new in that area. Never
   deferred. Repeated Significant *defects* in one area (~3rd recurrence) are pinned with a
@@ -211,9 +210,9 @@ productive. Engineering practice layers an adaptive completion signal with a har
 cap as a guardrail (framework defaults: 10-25). So: the primary stop is the tier gate plus
 the dry signal (new unique gated findings per round, tracked by the assessor); the guardrail
 is a cap at round 5, at which the assessor returns `Escalate` and the user decides (rework,
-accept the residual, or knowingly authorize more rounds). Two 8-11-round production runs of
-the previous uncapped design showed exactly the predicted late-round profile: churn,
-re-broken fixes, and noise, with the real architecture decision surfacing at round 3.
+accept the residual, or knowingly authorize more rounds).
+Uncapped loops show exactly the late-round profile the research predicts: churn,
+re-broken fixes, and noise, while the real architecture decision surfaces early.
 
 ## 6b. Who decides: trade-offs by tier
 
@@ -222,7 +221,7 @@ The tier governs not only convergence but **who owns the decision**:
 - **Medium / Minor**: the orchestrator fixes autonomously. They are reversible and low-stakes; asking about them is noise.
 - **One-way / Significant**: the user's call when they involve a genuine choice. Before deciding one, the orchestrator runs `/research` if it has a technical dimension, then routes: if the evidence settles it, apply the documented answer and tell the user (an irreversible call is surfaced even when clear); if it is a genuine choice (defensible either way, depends on product/UX/risk), STOP and ask the user, one at a time, **at the moment it is reached**, not batched at the end.
 
-This is the long-standing "ask me about the things that need my input" rule, now tied explicitly to the rubric: the things that need input are the irreversible and consequential ones (One-way and Significant), which is exactly what the grader already identifies.
+The rule is that the user decides what needs their input, tied explicitly to the rubric: the things that need input are the irreversible and consequential ones (One-way and Significant), which is exactly what the grader already identifies.
 
 **Unattended exception:** inside an unattended pipeline (e.g. overnight-delivery), the loop cannot stop per answer; it applies evidence-resolved calls in-loop and accumulates the genuine One-way/Significant choices for that pipeline's trade-off gate.
 
@@ -319,7 +318,7 @@ deterministic exit condition.
   review (they close in tests, not rounds).
 - Stopping on saturation rather than a fixed count: defect-detection saturation and
   review-rate ceilings (Fagan, Wiegers, SmartBear/Cisco).
-- The round cap and dry signal (2026-07 calibration): iterative-refinement gains
+- The round cap and dry signal: iterative-refinement gains
   concentrate in passes 1-3 (Self-Refine, arXiv:2303.17651; debate saturates by 2-3 rounds,
   arXiv:2305.14325); intrinsic self-correction degrades monotonically past ~2 rounds
   (arXiv:2310.01798, ICLR 2024; survey arXiv:2406.01297, TACL); more calls has an interior

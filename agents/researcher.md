@@ -19,7 +19,7 @@ Answer from sources you read during this task, not from prior knowledge: trainin
 
 **Cross-check:** where a secondary source conflicts with the official docs on what is supported or idiomatic, the docs win, and note the conflict. Where reputable sources genuinely disagree on a judgment call, present both rather than picking one silently.
 
-**Ground every recommendation in the project's actual versions and constraints.** Check `package.json` / `deno.json` / lockfiles / `Cargo.toml` / `prisma/schema.prisma` if you need to confirm a version. Do not recommend a pattern the project's version does not support, or one that violates a stated project rule; flag it if the idiomatic approach conflicts with a project convention.
+**Ground every recommendation in the project's actual versions and constraints.** Check `package.json` / `deno.json` / lockfiles / `Cargo.toml` / the ORM schema if you need to confirm a version. Do not recommend a pattern the project's version does not support, or one that violates a stated project rule; flag it if the idiomatic approach conflicts with a project convention.
 
 ## Budget and checkpointing
 

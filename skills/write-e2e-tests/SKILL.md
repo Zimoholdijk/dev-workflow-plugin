@@ -2,7 +2,7 @@
 name: write-e2e-tests
 description: Write and run end-to-end browser tests for a feature using the bundled Playwright MCP. Drives a real browser to verify user-facing flows, then writes durable Playwright spec files so the behavior stays covered. Takes a feature name or flow description as argument.
 disable-model-invocation: false
-argument-hint: "[feature name or flow, e.g. 'claiming' or 'the listing creation flow']"
+argument-hint: "[feature name or flow, e.g. 'assignments' or 'the task creation flow']"
 ---
 
 # Write End-to-End Tests
@@ -53,7 +53,7 @@ If a step does not behave as the plan or PRD claims, stop, that is a bug in the 
 
 Translate each verified flow into a Playwright spec, following the project's existing conventions (file location, naming, fixtures, auth helpers). For each spec:
 
-- Name the test for the behavior it proves, not the mechanics ("claims an available toy and sees it in My Claims", not "click test 3").
+- Name the test for the behavior it proves, not the mechanics ("reassigns a task and sees it in the new owner's list", not "click test 3").
 - Assert on user-visible state and application state, not implementation details.
 - Use role- and text-based locators (`getByRole`, `getByText`, `getByLabel`) over brittle CSS/XPath selectors.
 - Wait on state via Playwright's web-first, auto-retrying assertions (`expect(locator).toBeVisible()`, `toHaveURL`, etc.), never fixed timeouts or `waitForTimeout`.

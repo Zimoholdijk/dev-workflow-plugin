@@ -2,7 +2,7 @@
 name: discuss-plan
 description: Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, writes the agreed decisions directly into the plan file's Architecture Decisions section (no separate design doc), and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Two entry points: between /write-prd and /write-plan to settle architecture before phasing, AND mid-plan-review (the round-3 design checkpoint, or whenever review rounds keep churning on one area) to step back and simplify — decisions then fold into the existing plan's Architecture Decisions. Takes a feature name or PRD path as argument.
 disable-model-invocation: false
-argument-hint: "[feature name or path to PRD, e.g. 'Claiming' or 'context/Claiming/ClaimingPRD.md']"
+argument-hint: "[feature name or path to PRD, e.g. 'Assignments' or 'context/Assignments/AssignmentsPRD.md']"
 ---
 
 # Discuss Plan
@@ -21,8 +21,8 @@ These are non-negotiable and apply to every message in the discussion:
 
 1. **150 words maximum per message.** Hard cap. If a topic needs more, it is two topics.
 2. **One topic per message.** Never bundle. Wait for the user's answer before moving to the next topic.
-3. **Plain English.** Conversational prose, no jargon walls, no code blocks, no Prisma/TypeScript/SQL syntax, no headers, no bullet-heavy structure. (One exception: the decision summary table at the end.) Describe the approach in words, not code.
-4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree we key off the existing tenant id?") or a single open lean ("Which way do you lean on storing the snapshot?"). Never numbered option menus, never stacked asks.
+3. **Plain English.** Conversational prose, no jargon walls, no code blocks, no schema, TypeScript, or SQL syntax, no headers, no bullet-heavy structure. (One exception: the decision summary table at the end.) Describe the approach in words, not code.
+4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree we store the assignee on the task itself?") or a single open lean ("Which way do you lean on keeping a history of reassignments?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation, researched first.** Describe 2-3 realistic options in flowing sentences, say which you lean toward and why, then let the user decide. But research the technical ones before you surface them (see Step 3): documented best practice often settles a trade-off outright, and the user should only adjudicate genuinely open choices. Never decide silently; never hand over a bare "A or B?" you could have researched.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
 7. **No em dashes in customer-facing copy** you draft. The discussion and the plan file are internal, em dashes there are fine.
@@ -34,10 +34,10 @@ Read, do not dump at the user:
 
 - The approved PRD for this feature.
 - `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`.
-- The **actual code** the feature touches: the relevant routes, components, middleware, server utilities, and the current schema (`prisma/schema.prisma` or the baseline migration). Read the real function bodies, policies, and existing patterns, not just file names.
-- The **installed versions** (`package.json` / `deno.json` / lockfiles / `prisma/schema.prisma`) so every option you raise is one this stack actually supports.
+- The **actual code** the feature touches: the relevant routes, components, middleware, server utilities, and the current schema (the ORM schema file or the baseline migration). Read the real function bodies, policies, and existing patterns, not just file names.
+- The **installed versions** (`package.json` / `deno.json` / lockfiles / the ORM schema) so every option you raise is one this stack actually supports.
 
-Use this to make each topic concrete and grounded in current behavior ("today claims live on the listing row, so adding status there is cheaper than a new table") instead of generic.
+Use this to make each topic concrete and grounded in current behavior ("today the assignee lives on the task row, so adding a status there is cheaper than a new table") instead of generic.
 
 ## Step 2: Build a private topic list, one-way doors first
 
@@ -139,7 +139,7 @@ Keep it prose, no code. The ADs are decisions records, not phase specs; `/write-
 
 ## Notes
 
-- **The second entry point is mid-review.** When `/plan-review` rounds keep circling one area (or its round-3 checkpoint fires), this same discussion runs against the existing plan: distill what keeps churning, put the simplification options plainly, and fold the decisions into the plan's Architecture Decisions in place. The audited runs' biggest wins (deleting a reconciler, a session re-check, an audit trail) all came from exactly this conversation.
+- **The second entry point is mid-review.** When `/plan-review` rounds keep circling one area (or its round-3 checkpoint fires), this same discussion runs against the existing plan: distill what keeps churning, put the simplification options plainly, and fold the decisions into the plan's Architecture Decisions in place. Simplifications that delete machinery added during review usually come from exactly this conversation.
 - **This is an interactive gate, not part of `/overnight-delivery`.** Overnight delivery runs unattended from an approved PRD; a design discussion needs the user in the loop. Run `discuss-plan` before kicking off an autonomous pipeline if you want the architecture settled first.
 - **It does not replace `/plan-review`.** The cold multi-lens review still runs on the written plan. This skill reduces what that review finds by settling the one-way doors up front; it does not pre-approve anything.
 - **Persona-free.** This is a job description, not a character. Do not role-play a "senior architect"; just run the discussion well, grounded in the docs and the code.

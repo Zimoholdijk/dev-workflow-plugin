@@ -14,7 +14,7 @@ The user asked you to step back and simplify: $ARGUMENTS (or whatever is current
 ## The flow
 
 1. **First message is the first idea.** No preamble of any kind: do not name the question, do not announce how many ideas there are, do not list what you are about to explain ("three concepts get us there" is wasted tokens and gets the user no closer). Start explaining the first idea in the first sentence. The user can see the sequence as it arrives.
-2. **One idea per message, ~80 words, hard cap 100, including the first.** Plain language. One everyday analogy if the idea is a jargon term, and the analogy must not need its own explanation. Concrete to this project: real pages, real people, real data ("the rows Eric edited in the admin UI"), never "a user" or "the resource". End with a one-line check naming what's next.
+2. **One idea per message, ~80 words, hard cap 100, including the first.** Plain language. One everyday analogy if the idea is a jargon term, and the analogy must not need its own explanation. Concrete to this project: real pages, real people, real data ("the three tasks the support lead reassigned this morning"), never "a user" or "the resource". End with a one-line check naming what's next.
 3. **Wait every time.** Confirm → next idea. Question → answer it in the same tiny format, re-check, continue. "I know this" → skip. Silence → hold.
 4. **Close (cap 80 words).** Connect the ideas to the question in one short paragraph: what each option really costs, and your recommendation with its reason, stated once, no hedging. Then ask the decision as one question with numbered options (AskUserQuestion if available, recommendation first, labeled "(Recommended)") — only if a decision was actually pending; if the user just wanted understanding, stop after the close.
 5. **Record** any decision wherever the surrounding workflow records them (progress.md Trade-off Decisions, the plan's Architecture Decisions), then hand back to that workflow.
@@ -33,5 +33,5 @@ The user asked you to step back and simplify: $ARGUMENTS (or whatever is current
 ## Notes
 
 - Same register as `discuss-plan`'s tutor mode, available anywhere in the workflow.
-- If a step reveals a false premise ("nobody but my father ever logs in there"), stop, say what changed, and hand that fact back to the surrounding workflow instead of finishing the lesson.
+- If a step reveals a false premise ("only one person ever logs in there"), stop, say what changed, and hand that fact back to the surrounding workflow instead of finishing the lesson.
 - If the topic genuinely needs only one small message, send that one message; the step machinery is for when one message can't stay small.

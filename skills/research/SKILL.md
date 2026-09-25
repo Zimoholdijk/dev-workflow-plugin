@@ -17,7 +17,7 @@ This skill spins up a research sub-agent to answer a technical question or find 
 - You need to verify whether a pattern is idiomatic for a specific tool (this is the framework-idiom check those skills call for, done properly with sources).
 - You're weighing two approaches and want the tradeoffs documented from credible sources, not asserted.
 
-For a broad, multi-source, fact-checked report on an open-ended topic, use the heavier `deep-research` skill instead. This skill is the focused, repo-grounded version: one or a few specific questions, answered against the docs and the project.
+For a broad, multi-source, fact-checked report on an open-ended topic, use a heavier multi-source research workflow instead. This skill is the focused, repo-grounded version: one or a few specific questions, answered against the docs and the project.
 
 ## Rules
 
@@ -25,7 +25,7 @@ These are non-negotiable:
 
 1. **Documentation first, always.** When the question involves any specific technology, the first pass is that technology's *official* documentation, not a search engine, not a blog, not memory. Only after the docs are exhausted do secondary sources come in. A best-practice claim that contradicts the official docs is wrong until proven otherwise.
 2. **Do not answer from memory.** Model training is stale and these questions are version-sensitive. Every substantive claim must trace to a source read during this research. If a sub-agent returns an answer with no sources, send it back.
-3. **Ground the answer in the actual project.** The recommendation must fit the project's real stack and *installed versions* (check `package.json`, `deno.json`, lockfiles, `prisma/schema.prisma`, etc.). A pattern the project's version doesn't support is not an answer. Tie findings back to the specific plan or code under discussion.
+3. **Ground the answer in the actual project.** The recommendation must fit the project's real stack and *installed versions* (check `package.json`, `deno.json`, lockfiles, the ORM schema, etc.). A pattern the project's version doesn't support is not an answer. Tie findings back to the specific plan or code under discussion.
 4. **No persona posturing in the sub-agent prompt.** Do not frame the research agent with an assumed identity ("you are a senior engineer", "act as an expert"). Persona framing shows no reliable benefit and its effects are unpredictable. State the task, the sources to use, and the quality bar directly. Judge the work by its sources, not by a role it was told to play.
 5. **Weight sources by credibility, and say so.** Official docs and maintainer writing outrank well-regarded engineering blogs, which outrank random tutorials and unattributed forum answers. Cite every source and note its tier. A lone Stack Overflow answer is a lead to verify, not a conclusion.
 6. **Surface conflicts, don't paper over them.** Where reputable sources disagree, or where best practice conflicts with the current plan, present the disagreement and let the user decide. Do not silently pick a side.
@@ -35,8 +35,8 @@ These are non-negotiable:
 Before spawning anything, pin down what's actually being asked and assemble what the sub-agent needs (it has no prior knowledge of this project):
 
 1. **State the question precisely.** If the user's phrasing is broad, narrow it to the decision actually in front of you.
-2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do I deploy an edge function, what can the Deno runtime do, and how do I path-filter the workflow" is Supabase CLI docs, Deno docs, and GitHub Actions docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
-3. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / `prisma/schema.prisma` to learn exactly which tools and which versions are in play. Name them explicitly; "Supabase" alone is not enough, note the client/library versions and whether it's RLS, Auth, Storage, Edge Functions, etc.
+2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do database migrations run on deploy, what does the payment provider guarantee about webhook retries, and how should the CI job cache dependencies" is database docs, payment-provider docs, and CI docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
+3. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / the ORM schema to learn exactly which tools and which versions are in play. Name them explicitly; "Supabase" alone is not enough, note the client/library versions and whether it's RLS, Auth, Storage, Edge Functions, etc.
 4. **Read the project context** the answer must fit: `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, and the specific PRD / implementation plan / `progress.md` the question arose from.
 5. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
 6. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a Supabase MCP with a `search_docs` tool, or a docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
@@ -49,7 +49,7 @@ You do not need to restate the methodology; the agent owns it. Give it only the 
 
 - **The objective, as up to three numbered questions** (narrowed to the decision actually in front of you).
 - **A findings file path** the agent checkpoints into after each answered question. Put it outside the project tree, in the OS temp directory or the session scratchpad if one is provided (e.g. `/tmp/research/<slug>.md`), one path per agent. This is the safety net if the agent is cut off; it is not a deliverable and is never committed.
-- **Technologies and versions in play** (from `package.json` / `deno.json` / lockfiles / `prisma/schema.prisma`).
+- **Technologies and versions in play** (from `package.json` / `deno.json` / lockfiles / the ORM schema).
 - **Project stack and architecture** (from `overview.md`).
 - **Project rules and conventions** (relevant `CLAUDE.md` excerpts).
 - **The plan or code this question is about** (the specific plan section or files, so the answer is concrete).

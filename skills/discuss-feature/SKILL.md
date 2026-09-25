@@ -2,7 +2,7 @@
 name: discuss-feature
 description: Run a pre-PRD feature discussion in plain language. Walks through framing, functionality, and trade-offs one short message at a time, collects decisions, then creates a ticket on the project board and hands off to /write-prd. Takes a raw feature idea or problem description as argument.
 disable-model-invocation: false
-argument-hint: "[raw feature idea or problem, e.g. 'users want to share their listings page']"
+argument-hint: "[raw feature idea or problem, e.g. 'members want to share a project board with a client']"
 ---
 
 # Discuss Feature
@@ -22,11 +22,11 @@ These are non-negotiable and apply to every message in the discussion:
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
 7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings). The discussion and the ticket are internal, em dashes there are fine.
-8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "we already have an OG image route, so a collage is feasible").
+8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "we already render link previews, so a preview image is cheap").
 
 ## Step 1: Ground yourself (silently, before the first message)
 
-Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (pages, routes, components) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today /my-listings does double duty: your toys plus incoming claims").
+Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (pages, routes, components) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today the dashboard does double duty: your own tasks plus tasks waiting on you").
 
 ## Step 2: Build a private topic list
 

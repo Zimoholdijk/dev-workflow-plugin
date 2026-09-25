@@ -2,7 +2,7 @@
 name: write-plan
 description: Draft an implementation plan for an approved PRD following the project's established format and workflow rules. Takes a feature name or PRD path as argument. Produces a phased implementation plan for review.
 disable-model-invocation: false
-argument-hint: "[feature name or path to PRD, e.g. 'claiming' or 'context/Claiming/ClaimingPRD.md']"
+argument-hint: "[feature name or path to PRD, e.g. 'assignments' or 'context/Assignments/AssignmentsPRD.md']"
 ---
 
 # Write Implementation Plan
@@ -15,10 +15,10 @@ These rules are non-negotiable:
 
 1. **PRD must be approved first.** Do not write an implementation plan for a feature without an approved PRD. If the PRD status is "Draft", stop and tell the user.
 2. **The plan describes *how*, not *what*.** The PRD covers what and why. The plan covers architecture decisions, schema changes, file changes, and phased implementation.
-3. **No code in the plan.** Describe what to build in prose. No Prisma syntax, no TypeScript, no JSX, no code expressions. Implementation details like "use try/catch" or "return 500" are fine: code blocks are not. If you catch yourself writing backtick-wrapped code expressions (like `{ where: { status: "active" } }`), rewrite as prose.
+3. **No code in the plan.** Describe what to build in prose. No schema or ORM syntax, no TypeScript, no JSX, no code expressions. Implementation details like "use try/catch" or "return 500" are fine: code blocks are not. If you catch yourself writing backtick-wrapped code expressions (like `{ where: { status: "active" } }`), rewrite as prose.
 4. **Every phase must be testable, by a human and by the test suite.** Each phase ends with a "Testable" section describing (a) what a human can verify in the browser or via curl, and (b) the automated tests that ship *with that phase*, unit tests for the logic it introduces, plus integration or end-to-end tests for the flow it exposes. A phase that adds logic without adding tests for that logic is not done. If a phase isn't testable, merge it with the next one.
 9. **Testing is part of the plan, not an afterthought.** The plan must include a "Testing Strategy" section (see structure below) and every phase must name the tests it adds. Do not defer all testing to a final phase. New code is covered as it lands. If the project has no test infrastructure yet, the first phase establishes it (test runner, e2e harness, a first passing test) before feature work proceeds, and the plan says so explicitly.
-5. **Pages before components.** Create the page shell first, then add interactive islands. This matches the Astro SSR-first architecture.
+5. **Shells before detail.** For UI work, create the page or screen shell first, then the interactive parts inside it, so every phase has somewhere to render.
 6. **Document freeze.** Once approved, the plan is frozen. Deviations during implementation go in `progress.md`.
 7. **Surface all trade-offs, but research them first.** Never accept trade-offs silently. Note known limitations, performance compromises, and security implications. But before presenting a trade-off as an open choice, research it (Step 2.6): documented best practice often resolves it outright, and the user should only adjudicate genuinely open choices, each backed by evidence, never a bare "A or B?" they have to research themselves.
 10. **Facts before phases.** A plan rests on claims about the world: what an external system actually sends, what the data actually looks like, how many rows there really are, what the current code does at runtime. Every such claim is verified before drafting (Step 1.5) and recorded in the plan's **Verified Facts** section with how it was checked. Never guess the shape of a response, the volume of a table, or the behavior of existing code when a query, a file read, or one question to the user would settle it. And never defer the check into the plan: a "Phase 0", "probe", or "spike" phase whose purpose is to discover something the planner could learn today is not a phase, it is unfinished planning. A discovery phase survives only when the fact cannot exist before the code does (a credential that must be issued first, a system not yet deployed), and then the plan says why and what each outcome changes.
@@ -34,7 +34,7 @@ Before writing anything, read:
 4. `.claude/CLAUDE.md`: project rules
 5. `~/.claude/CLAUDE.md`: global rules
 6. Any existing feature docs that this feature depends on or interacts with
-7. The current schema (`prisma/schema.prisma`)
+7. The current schema (the ORM schema file, migrations, or model definitions)
 8. Relevant existing code files that will be modified (middleware, routes, pages, components)
 
 Understand the current state of the codebase before proposing changes. Check what already exists in shared utilities before creating new ones. If discuss-plan seeded the Architecture Decisions, the big trade-offs are largely settled; Step 2.6 then only needs to research trade-offs that surface fresh during planning, not re-litigate the agreed ones.
@@ -44,7 +44,7 @@ Understand the current state of the codebase before proposing changes. Check wha
 Before drafting, list every claim the plan's correctness depends on that is a fact about the world rather than a design choice. Typical ones:
 
 - **External response shape.** What a vendor API, webhook, or upstream service actually returns: field names, field order, formats, timestamps, limits. Check the stored responses or request logs if the project keeps them, the vendor's documented contract, and the current code that parses it.
-- **Data reality.** Row counts, value distributions, whether a column is ever null, whether an edge value (an off-grid timestamp, a duplicate key, a non-numeric string) has ever actually occurred. A query answers this; a guess does not.
+- **Data reality.** Row counts, value distributions, whether a column is ever null, whether an edge value (a null the code assumes cannot happen, a duplicate key, a value outside the documented range) has ever actually occurred. A query answers this; a guess does not.
 - **Current runtime behavior.** What the existing code does on the path the plan changes, read from the code, not from its comments or the docs.
 - **Existence and state.** Whether production data exists, whether the feature is live, which indexes, policies, triggers, and constraints are really present.
 
@@ -59,7 +59,7 @@ Use this exact structure. Every section is required.
 ```markdown
 # [Feature Name]: Implementation Plan
 
-**Feature:** [TOY-XX] · **Status:** Draft · **Depends on:** [TOY-XX (done), ...]
+**Feature:** [TICKET-ID] · **Status:** Draft · **Depends on:** [TICKET-ID (done), ...]
 **Branch:** `[branch-name]`
 **PRD:** `context/[Feature]/[Feature]PRD.md`
 
@@ -83,7 +83,7 @@ be checked. Reviewers treat this table as fact; anything not in it is open.]
 
 | Claim | Checked by | Result |
 |-------|-----------|--------|
-| [e.g. the vendor never sends a non-quarter-hour timestamp] | [SELECT count(*) ... against the table that stores raw vendor rows, run 2026-09-04] | [0 rows in 14 months] |
+| [e.g. no task has ever been saved without an owner] | [read-only SELECT count(*) FROM tasks WHERE owner_id IS NULL, against production] | [0 rows] |
 
 ---
 
@@ -107,7 +107,7 @@ state management, error handling strategy, performance considerations.]
 
 ## Schema Changes
 
-**File:** `prisma/schema.prisma`
+**File:** `[schema file]`
 
 [Describe new models, new fields, new indexes, new enums in prose.
 State whether the migration is breaking or non-breaking.
@@ -217,7 +217,7 @@ If a phase fails this check, fix it by one of: build the page shell first so the
 
 Before saving and presenting the plan, run this self-check:
 
-1. Grep your own draft prose for near-identical bullets across phases or sub-steps. Look for descriptions that share verb + object structure and differ only by a literal, key, separator, or metadata value (e.g., "for textarea use \n\n; for free-text use ; for typed use ,").
+1. Grep your own draft prose for near-identical bullets across phases or sub-steps. Look for descriptions that share verb + object structure and differ only by a literal, key, separator, or metadata value (e.g., "for CSV export use a comma; for TSV export use a tab; for the clipboard use a newline").
 2. If you find N parallel descriptions that only differ by data, you have two structural options:
    - **Branched:** N code paths, one per type.
    - **Unified:** One code path that reads the differing value from a small lookup or parameter.
@@ -256,12 +256,9 @@ After writing the plan, present it to the user with:
 
 Do NOT proceed to implementation until the user explicitly approves the plan (after reviews). Approval means explicit language like "approved", "looks good, move on", or "start implementing". Silence, "ok", or "thanks" is not approval; if the signal is ambiguous, ask whether they're ready to move on.
 
-## Patterns from existing plans
-
-Two implementation plans exist in the project. Follow their established conventions:
+## Plan conventions
 
 ### Header format
-Both plans use the same header:
 - Feature ticket + Status + Depends on (first line)
 - Branch name (second line)
 - PRD path (third line)
@@ -273,7 +270,7 @@ Both plans use the same header:
 - Reference other ADs by number when they interact
 
 ### Schema Changes
-- Name the file (`prisma/schema.prisma`)
+- Name the schema file
 - Describe changes in prose (new models, fields, indexes)
 - State whether migration is breaking or non-breaking
 - "None" with explanation if no schema changes needed
@@ -289,7 +286,7 @@ Both plans use the same header:
 - Sub-steps use format: "### 1a. [Title] (`file/path`)"
 - Reference ADs by number: "per AD-3" or "(AD-7)"
 - Testable section is imperative: "User clicks X → Y happens"
-- Larger plans (Discovery) use sub-steps within phases; smaller plans (Listing) use paragraphs
+- Larger plans use sub-steps within phases; smaller plans use paragraphs
 
 ### Verification
 - Numbered list, 8-15 items
@@ -307,7 +304,7 @@ Both plans use the same header:
 - Kept separate so reviewers reading the plan can't be primed by prior rounds
 
 ### Things to avoid
-- No code blocks, Prisma syntax, or TypeScript in the plan
+- No code blocks, schema or ORM syntax, or source code in the plan
 - No implementation details that belong in the code (exact prop shapes, CSS classes, etc.)
 - No Review Log inside the plan (it's a sidecar)
 - No phases that aren't browser-testable

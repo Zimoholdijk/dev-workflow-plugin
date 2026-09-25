@@ -43,7 +43,7 @@ Your review should cover:
 
 **Alignment with Project Goals**
 - Does this plan serve the stated product goals, or is it engineering for engineering's sake?
-- Does it respect the project's working agreements (e.g., document freeze, mobile-first, no over-engineering)?
+- Does it respect the project's working agreements (e.g., document freeze, no over-engineering)?
 - Is the priority ordering correct? Are the most impactful changes first?
 
 **Code Quality Standards**

@@ -2,7 +2,7 @@
 name: tradeoff-review
 description: Walk the user through accumulated tradeoffs one by one, collecting decisions. Used at tradeoff gates and after code reviews. Takes a feature name or "pending" to review all unresolved tradeoffs.
 disable-model-invocation: false
-argument-hint: "[feature name, e.g. 'RelatedToys']"
+argument-hint: "[feature name, e.g. 'Assignments']"
 ---
 
 # Tradeoff Review
@@ -10,7 +10,7 @@ argument-hint: "[feature name, e.g. 'RelatedToys']"
 You are walking the user through tradeoffs for: $ARGUMENTS
 
 This skill presents tradeoffs **one at a time** and collects the user's decision on each before moving to the next. It is used at two points in the overnight-delivery pipeline:
-1. **Stage 3 (Tradeoff Gate):** After 4 plan review rounds, before implementation begins.
+1. **Stage 3 (Tradeoff Gate):** After plan review converges, before implementation begins.
 2. **End of pipeline:** After code reviews, collecting any remaining tradeoffs from implementation and review findings.
 
 It can also be invoked standalone to review accumulated tradeoffs for any feature.
@@ -35,7 +35,7 @@ For each tradeoff that has a **technical or best-practice dimension** (framework
 - **Resolved by evidence** — the docs/best practices clearly favor one option, or the concern is negligible here. Pull it OUT of the one-by-one walk: take the recommended option and list it in the overview under "Resolved by research" with a one-line rationale and citation, so the user can still object but doesn't spend a decision turn on a settled question.
 - **Genuine tradeoff** — still defensible either way, or the choice depends on product/UX/risk preference the user owns. Keep it in the walk-through, and attach the researched evidence to its presentation (Step 3).
 
-Pure product/UX-preference tradeoffs with no documented answer (e.g. sticky vs scroll-away banner) skip research, keep them in the walk-through as-is.
+Pure product/UX-preference tradeoffs with no documented answer (e.g. inline confirmation vs a dialog) skip research, keep them in the walk-through as-is.
 
 - **Resolved by a fact** — the tradeoff turns on something about the live system (does this value ever occur, how many rows, what does the vendor actually send, what does the current code do). Do not present it as a choice: read the code, run a read-only query through a connected database MCP (show the query first, never a write), or hand the user the exact query and wait. Present the tradeoff only if the answer leaves one, and list it under "Resolved by research" with the query and result otherwise. A choice put to the user that a query would have dissolved is the wrong pattern.
 
@@ -96,7 +96,7 @@ Which option?
 - If the user says "accept" or picks option 1, record it and move on.
 - If the user says "fix" or picks option 2+, note it as an action item.
 - If the user asks a clarifying question, answer it, then re-present the options.
-- If the user says "explain this", "simplify", asks what a term means, or their answer suggests they are guessing rather than deciding, run `/discuss-simply` on this tradeoff. Its first message must be SHORTER than the tradeoff block that confused them: one sentence naming the question plus a step list, then one small idea per confirmed message. Resume the walk-through afterwards.
+- If the user says "explain this", "simplify", asks what a term means, or their answer suggests they are guessing rather than deciding, run `/discuss-simply` on this tradeoff. Its first message is the first idea itself, with no preamble, and must be SHORTER than the tradeoff block that confused them; then one small idea per confirmed message. Resume the walk-through afterwards.
 - If the user says "skip" or "later", mark it as unresolved and move on.
 
 ## Step 4: Summary and action items
@@ -135,4 +135,4 @@ If all items are accepted or skipped:
 
 ## Standalone usage
 
-When invoked outside the overnight-delivery pipeline (e.g., the user runs `/tradeoff-review RelatedToys` directly), gather tradeoffs from the plan and progress doc only (no conversation-level code review output). Present the same one-by-one flow. At the end, update `progress.md` with decisions.
+When invoked outside the overnight-delivery pipeline (e.g., the user runs `/tradeoff-review Assignments` directly), gather tradeoffs from the plan and progress doc only (no conversation-level code review output). Present the same one-by-one flow. At the end, update `progress.md` with decisions.

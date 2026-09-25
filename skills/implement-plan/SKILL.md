@@ -2,7 +2,7 @@
 name: implement-plan
 description: Execute an approved implementation plan phase-by-phase, keeping progress docs and overview in sync. Takes a feature name or plan path as argument.
 disable-model-invocation: false
-argument-hint: "[feature name or path to plan, e.g. 'claiming' or 'context/Claiming/implementation-plan.md']"
+argument-hint: "[feature name or path to plan, e.g. 'assignments' or 'context/Assignments/implementation-plan.md']"
 ---
 
 # Implement Plan
@@ -33,7 +33,7 @@ Before writing any code, read:
 3. `context/overview.md`: current project state, shared utilities, key decisions
 4. `.claude/CLAUDE.md`: project rules
 5. `~/.claude/CLAUDE.md`: global rules
-6. `prisma/schema.prisma`: current schema
+6. The current schema (ORM schema file or migrations)
 7. The feature's `progress.md` if it exists (may have work from a previous session)
 8. The plan's `## Test Obligations` section if present (what plan-review deferred to code+tests), and note which phase each obligation is referenced from
 
@@ -77,7 +77,7 @@ Structure:
 ```markdown
 # [Feature]: Progress
 
-**Feature:** [TOY-XX] · **Branch:** `[branch-name]`
+**Feature:** [TICKET-ID] · **Branch:** `[branch-name]`
 **Plan:** `context/[Feature]/implementation-plan.md`
 **PRD:** `context/[Feature]/[Feature]PRD.md`
 
@@ -160,7 +160,7 @@ Update these sections as needed:
 - **Features section:** Update the feature's status to "Complete" and write a 2-3 sentence summary of what was built (follow the format of existing feature entries)
 - **Shared Utilities table:** Add any new shared utilities created during implementation (constants, hooks, helpers, lib files)
 - **Key Decisions table:** Add any significant architectural or product decisions made during implementation, with today's date
-- **Deferred Items:** Add any tech debt, known limitations, or follow-up items identified during implementation to the appropriate table (must-fix, should-fix, or post-v0.1)
+- **Deferred Items:** Add any tech debt, known limitations, or follow-up items identified during implementation to the appropriate table (must-fix, should-fix, or post-v1)
 
 Do NOT rewrite existing entries: only add new ones or update the feature's status.
 

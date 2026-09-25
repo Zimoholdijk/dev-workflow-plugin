@@ -2,7 +2,7 @@
 name: overnight-delivery
 description: End-to-end feature delivery pipeline. Writes implementation plan, runs plan review to convergence, gates on tradeoffs, implements all phases, runs 2 code review rounds with fixes. Takes a feature name with an approved PRD.
 disable-model-invocation: false
-argument-hint: "[feature name or path to PRD, e.g. 'RelatedToys' or 'context/RelatedToys/RelatedToysPRD.md']"
+argument-hint: "[feature name or path to PRD, e.g. 'Assignments' or 'context/Assignments/AssignmentsPRD.md']"
 ---
 
 # Overnight Delivery

@@ -1,4 +1,4 @@
-# dev-workflow
+# plan-first
 
 A Claude Code plugin packaging a PRD-first development workflow: write PRDs, settle architecture in a plain-language design discussion before any plan is phased, draft phased implementation plans, run multi-lens plan reviews (clarifying-questions, deep-critique, and adversarial red-team passes), implement plans phase-by-phase with progress tracking, run parallel code reviews, collect tradeoff decisions, and audit documentation against the codebase. Testing is treated as a first-class part of the workflow: plans must carry a testing strategy, every phase ships its own tests, a dedicated review agent runs the suite, and a bundled Playwright MCP drives real-browser end-to-end tests.
 
@@ -76,15 +76,15 @@ The server runs a real browser via `npx`, so Node.js must be available. It defau
 From a local checkout:
 
 ```
-/plugin marketplace add /path/to/dev-workflow-plugin
-/plugin install dev-workflow@dev-workflow-marketplace
+/plugin marketplace add /path/to/plan-first-development
+/plugin install plan-first@plan-first-marketplace
 ```
 
 Or from GitHub:
 
 ```
-/plugin marketplace add Zimoholdijk/dev-workflow-plugin
-/plugin install dev-workflow@dev-workflow-marketplace
+/plugin marketplace add Zimoholdijk/plan-first-development
+/plugin install plan-first@plan-first-marketplace
 ```
 
 To pull updates later: `/plugin marketplace update` then `/reload-plugins`.
@@ -95,9 +95,9 @@ This plugin ships generic on purpose: no personal workspace IDs, board IDs, or t
 
 1. **Pick a default issue tracker (once, global).** Some skills (`discuss-feature`, `write-prd`) create tickets. Add a line to your `~/.claude/CLAUDE.md` naming your default tracker, for example: "Default issue tracker is Notion; use it for backlog tickets and feature boards unless a project overrides it." Project config always overrides this. Do not put a specific board or data source ID here; that is per-project.
 
-2. **Capture each project's board (per repo).** Run `/dev-workflow:project-setup` in a repo. It asks which tracker and the exact target (Notion data source ID, Linear team/project) and writes it to an "Issue Tracker" section of that project's `.claude/CLAUDE.md`. `discuss-feature` and `write-prd` read that section and create tickets without re-asking. If a project has no board, leave it out and the skills just deliver the decision summary instead of creating a ticket.
+2. **Capture each project's board (per repo).** Run `/plan-first:project-setup` in a repo. It asks which tracker and the exact target (Notion data source ID, Linear team/project) and writes it to an "Issue Tracker" section of that project's `.claude/CLAUDE.md`. `discuss-feature` and `write-prd` read that section and create tickets without re-asking. If a project has no board, leave it out and the skills just deliver the decision summary instead of creating a ticket.
 
-3. **Tune the global rules the skills inherit.** Every skill reads `~/.claude/CLAUDE.md`. Conventions you keep there (approval semantics, no-hardcoded-config, mobile-first, writing style) are obeyed by the whole workflow. This is where your cross-project standards and voice live.
+3. **Tune the global rules the skills inherit.** Every skill reads `~/.claude/CLAUDE.md`. Conventions you keep there (approval semantics, no-hardcoded-config, primary viewport, writing style) are obeyed by the whole workflow. This is where your cross-project standards and voice live.
 
 Creating tickets also requires the relevant MCP server connected in your environment (e.g. the Notion or Linear MCP). Without it, the skills still run the discussion and hand off; they just skip the ticket step.
 
@@ -119,6 +119,6 @@ Why this split: project-specific values differ per repo and should not leak into
 
 ## Notes
 
-- When installed as a plugin, skills are namespaced: `/dev-workflow:write-prd` instead of `/write-prd`. Skill bodies reference each other by their short names (e.g. "Run /plan-review"); Claude resolves these to the namespaced versions.
-- Some skills read `~/.claude/CLAUDE.md` for global rules. If that file doesn't exist in the environment (e.g. a fresh Cowork session), the skills proceed without it.
+- When installed as a plugin, skills are namespaced: `/plan-first:write-prd` instead of `/write-prd`. Skill bodies reference each other by their short names (e.g. "Run /plan-review"); Claude resolves these to the namespaced versions.
+- Some skills read `~/.claude/CLAUDE.md` for global rules. If that file doesn't exist in the environment (e.g. a fresh cloud session), the skills proceed without it.
 - The typical flow: `project-setup` once per repo, then per feature: `discuss-feature` → `write-prd` → `discuss-plan` → `write-plan` → `plan-review` → `tradeoff-review` → `implement-plan` (tests ship with each phase, `write-e2e-tests` for browser flows) → `full-code-review` → `doc-audit`. `discuss-plan` is an interactive design gate that settles architecture before phasing, so `plan-review` has less to raise — and it comes back mid-review as the simplification conversation when rounds churn; it sits outside the unattended `overnight-delivery`, which chains the rest end-to-end from an approved PRD.

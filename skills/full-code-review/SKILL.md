@@ -35,7 +35,7 @@ Also read:
 - `~/.claude/CLAUDE.md` (global rules)
 - `.claude/CLAUDE.md` (project rules, if it exists)
 
-For **full scope**, skip the diff commands. Instead, read `context/overview.md` and `.claude/CLAUDE.md`, then list the top-level directories the review should cover (e.g. `src/`, `server/`, `prisma/`). Tell the user which directories are in scope and ask to confirm before spawning: the review is expensive (up to seven parallel reviewers plus validators) and easy to misframe.
+For **full scope**, skip the diff commands. Instead, read `context/overview.md` and `.claude/CLAUDE.md`, then list the top-level directories the review should cover (e.g. `src/`, `api/`, `db/`). Tell the user which directories are in scope and ask to confirm before spawning: the review is expensive (up to seven parallel reviewers plus validators) and easy to misframe.
 
 **Important:** Do NOT pre-read the full diff, source files, or overview yourself. Each reviewer agent will gather its own context by reading the codebase directly. Your job is to orchestrate and to run the *mechanical* checks in Steps 2 and 4; the judgment calls belong to the reviewers and validators.
 
