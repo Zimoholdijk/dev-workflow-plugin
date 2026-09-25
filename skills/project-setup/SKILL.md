@@ -74,7 +74,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - ORM: [detected/confirmed]
 - CSS: [detected/confirmed]
 - Auth: [detected/confirmed]
-[Add any project-specific tech notes, e.g. "the ORM needs a driver adapter; the default client does not work here"]
+[Add any project-specific tech notes, e.g. "the test database is recreated per run; never point tests at the dev database"]
 
 ## Architecture
 [Fill in from Step 2: dev server setup, page vs API separation, middleware structure]
@@ -215,7 +215,7 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 ## Working Agreements
 
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
-- **Testable phases.** Each phase produces something visible in the browser AND ships its own tests. Pages before components.
+- **Testable phases.** Each phase produces something independently verifiable (in the browser, via curl or SQL, or by a test) AND ships its own tests. Shells before detail.
 - **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints, Playwright e2e tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
 - **[Primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
 - **No auto-commits.** Claude does not commit unless explicitly asked.
@@ -272,9 +272,8 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 
 ## Workflow
 - PRD first, implementation plan second, code last. No code until the plan is approved.
-- Each implementation phase must produce something testable in the browser. Pages before components.
+- Each implementation phase must produce something independently verifiable (in the browser, via curl or SQL, or by a test). Shells before detail.
 - Do not commit unless explicitly asked.
-- Do not start or restart dev servers. The user manages them.
 
 ## Decision Making
 - Never accept trade-offs silently. Always surface trade-offs to the user and let them decide. This includes architectural trade-offs, known limitations, performance compromises, and security acceptances. Document the user's decision, not your own judgement.
@@ -289,7 +288,6 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 - React components should do one thing. If a component manages more than 3 concerns, split it. Target <200 lines per file.
 - All configuration (URLs, ports, limits, feature flags) must come from environment variables, never hardcoded.
 - No placeholder, lorem ipsum, or TODO strings as committed UI text. All user-facing strings must be real copy.
-- [Primary viewport rule, e.g. mobile first with desktop as progressive enhancement.]
 
 ## Planning Workflow
 - When creating an implementation or refactoring plan, use `/plan-review` to run the multi-stage review workflow after drafting.

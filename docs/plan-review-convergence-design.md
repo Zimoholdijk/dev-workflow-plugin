@@ -70,8 +70,8 @@ mislabeling reversible defects as irreversible.
 
 - **One-way door** (irreversible *decision*): a choice touching a trigger-list category (4.2)
   that cannot be changed with every dependant in one atomic deploy. Must be settled in the plan.
-- **Significant** (reversible but consequential): big blast radius, OR large magnitude (e.g. a
-  600-line file split), OR a serious *defect* in important code (cross-tenant leak, auth gap)
+- **Significant** (reversible but consequential): big blast radius, OR large magnitude (e.g.
+  splitting a large, widely imported module), OR a serious *defect* in important code (cross-tenant leak, auth gap)
   whose fix is reversible.
 - **Medium** (reversible, modest size, but a real correctness/behavior defect): data loss,
   wrong state, a race, an infinite loop, a broken flow. Not big, not cosmetic.
@@ -174,7 +174,7 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
   same area, or one that will not stay settled across two rounds, **escalates**: the
   assessor returns `Escalate` and the loop stops for a user architecture decision, rather
   than point-fixing symptoms forever. (The old design only raised an advisory flag here and
-  kept looping, which is how a loop can run many rounds on one cluster,
+  kept looping, which is how a loop can run many rounds on one area,
   each round point-fixing a new symptom of the one architecture decision underneath.) A
   One-way fixed once and then clean through a fully-cold round is **settled** and stops
   gating, **but its area's One-way count persists across banking**: banking suspends
@@ -205,14 +205,14 @@ stop to the user), never another automatic round.
 consistent: gains concentrate in the first 2-3 passes and plateau by 3-4; past the plateau,
 revision without an external verifier degrades more than it repairs (intrinsic
 self-correction flips more correct content wrong than the reverse, measured across models);
-and per-round new-finding counts in real audits decay toward zero rather than staying
+and per-round new-finding counts in published inspection data decay toward zero rather than staying
 productive. Engineering practice layers an adaptive completion signal with a hard iteration
 cap as a guardrail (framework defaults: 10-25). So: the primary stop is the tier gate plus
 the dry signal (new unique gated findings per round, tracked by the assessor); the guardrail
 is a cap at round 5, at which the assessor returns `Escalate` and the user decides (rework,
 accept the residual, or knowingly authorize more rounds).
-Uncapped loops show exactly the late-round profile the research predicts: churn,
-re-broken fixes, and noise, while the real architecture decision surfaces early.
+Uncapped loops tend to show the late-round profile the research predicts: churn,
+re-broken fixes, and noise, often after the real architecture decision has already surfaced.
 
 ## 6b. Who decides: trade-offs by tier
 
@@ -221,7 +221,7 @@ The tier governs not only convergence but **who owns the decision**:
 - **Medium / Minor**: the orchestrator fixes autonomously. They are reversible and low-stakes; asking about them is noise.
 - **One-way / Significant**: the user's call when they involve a genuine choice. Before deciding one, the orchestrator runs `/research` if it has a technical dimension, then routes: if the evidence settles it, apply the documented answer and tell the user (an irreversible call is surfaced even when clear); if it is a genuine choice (defensible either way, depends on product/UX/risk), STOP and ask the user, one at a time, **at the moment it is reached**, not batched at the end.
 
-The rule is that the user decides what needs their input, tied explicitly to the rubric: the things that need input are the irreversible and consequential ones (One-way and Significant), which is exactly what the grader already identifies.
+The principle is to ask the user about the things that need their input, now tied explicitly to the rubric: the things that need input are the irreversible and consequential ones (One-way and Significant), which is exactly what the grader already identifies.
 
 **Unattended exception:** inside an unattended pipeline (e.g. overnight-delivery), the loop cannot stop per answer; it applies evidence-resolved calls in-loop and accumulates the genuine One-way/Significant choices for that pipeline's trade-off gate.
 

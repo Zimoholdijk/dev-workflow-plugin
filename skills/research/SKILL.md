@@ -1,8 +1,8 @@
 ---
 name: research
-description: Spin up a research sub-agent to answer a technical question or find best practices, grounded in the repo, the plans, and the current discussion. For any named technology (Supabase, Prisma, a framework, a library), it reads the official documentation first, then corroborates with reputable engineering sources. Returns a cited, recommendation-first answer checked against the project's actual stack and versions. Takes the question as argument.
+description: Spin up a research sub-agent to answer a technical question or find best practices, grounded in the repo, the plans, and the current discussion. For any named technology (a database, an ORM, a framework, a library), it reads the official documentation first, then corroborates with reputable engineering sources. Returns a cited, recommendation-first answer checked against the project's actual stack and versions. Takes the question as argument.
 disable-model-invocation: false
-argument-hint: "[the question, e.g. 'best way to paginate a large feed in Supabase' or 'debounce vs throttle for this input']"
+argument-hint: "[the question, e.g. 'best way to paginate a large table in Postgres' or 'debounce vs throttle for this input']"
 ---
 
 # Research a Question
@@ -17,7 +17,7 @@ This skill spins up a research sub-agent to answer a technical question or find 
 - You need to verify whether a pattern is idiomatic for a specific tool (this is the framework-idiom check those skills call for, done properly with sources).
 - You're weighing two approaches and want the tradeoffs documented from credible sources, not asserted.
 
-For a broad, multi-source, fact-checked report on an open-ended topic, use a heavier multi-source research workflow instead. This skill is the focused, repo-grounded version: one or a few specific questions, answered against the docs and the project.
+This skill is focused and repo-grounded: one or a few specific questions, answered against the docs and the project. Split an open-ended topic into specific questions before using it.
 
 ## Rules
 
@@ -36,7 +36,7 @@ Before spawning anything, pin down what's actually being asked and assemble what
 
 1. **State the question precisely.** If the user's phrasing is broad, narrow it to the decision actually in front of you.
 2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do database migrations run on deploy, what does the payment provider guarantee about webhook retries, and how should the CI job cache dependencies" is database docs, payment-provider docs, and CI docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
-3. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / the ORM schema to learn exactly which tools and which versions are in play. Name them explicitly; "Supabase" alone is not enough, note the client/library versions and whether it's RLS, Auth, Storage, Edge Functions, etc.
+3. **Identify the technologies and their versions.** Read `package.json` / `deno.json` / lockfiles / `Cargo.toml` / the ORM schema to learn exactly which tools and which versions are in play. Name them explicitly; "the database" alone is not enough, note the client/library versions and which sub-features are involved (auth, storage, row-level policies, serverless functions, etc.).
 4. **Read the project context** the answer must fit: `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, and the specific PRD / implementation plan / `progress.md` the question arose from.
 5. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
 6. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a Supabase MCP with a `search_docs` tool, or a docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
@@ -81,5 +81,5 @@ If the research was prompted by a plan or PRD discussion, offer to fold the conc
 ## Notes
 
 - This skill pairs with the framework-idiom checks in `/plan-review` and `/full-code-review`: when a reviewer flags "is this pattern idiomatic?", `/research` is how you answer it with sources instead of asserting.
-- Keep the question specific. "How does auth work" is a reading task; "does this Supabase version support `getClaims()` for JWT verification, and is it preferred over `getUser()` here?" is a research question this skill answers well.
+- Keep the question specific. "How does auth work" is a reading task; "does the installed auth library version support verifying the session token locally, and is that preferred over a round-trip lookup here?" is a research question this skill answers well.
 - Persona-free prompting is deliberate (Rule 4). If you adapt this skill, do not add "act as an expert" framing back in.

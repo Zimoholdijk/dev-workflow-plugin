@@ -29,7 +29,7 @@ These rules are non-negotiable:
 Before writing anything, read:
 
 1. The approved PRD for this feature
-2. `context/[Feature]/implementation-plan.md` if `/discuss-plan` already seeded it: a plan stub whose `## Architecture Decisions` section holds the decisions agreed there, each with its basis (a research citation, an established fact, or a product call) and reversibility. **These are settled inputs**: keep their AD numbering, preserve their citations, and build the rest of the plan around them, do not silently reopen or contradict them. If planning reveals one is wrong, flag it to the user rather than quietly overriding it. (A legacy `context/[Feature]/design-decisions.md`, if one exists from an older run, is consumed the same way and then superseded by the plan.)
+2. `context/[Feature]/implementation-plan.md` if `/discuss-plan` already seeded it: a plan stub whose `## Architecture Decisions` section holds the decisions agreed there, each with its basis (a research citation, an established fact, or a product call) and reversibility. **These are settled inputs**: keep their AD numbering, preserve their citations, and build the rest of the plan around them, do not silently reopen or contradict them. If planning reveals one is wrong, flag it to the user rather than quietly overriding it.
 3. `context/overview.md`: project overview, tech stack, existing features, shared utilities
 4. `.claude/CLAUDE.md`: project rules
 5. `~/.claude/CLAUDE.md`: global rules
@@ -307,7 +307,7 @@ Do NOT proceed to implementation until the user explicitly approves the plan (af
 - No code blocks, schema or ORM syntax, or source code in the plan
 - No implementation details that belong in the code (exact prop shapes, CSS classes, etc.)
 - No Review Log inside the plan (it's a sidecar)
-- No phases that aren't browser-testable
+- No phases that can't be independently verified (browser, curl, SQL, or a test)
 - No "Phase 0" / probe / spike phase to learn a fact the planner could verify now (Step 1.5); discovery belongs in Verified Facts, not in a phase
 - No claim about response shape, data volume, or current behavior that is not in Verified Facts
 - No phase that adds logic without naming the tests it adds for that logic

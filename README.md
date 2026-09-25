@@ -31,7 +31,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, set
 
 All defined roles live in `agents/`, so skills spawn named sub-agents (consistent prompt, explicit model, restricted tools) rather than ad-hoc inline ones.
 
-Every agent carries a hard `maxTurns` and a shared budget rule: a turn is one message, not one tool call, so independent reads are batched; reading stops at a numeric reserve (five turns before the cap) and the remaining turns go to writing; and the complete result ships in a single final message, because nothing said before it reaches the caller. The spawning skills handle the other side: a run that comes back partial is resumed once with "no more reads, write what you have", then re-spawned once, and only then reported as not delivered, never silently dropped.
+Every agent carries a hard `maxTurns` and a shared budget rule: a turn is one message, not one tool call, so independent reads are batched; reading stops at a numeric reserve a few turns before the cap (five for the 20 to 30 turn agents, three for the 10 to 12 turn ones) and the remaining turns go to writing; and the complete result ships in a single final message, because nothing said before it reaches the caller. The spawning skills handle the other side: a run that comes back partial is resumed once with "no more reads, write what you have", then re-spawned once, and only then reported as not delivered, never silently dropped.
 
 **Plan-review** (red-team-reviewer on Opus; clarifying-reviewer, deep-critique-reviewer, grader, and assessor on Sonnet 5):
 

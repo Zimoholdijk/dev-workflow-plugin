@@ -16,7 +16,7 @@ This skill uses the **Playwright MCP** (bundled with this plugin, exposed as `mc
 These rules are non-negotiable:
 
 1. **Every aspect of new code gets a test.** E2E tests cover the user-facing flow; they do not replace unit tests for logic. If the feature has units worth testing in isolation (helpers, reducers, validators, server utilities), say so and either write them or flag them as a gap. End-to-end coverage of a happy path is not "fully tested."
-2. **Test against a running app, never a mock of it.** The user manages the dev server. Confirm the app is running and reachable before driving the browser. Do not start or restart dev servers yourself.
+2. **Test against a running app, never a mock of it.** Confirm the app is running and reachable before driving the browser. If the project's CLAUDE.md says the user manages dev servers, do not start or restart them; otherwise ask once before doing so.
 3. **Verify live before you commit a spec.** Use the Playwright MCP to walk the flow in a real browser first. Only write a spec assertion once you have observed the real behavior. Never write assertions against behavior you have not seen.
 4. **Cover more than the happy path.** A flow is not tested until you have exercised the happy path, the obvious error states, empty/loading states, and the relevant auth boundaries (signed-out, wrong-owner, expired session). List which of these apply and cover each, or state explicitly why one does not apply.
 5. **Tests must be deterministic.** No reliance on real wall-clock timing, network flakiness, or test-order coupling. Wait on application state (visible elements, URLs, network idle), not fixed sleeps. Each spec sets up and tears down its own data; tests must pass run in any order and in isolation.
@@ -53,7 +53,7 @@ If a step does not behave as the plan or PRD claims, stop, that is a bug in the 
 
 Translate each verified flow into a Playwright spec, following the project's existing conventions (file location, naming, fixtures, auth helpers). For each spec:
 
-- Name the test for the behavior it proves, not the mechanics ("reassigns a task and sees it in the new owner's list", not "click test 3").
+- Name the test for the behavior it proves, not the mechanics ("reassigns a task and sees it in the new assignee's list", not "click test 3").
 - Assert on user-visible state and application state, not implementation details.
 - Use role- and text-based locators (`getByRole`, `getByText`, `getByLabel`) over brittle CSS/XPath selectors.
 - Wait on state via Playwright's web-first, auto-retrying assertions (`expect(locator).toBeVisible()`, `toHaveURL`, etc.), never fixed timeouts or `waitForTimeout`.

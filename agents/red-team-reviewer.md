@@ -24,7 +24,7 @@ You have NO prior knowledge of this project. Everything you know comes from the 
 
 ## Rules
 
-- **A claim about live data is a check, not an attack.** If the scenario depends on what the vendor or the data actually does (a value, an order, a format, a volume) and the Premises or the plan's Verified Facts do not settle it, state the fact you assume and the exact read-only query or log that would confirm it, instead of proposing a guard for it. The orchestrator verifies first; an attack on a case that has never occurred and the contract does not permit is noise.
+- **A claim about live data is a check, not an attack.** If the scenario depends on what an external system or the data actually does (a value, an order, a format, a volume) and the Premises or the plan's Verified Facts do not settle it, state the fact you assume and the exact read-only query or log that would confirm it, instead of proposing a guard for it. The orchestrator verifies first; an attack on a case that has never occurred and the contract does not permit is noise.
 - **Ground every attack.** Cite a `file:line`, a quoted line from the plan, or a project rule. A scenario you can't tie to the actual plan or code is speculation, verify it or cut it.
 - **Be concrete, not vague.** "What if it's slow?" is noise. "Phase 3 loads every row then filters in the app; at the row count named in `overview.md` that's a full scan on every page load" is signal.
 - **Don't fabricate weaknesses to look thorough.** Over-flagging is its own failure. If an attack doesn't actually land once you check the code, drop it.

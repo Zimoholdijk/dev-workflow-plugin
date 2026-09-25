@@ -90,7 +90,7 @@ Stories should be testable: if you can't demo it in a browser, it's too vague.]
 
 [Prose description of what the user sees and can do. Not wireframes.
 Include: what's visible, what actions are available, what happens on each action.
-Call out mobile-specific considerations.
+Call out considerations for the project's primary viewport (and any secondary one).
 Reference related screens by name.]
 
 ### [Screen 2 Name]
@@ -155,7 +155,7 @@ Do NOT proceed to implementation planning until the user explicitly approves. "L
 Use `**Feature:** ... · **Ticket:** [TICKET-ID] · **Status:** Draft` on the first line and `**Depends on:** ...` on the second. Omit Ticket only when the work has no ticket (common for infrastructure PRDs).
 
 ### Content patterns
-- **Overview tone:** Direct, specific, problem-focused. Opens with the gap, not the solution. Example: "Tasks can be created but not handed off, so when an owner is away their tasks stall."
+- **Overview tone:** Direct, specific, problem-focused. Opens with the gap, not the solution. Example: "Tasks can be created but not handed off, so when an assignee is away their tasks stall."
 - **Goals:** Verb-led bullets. "Let users...", "Give users...", "Keep the experience consistent with..."
 - **Out of Scope:** Each item includes a reason or ticket reference. "Email notifications on reassignment (depends on the notifications feature, ENG-7)"
 - **User Stories:** Standard "As a [role]..." format. Grouped by journey, not by technical component. 3-5 groups, 2-5 stories per group.
@@ -165,5 +165,5 @@ Use `**Feature:** ... · **Ticket:** [TICKET-ID] · **Status:** Draft` on the fi
 
 ### Infrastructure PRDs (e.g. a storage or logging migration)
 Simpler structure. Skip User Stories, Screens/Flow, Success Criteria, and Open Questions. Add instead:
-- **Affected Areas**: grouped by Server / Frontend / Pages, listing specific files and what changes
+- **Affected Areas**: grouped by layer (e.g. backend / frontend / config), listing specific files and what changes
 - **Environment Variables** table: Variable | Example (dev) | Description

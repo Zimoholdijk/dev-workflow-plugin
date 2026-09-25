@@ -50,8 +50,8 @@ Based on the research and current state:
 
 - Re-read the changed files to confirm correctness
 - If the fix is a migration, verify SQL syntax is valid
-- If the fix is application code, check for TypeScript errors
-- Run existing tests if they cover the changed code (`npx vitest run` for the specific test file)
+- If the fix is application code, run the project's type checker or linter if it has one
+- Run the existing tests that cover the changed code, using the project's test command (see `.claude/CLAUDE.md`)
 
 ## Output
 

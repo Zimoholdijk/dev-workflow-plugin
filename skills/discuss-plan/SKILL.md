@@ -34,10 +34,10 @@ Read, do not dump at the user:
 
 - The approved PRD for this feature.
 - `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`.
-- The **actual code** the feature touches: the relevant routes, components, middleware, server utilities, and the current schema (the ORM schema file or the baseline migration). Read the real function bodies, policies, and existing patterns, not just file names.
+- The **actual code** the feature touches: the relevant routes, components, middleware, server utilities, and the current schema (the ORM schema file, migrations, or model definitions). Read the real function bodies, policies, and existing patterns, not just file names.
 - The **installed versions** (`package.json` / `deno.json` / lockfiles / the ORM schema) so every option you raise is one this stack actually supports.
 
-Use this to make each topic concrete and grounded in current behavior ("today the assignee lives on the task row, so adding a status there is cheaper than a new table") instead of generic.
+Use this to make each topic concrete and grounded in current behavior ("today every task row already carries its owner, so recording the assignee there is cheaper than a new assignments table") instead of generic.
 
 ## Step 2: Build a private topic list, one-way doors first
 
