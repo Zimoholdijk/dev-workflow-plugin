@@ -2,7 +2,7 @@
   "name": "plan-first-marketplace",
   "description": "Marketplace hosting the plan-first Claude Code plugin",
   "owner": {
-    "name": "Zimo Holdijk",
+    "name": "Zimoholdijk",
     "email": "zimoholdijk@gmail.com"
   },
   "plugins": [
