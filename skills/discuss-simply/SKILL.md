@@ -27,7 +27,7 @@ The user asked you to step back and simplify: $ARGUMENTS (or whatever is current
 - Re-presenting the original wall of text "with context".
 - Asking the decision before the ideas are confirmed.
 - Hedging that buries the recommendation.
-- Em dashes in these messages (commas, colons, or separate sentences).
+- Anything the writing-style rules in CLAUDE.md forbid.
 - "Simply", "just", "obviously", "as you can imagine".
 
 ## Notes

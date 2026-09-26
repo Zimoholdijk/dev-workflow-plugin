@@ -19,7 +19,7 @@ These rules are non-negotiable:
 4. **Research in-flight trade-offs, then surface only the genuine ones.** If you hit a decision not covered by the plan, research it first with `/research` (grounded in the project's stack) when it has a technical or best-practice dimension. If documented best practice or the project's own conventions clearly resolve it, apply that, record the decision and citation in `progress.md`, and don't stop the user for a settled question. Surface to the user only the genuinely contested choices, and bring the researched points with them. Document the user's decision in `progress.md`.
 5. **No commits unless asked.** The user manages git.
 6. **Dev servers.** If the project's CLAUDE.md says the user manages dev servers, do not start or restart them; otherwise ask once before doing so.
-7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy, that phase's "Testable" section, and that phase's referenced **Test Obligations** (see rule 7a), unit tests for the logic it adds, and an e2e test (via `/write-e2e-tests`) for any user-facing flow it exposes. A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
+7. **Tests ship with the code, in the same phase.** Each phase writes the tests named in the plan's Testing Strategy, that phase's "Testable" section, and that phase's referenced **Test Obligations** (see rule 7a), unit tests for the logic it adds, and an end-to-end test for any user-facing flow it exposes (for browser UIs, via `/write-e2e-tests`). A phase is not "Done" until its tests exist and pass. Do not batch all testing into a final phase, and do not mark a phase Done with the suite red. If the plan named no test for logic you just wrote, that's a gap, write the test and note it in `progress.md` rather than skipping it.
 7a. **Test Obligations are mandatory, not optional.** If the plan carries a `## Test Obligations` section (plan-review writes one at convergence for everything review deferred to code+tests), every obligation must be fulfilled by a real test in the phase that references it. An obligation that came with a **simplification note** flags an area that churned in review: before re-implementing it as-is, consider the simpler structure the note points at, then cover it with the obligated test either way. A phase that references an obligation is not "Done" until that obligation's test exists and passes.
 8. **You are the only writer; delegate only reads.** Do every file edit yourself, in the main session. Never spawn sub-agents to write code in parallel: parallel writers make conflicting implicit decisions the orchestrator can't reconcile. You may delegate read-only work (locating code, researching an idiom, reviewing a diff) to a sub-agent so its file-reading stays out of your context, but only when the reads are large enough to be worth the token cost. Don't spin up an agent for a trivial single-file lookup.
 9. **Don't thrash.** After about two failed attempts at the same issue, stop. Re-anchor from `progress.md` and the plan phase with fresh framing, and `/research` the actual error instead of guessing again. If still stuck, surface it to the user with what you tried. Never loop on the same broken approach.
@@ -33,7 +33,7 @@ Before writing any code, read:
 3. `context/overview.md`: current project state, shared utilities, key decisions
 4. `.claude/CLAUDE.md`: project rules
 5. `~/.claude/CLAUDE.md`: global rules
-6. The current schema (the ORM schema file, migrations, or model definitions)
+6. The persisted data model, if any (database schema, migrations, model definitions, or stored file formats)
 7. The feature's `progress.md` if it exists (may have work from a previous session)
 8. The plan's `## Test Obligations` section if present (what plan-review deferred to code+tests), and note which phase each obligation is referenced from
 
@@ -45,7 +45,7 @@ Before writing any code, scan the plan for **prerequisites the user must handle 
 
 Check for:
 
-1. **Schema migrations that assume empty tables or no data conflicts.** If the plan adds NOT NULL constraints to existing nullable columns, adds unique constraints, or changes column types, and the database may have existing data: flag it. The user should reset/seed their database first. Never add data manipulation (UPDATE, DELETE, INSERT) to migration files as a workaround.
+1. **Schema migrations that assume empty tables or no data conflicts.** If the plan adds NOT NULL constraints to existing nullable columns, adds unique constraints, or changes column types, and the database may have existing data: flag it. If the data is disposable (a local or seed database), the user can reset it; if production data exists, plan the backfill or data migration the project's convention calls for. Do not slip data changes into a schema migration as an unplanned workaround.
 2. **Database resets or seeds.** If the plan's testability depends on specific data state (empty DB, seed data, specific test records), flag it.
 3. **Environment changes.** If the plan requires new env vars, new Docker services, or infrastructure changes the user must configure.
 4. **Branch or git state.** If the plan specifies a branch name, check if it exists or needs to be created.
@@ -136,7 +136,7 @@ For each phase (in order):
 1. Follow the plan's sub-steps in order
 2. Use existing shared code: check the Shared Utilities table in `overview.md`
 3. If you create a new shared utility, note it for the overview update
-4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, **plus every Test Obligation this phase references** (per rule 7a), plus an e2e test for any user-facing flow (use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
+4. Write the phase's tests alongside its code, not after. Unit/integration tests for the logic the plan named for this phase, **plus every Test Obligation this phase references** (per rule 7a), plus an end-to-end test for any user-facing flow (for browser UIs, use `/write-e2e-tests`). Cover the error states, auth boundaries, and edge cases the plan calls out, not just the happy path. If you wrote non-trivial logic the plan didn't name a test for, write one anyway and note the gap in `progress.md`.
 5. If you deviate from the plan (different approach, extra file, skipped step), document why in `progress.md` under "Deviations from Plan"
 6. If you encounter a trade-off not covered by the plan, stop and research it first (`/research`). If the evidence settles it, apply it and record the decision + citation; otherwise surface it to the user with the researched points. Record the decision in `progress.md` under "Trade-off Decisions"
 

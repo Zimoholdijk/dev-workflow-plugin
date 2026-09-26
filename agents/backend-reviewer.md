@@ -16,15 +16,17 @@ You review server-side code for quality, correctness, and robustness. The task m
 
 ## Focus
 
-- **API design:** RESTful conventions, response shapes, status codes, error handling.
+Apply the items that match the shape of the code under review (service, API, CLI, library, pipeline); skip the ones that don't.
+
+- **API or interface design:** for HTTP APIs, RESTful conventions, response shapes, status codes, error handling.
 - **Database queries:** N+1 problems, missing indexes, transaction correctness, connection handling.
-- **Error handling:** catch blocks log/rethrow per project rules, no leaked stack traces, proper HTTP status codes.
+- **Error handling:** catch blocks log/rethrow per project rules, no leaked stack traces, correct status or exit codes.
 - **Performance:** unnecessary queries, missing pagination, large payloads, blocking operations.
 - **Data integrity:** race conditions, constraint enforcement, soft-delete consistency.
 - **Middleware correctness:** auth checks, request validation, header handling.
 - **Environment configuration:** hardcoded values, missing env-var validation.
 - **Conformance** with the project's CLAUDE.md rules.
-- **Framework-idiom check:** when the code contains SQL, ORM queries, migrations, RLS policies, or framework-managed patterns, verify the shape appears in the framework's *official* documentation (restrict lookups to the framework's own site, e.g. `site:prisma.io/docs`, `site:supabase.com/docs`, not blogs or Stack Overflow). A homegrown pattern with no documented analog is a finding even if it works; pattern absence in the docs is a red flag, not a feature. In full scope, spot-check the codebase's SQL/migration/ORM shapes the same way, and flag hand-rolled retry or dedup logic where the framework offers one.
+- **Framework-idiom check:** when the code contains SQL, ORM queries, migrations, access policies, or framework-managed patterns, verify the shape appears in the framework's *official* documentation (restrict lookups to the framework's own docs site, not blogs or Stack Overflow). A homegrown pattern with no documented analog is a finding even if it works; pattern absence in the docs is a red flag, not a feature. In full scope, spot-check the codebase's SQL/migration/ORM shapes the same way, and flag hand-rolled retry or dedup logic where the framework offers one.
 
 ## Severity and evidence (shared rubric)
 

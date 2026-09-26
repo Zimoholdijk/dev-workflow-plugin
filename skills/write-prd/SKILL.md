@@ -17,7 +17,7 @@ These rules are non-negotiable:
 2. **Document freeze.** Once the user approves, the PRD is frozen. All deviations during implementation go in `progress.md`, not by editing the PRD.
 3. **Never accept trade-offs silently.** Surface every trade-off, limitation, and open question. Let the user decide. Document their decision, not your judgment.
 4. **No placeholder text.** All user-facing copy must be real. No lorem ipsum, no "TBD" in decided items.
-5. **Primary viewport.** Describe UI for the viewport the project's rules name as primary (mobile, desktop, or both). If the project does not say, ask once and record the answer in the Decided table.
+5. **Primary viewport (visual UIs only).** Describe UI for the viewport the project's rules name as primary (mobile, desktop, or both). If the project does not say, ask once and record the answer in the Decided table.
 6. **The PRD describes *what* and *why*, never *how*.** No implementation details, no code, no technology choices (unless the technology IS the decision, e.g. "single sign-on only, no local passwords"). Implementation details belong in the implementation plan. Exception: infrastructure/migration PRDs may reference file paths in "Affected Areas" since the files ARE the scope.
 
 ## Step 1: Gather context
@@ -35,7 +35,7 @@ Also check if a PRD already exists for this feature in `context/`. If it does, i
 
 ## Step 2: Draft the PRD
 
-Use this exact structure. Every section is required for user-facing features. For infrastructure/migration features (no direct user interaction), you may omit "User Stories", "Screens / Flow", "Success Criteria", and "Open Questions". Replace User Stories and Screens/Flow with "Affected Areas" (grouped by Server/Frontend/Pages) and an "Environment Variables" table if the feature introduces new env vars. Use "Decided" as the section name (not "Decisions") for consistency.
+Use this exact structure. Every section is required for user-facing features. For infrastructure/migration features (no direct user interaction), you may omit "User Stories", "Interface / Flow", "Success Criteria", and "Open Questions". Replace User Stories and Interface / Flow with "Affected Areas" (grouped by the project's own layers) and an "Environment Variables" table if the feature introduces new env vars. Use "Decided" as the section name (not "Decisions") for consistency.
 
 ```markdown
 # [Feature Name] PRD
@@ -80,24 +80,24 @@ Format: "- [Thing] ([reason or future ticket])"  ]
 - ...
 
 [Group by user journey or feature area. 3-5 groups typical. 3-5 stories per group.
-Stories should be testable: if you can't demo it in a browser, it's too vague.]
+Stories should be testable: if you can't demonstrate it (in the UI, at the command line, or through the API), it's too vague.]
 
 ---
 
-## Screens / Flow
+## Interface / Flow
 
-### [Screen 1 Name]
+### [Screen, command, or endpoint 1]
 
-[Prose description of what the user sees and can do. Not wireframes.
+[Prose description of what the user sees and can do (a screen, a command, or an API call). Not wireframes.
 Include: what's visible, what actions are available, what happens on each action.
-Call out considerations for the project's primary viewport (and any secondary one).
-Reference related screens by name.]
+For visual UIs, call out considerations for the project's primary viewport.
+Reference related screens, commands, or endpoints by name.]
 
-### [Screen 2 Name]
+### [Screen, command, or endpoint 2]
 
 [...]
 
-[One subsection per distinct screen or state. Include empty states, error states,
+[One subsection per distinct screen, command, endpoint, or state. Include empty states, error states,
 and edge cases (e.g. "what if the list has no tasks yet?")]
 
 ---
@@ -105,7 +105,7 @@ and edge cases (e.g. "what if the list has no tasks yet?")]
 ## Success Criteria
 
 [Bullet list of testable statements. Each one should be verifiable by a human
-clicking through the app. No technical criteria: those go in the implementation plan.
+using the feature. No technical criteria: those go in the implementation plan.
 Format: "- A user can [do X] and [Y happens]"]
 
 ---
@@ -159,11 +159,11 @@ Use `**Feature:** ... · **Ticket:** [TICKET-ID] · **Status:** Draft` on the fi
 - **Goals:** Verb-led bullets. "Let users...", "Give users...", "Keep the experience consistent with..."
 - **Out of Scope:** Each item includes a reason or ticket reference. "Email notifications on reassignment (depends on the notifications feature, ENG-7)"
 - **User Stories:** Standard "As a [role]..." format. Grouped by journey, not by technical component. 3-5 groups, 2-5 stories per group.
-- **Screens / Flow:** Prose paragraphs per screen. Describe what the user sees, not how it's built. Include CTA copy verbatim. Reference ticket IDs for flows that depend on unbuilt features.
+- **Interface / Flow:** Prose paragraphs per screen, command, or endpoint. Describe what the user sees, not how it's built. Include CTA copy verbatim. Reference ticket IDs for flows that depend on unbuilt features.
 - **Decided table:** Two columns only: Question | Decision. No rationale column: the decision should be self-explanatory or the Overview/context makes it clear.
 - **Open Questions:** Brief. "None at this time." if everything is decided. Don't manufacture questions.
 
 ### Infrastructure PRDs (e.g. a storage or logging migration)
-Simpler structure. Skip User Stories, Screens/Flow, Success Criteria, and Open Questions. Add instead:
+Simpler structure. Skip User Stories, Interface / Flow, Success Criteria, and Open Questions. Add instead:
 - **Affected Areas**: grouped by layer (e.g. backend / frontend / config), listing specific files and what changes
 - **Environment Variables** table: Variable | Example (dev) | Description

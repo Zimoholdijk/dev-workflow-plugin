@@ -21,24 +21,23 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree with keeping it that lean?") or a single open lean ("Which way do you lean on the URL?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings). The discussion and the ticket are internal, em dashes there are fine.
-8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "we already render link previews, so a preview image is cheap").
+7. **Customer-facing copy follows the project's style rules.** Apply any writing-style rules in CLAUDE.md to copy you draft (CTA text, UI strings, messages).
+8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "the export already runs as a background job, so adding a format is cheap").
 
 ## Step 1: Ground yourself (silently, before the first message)
 
-Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (pages, routes, components) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today the dashboard does double duty: your own tasks plus tasks waiting on you").
+Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (the modules, screens, commands, or endpoints involved) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today the dashboard does double duty: your own tasks plus tasks waiting on you").
 
 ## Step 2: Build a private topic list
 
 Sketch the topics to walk through, ordered from framing outward. Typical shape for a user-facing feature:
 
 1. Problem framing: what the feature actually is, who its audiences are, why now
-2. Naming, URLs, and privacy: what identifies things publicly, what leaks
-3. Page or screen content: what is shown, empty states, logged-out behavior
-4. The share or first-contact surface: link previews, OG images, entry from outside
-5. Navigation and entry points: where it lives, what existing pages restructure
-6. Impact on existing users and data: backfills, relearning costs, prod safety
-7. Scope boundary: what is explicitly lean or out, and why
+2. Naming and exposure: what the feature is called, what becomes public or leaves the system
+3. The interface: what the user sees or calls (screen, command, or API), empty and error cases
+4. Entry points: how users find or reach it, and what existing parts change around it
+5. Impact on existing users and data: backfills, relearning costs, prod safety
+6. Scope boundary: what is explicitly lean or out, and why
 
 Adapt the list to the feature; drop topics that do not apply, add ones that do. Keep the list internal. Optionally preview the next topic in one trailing sentence ("Next I'd cover the URL and privacy question").
 

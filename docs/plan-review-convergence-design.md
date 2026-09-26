@@ -63,7 +63,7 @@ cannot update in lockstep), it is a one-way door.
 go more than one way and that a person should own; a **defect** is the plan being
 wrong/unsafe/incomplete with a correct fix. **Only a decision can be One-way.** A defect is
 graded by reversibility and blast radius even in security/auth/data code, a serious security
-bug whose fix ships in one atomic deploy (redeploy a function, tighten a policy
+bug whose fix ships in one atomic deploy (redeploy a service, tighten an access rule
 pre-prod-data, add a gate) is a reversible Significant defect, not a One-way. This is the fix
 for the "everything near auth grades One-way" failure: the category-4 shortcut was
 mislabeling reversible defects as irreversible.
@@ -123,8 +123,8 @@ magnitude under Significant.
   in-use mechanism that bounds the blast radius (API versioning + deprecation window,
   expand/contract migration, consumer-driven contract tests) **and** states the migration
   path. Data or events already written stay irreversible even then.
-- **Area tag:** the grader labels each finding with an area/topic (e.g. "sync state
-  machine", "public API contract") so the test-obligation list, the assessor's
+- **Area tag:** the grader labels each finding with an area/topic (e.g. "notification
+  delivery", "public API contract") so the test-obligation list, the assessor's
   banking, and its escalation test can name a consistent area. Use stable labels across rounds.
 - **Not-an-issue (discard disposition):** a finding that is factually wrong, already
   handled, or moot given the premises is graded Not-an-issue with cited refuting evidence

@@ -51,8 +51,8 @@ First split the changed files into **code** and **non-code**. Non-code: markdown
 |----------|--------------|
 | `testing-reviewer` | **Always, whenever any code file changed.** Every code change gets its coverage checked and the suite run. Not skippable (except in a docs-only diff). |
 | `regression-reviewer` | A **code** file contains deleted lines beyond pure whitespace/formatting/renames. Deletions in plans/docs don't count. |
-| `frontend-reviewer` | Client-side files changed: components, pages, styles, client hooks (`.tsx`/`.jsx`/`.vue`/`.svelte`, `.css`/`.scss`, `app/`/`pages/`/`components/` client code). |
-| `backend-reviewer` | Server-side files changed: API routes/handlers, services, db/schema/migrations, background jobs, middleware, server config. |
+| `frontend-reviewer` | UI code of any kind changed: web (`.tsx`/`.jsx`/`.vue`/`.svelte`, styles, client hooks), mobile, or desktop views. Never spawned for a project with no UI. |
+| `backend-reviewer` | Non-UI application code changed: services, API handlers, CLI commands, library modules, data pipelines, database schema or migrations, background jobs, config. |
 | `security-reviewer` | Risk greps hit in a **code** file's hunks (a plan *discussing* auth is not a signal; auth code is): auth, session, token, password, secret, key, permission, role, policy, RLS, payment, price, upload, deserialize, exec, raw SQL, `fetch(`/HTTP calls with user input, redirect, CORS, cookie. Or any new/changed endpoint. |
 | `architecture-reviewer` | The diff adds new files, touches 2+ modules/layers, or moves code between layers. |
 | `documentation-reviewer` | The diff touches docs (`*.md`, `docs/`, `context/`) or adds a route, exported utility, env var, or other documented surface. |
@@ -60,7 +60,7 @@ First split the changed files into **code** and **non-code**. Non-code: markdown
 **Escape hatches — run all seven whenever any of these hold:**
 
 - The diff is roughly ≥ 150 changed **code** lines or ≥ 10 **code** files (past that size, single-surface claims stop being credible). Docs, plans, and lockfiles never count toward size.
-- Any changed **code** file doesn't classify cleanly (unknown extension, generated code, vendored deps, mixed client/server file). Non-code files never trigger this.
+- Any changed **code** file doesn't classify cleanly (unknown extension, generated code, vendored deps, a file mixing UI and non-UI code). Non-code files never trigger this.
 - The user asked for it (`depth:full` or words to that effect).
 - You are uncertain for any reason. Ambiguity always resolves toward the full roster, never away from it.
 

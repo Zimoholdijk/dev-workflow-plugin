@@ -145,7 +145,7 @@ Present the delivery summary:
 
 Suggest the user:
 1. Review the diff (`git diff <base>...HEAD --stat`, using the same base as the code review)
-2. Test in the browser
+2. Try the feature yourself (run the app, the command, or the examples)
 3. Commit when satisfied
 4. Create a PR when ready
 

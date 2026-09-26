@@ -35,8 +35,8 @@ Your review should cover:
 - Could any step cause data loss?
 
 **Operational Reality & Failure Modes** (required, grade this explicitly)
-- For each new or rewritten surface, what happens when it fails? Are error states, empty states, and loading states handled, or only the happy path?
-- Are auth/ownership boundaries enforced where they matter (signed-out, wrong-owner, expired session), or assumed?
+- For each new or rewritten surface, what happens when it fails? Are error states handled (and empty and loading states, where the project has them), or only the happy path?
+- Where the project has users and ownership, are auth/ownership boundaries enforced where they matter (signed-out, wrong-owner, expired session), or assumed?
 - If a migration or deploy goes wrong mid-way, what's the rollback, and does the plan name it?
 - Could you tell, in production, that this broke? Is there enough logging/observability to debug it at 3 a.m.?
 - This is a DFMEA-style pass: enumerate what could go wrong, ranked by likelihood × blast radius, and check the plan handles or consciously defers each. The most consequential gaps are usually what the plan is silent about, not what it gets wrong.

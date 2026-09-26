@@ -21,7 +21,7 @@ Before creating anything, check what already exists:
 2. Check if `.claude/CLAUDE.md` exists
 3. Check if `context/` directory exists
 4. Check if `context/overview.md` exists
-5. Read `package.json`, `deno.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, or equivalent to detect tech stack
+5. Read `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `Gemfile`, or equivalent to detect tech stack
 6. Read `prisma/schema.prisma`, `drizzle.config.ts`, `knexfile.js`, or equivalent to detect ORM/DB
 7. Check for existing framework config (`astro.config.*`, `next.config.*`, `vite.config.*`, etc.)
 
@@ -34,10 +34,10 @@ If any of `.claude/CLAUDE.md`, `context/overview.md` already exist, ask the user
 Ask the user these questions (skip any that were auto-detected in Step 1):
 
 1. **What are you building?** (1-2 sentence description, this goes in the overview)
-2. **Tech stack**: confirm or correct what was auto-detected (runtime, frontend, API, ORM, CSS, auth)
-3. **Architecture**: how many servers/processes in dev? What serves pages vs. API?
-4. **Auth approach**: magic link, OAuth, session-based, JWT, etc.?
-5. **Database**: what DB, any soft-delete conventions, any existing models?
+2. **Project kind and tech stack**: what kind of project it is (web app, mobile app, CLI, library, service, data pipeline), then confirm or correct what was auto-detected (language and runtime, plus whichever of frontend, API, database, and auth apply). Ask only the follow-up questions below that fit this kind of project.
+3. **Architecture**: the main components and how they talk (processes, services, packages), and how it runs in dev
+4. **Auth approach** (if any): magic link, OAuth, session-based, JWT, API keys, etc.?
+5. **Data storage** (if any): what database or storage, any soft-delete conventions, any existing models?
 6. **Deployment target**: where will this run? (helps inform env var conventions)
 7. **Local-dev gotchas**: any non-default ports, service quirks, pre-existing build/lint errors, or env vars that have bitten before? (these go in CLAUDE.md so a fresh session doesn't waste its first turns rediscovering them)
 8. **Testing reality**: what test infrastructure exists today, if any? Can new features assume a suite?
@@ -77,7 +77,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Add any project-specific tech notes, e.g. "the test database is recreated per run; never point tests at the dev database"]
 
 ## Architecture
-[Fill in from Step 2: dev server setup, page vs API separation, middleware structure]
+[Fill in from Step 2: main components, how they communicate, and how the project runs in dev]
 
 ## Local-Dev Gotchas
 [Things that have bitten before and would waste a fresh session's first turns. Examples:
@@ -91,7 +91,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Map the actual project structure. List key directories and what lives where, one line each:]
 - `[directory]/`: [what lives there]
 
-## Database & Migrations
+## Database & Migrations *(example, SQL database)*
 - Migration files are schema-only. Never add data manipulation (UPDATE, DELETE, INSERT) to migration files. If a migration would fail due to existing data, surface it as a prerequisite for the user to handle (reset DB, seed clean data, etc.).
 - Before implementing schema changes, check whether the database has existing data that would conflict. Flag it to the user before writing any migration code.
 [Add any project-specific DB conventions, soft delete patterns, ID format, etc.]
@@ -116,9 +116,9 @@ This file contains project-specific rules that Claude must follow. Create it wit
 - At task completion, review changes for type safety, unused imports/variables, and proper error handling.
 
 ## Testing
-- Every aspect of code that's written gets a test. Logic gets unit tests; endpoints and module boundaries get integration tests; user-facing flows get Playwright e2e tests (use `/write-e2e-tests`). New code without a test is incomplete.
+- Every aspect of code that's written gets a test. Logic gets unit tests; endpoints and module boundaries get integration tests; user-facing flows get end-to-end tests (for browser UIs, `/write-e2e-tests` with Playwright). New code without a test is incomplete.
 - Test as you build, in the same phase, not as a final clean-up pass. A phase is not done until its tests exist and pass.
-- Cover more than the happy path: error states, auth boundaries (signed-out, wrong-owner, expired), and empty/loading states.
+- Cover more than the happy path: error states and, where the project has them, auth boundaries (signed-out, wrong-owner, expired) and empty/loading states.
 - Tests must be deterministic and isolated: each sets up and tears down its own data, waits on application state rather than fixed sleeps, and passes in any order.
 - Critical flows must be covered by an automated test, not just a manual check, manual-only coverage regresses silently.
 [If the project has no test runner yet, the first task is to establish one (runner + e2e harness + a first passing test) before feature work. For a new TypeScript/Vite stack, Vitest is the current default (Jest-compatible API, native TS/ESM, shared Vite config); use Jest to match an existing codebase or for React Native, and Playwright for e2e. For an existing repo, adopt whatever runner is already there rather than introducing a second one. Note the chosen tools here once picked.]
@@ -216,13 +216,13 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
 - **Testable phases.** Each phase produces something independently verifiable (in the browser, via curl or SQL, or by a test) AND ships its own tests. Shells before detail.
-- **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints, Playwright e2e tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
-- **[Primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
+- **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints and module boundaries, end-to-end tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
+- **[If the project has a visual UI: primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
 - **No auto-commits.** Claude does not commit unless explicitly asked.
 - **Document freeze.** PRDs and plans are frozen once agreed. Deviations go in `progress.md`, not by editing the plan.
 - **The overview is a summary.** Details live in feature docs. Updated only for stable project-wide decisions.
 - **Surface all trade-offs.** Never accept trade-offs silently. Document the user's decision, not Claude's judgement.
-- **No data in migrations.** Migration files are schema-only. Flag DB prerequisites to the user instead.
+- **[If the project has a database: its migration policy, e.g. schema-only migrations with data prerequisites flagged to the user.]**
 
 ---
 
@@ -286,8 +286,8 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 - *(example, HTTP API)* Wrap all database calls in try/catch. Return 500 with `{ error: "Internal server error" }` on failure, never leak stack traces.
 - Keep functions under CC=15. If a function has more than ~15 branch points, refactor it.
 - *(example, React)* React components should do one thing. If a component manages more than 3 concerns, split it. Target <200 lines per file.
-- All configuration (URLs, ports, limits, feature flags) must come from environment variables, never hardcoded.
-- No placeholder, lorem ipsum, or TODO strings as committed UI text. All user-facing strings must be real copy.
+- All configuration (URLs, ports, limits, feature flags) must come from the project's configuration mechanism (environment variables, config files, or build settings), never hardcoded.
+- *(if the project has a UI)* No placeholder, lorem ipsum, or TODO strings as committed UI text. All user-facing strings must be real copy.
 
 ## Planning Workflow
 - When creating an implementation or refactoring plan, use `/plan-review` to run the multi-stage review workflow after drafting.
@@ -367,5 +367,5 @@ Tell the user what was created:
 1. **Detect, don't assume.** Read the repo before generating files. The scaffolding must match the actual project.
 2. **Ask, don't guess.** If something can't be auto-detected, ask the user. Wrong scaffolding is worse than no scaffolding.
 3. **Minimal viable structure.** Create only what's needed now. Empty tables and placeholder sections are fine. They get populated during development.
-4. **Universal rules, project-specific details.** Working agreements and code quality rules are universal. Tech stack, architecture, and file organization are project-specific.
+4. **Starter rules, project-specific details.** Working agreements and code quality rules are starting defaults the user adjusts; rules marked as examples apply only to their stack. Tech stack, architecture, and file organization are project-specific.
 5. **Never overwrite.** If files exist, ask before replacing. The user may have customized them.

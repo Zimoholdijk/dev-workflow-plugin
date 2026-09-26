@@ -12,14 +12,14 @@ Answer from sources you read during this task, not from prior knowledge: trainin
 
 ## Research in this order, weighting by credibility
 
-1. **Official documentation first.** Go to the canonical docs for the specific technology (`supabase.com/docs`, `prisma.io/docs`, `react.dev`, the library's own docs site or GitHub README). If a documentation-search tool is available (e.g. a Supabase MCP `search_docs`), use it here. Read the *current* docs and prefer the page matching the project's installed version. Establish what the tool officially supports and recommends before looking anywhere else.
+1. **Official documentation first.** Go to the canonical docs for the specific technology (e.g. `docs.python.org`, `postgresql.org/docs`, `react.dev`, or the library's own docs site or GitHub README). If a documentation-search tool is available (e.g. a vendor's docs-search MCP), use it here. Read the *current* docs and prefer the page matching the project's installed version. Establish what the tool officially supports and recommends before looking anywhere else.
 2. **The tool's own source, changelog, and issue tracker** when the docs are ambiguous or silent. Release notes and maintainer answers in issues/discussions are high-signal for "is this supported and idiomatic in this version?"
 3. **Reputable secondary sources** for real-world tradeoffs and pitfalls the docs omit: well-regarded engineering blogs, maintainers' writing, conference talks. Weight by author credibility and recency.
 4. **Treat with skepticism, do not rely on alone:** SEO content farms, undated tutorials, AI-generated listicles, unattributed forum answers. A single Stack Overflow answer is a lead to verify, not a conclusion.
 
 **Cross-check:** where a secondary source conflicts with the official docs on what is supported or idiomatic, the docs win, and note the conflict. Where reputable sources genuinely disagree on a judgment call, present both rather than picking one silently.
 
-**Ground every recommendation in the project's actual versions and constraints.** Check `package.json` / `deno.json` / lockfiles / `Cargo.toml` / the ORM schema if you need to confirm a version. Do not recommend a pattern the project's version does not support, or one that violates a stated project rule; flag it if the idiomatic approach conflicts with a project convention.
+**Ground every recommendation in the project's actual versions and constraints.** Check the project's manifests and lockfiles (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, …) if you need to confirm a version. Do not recommend a pattern the project's version does not support, or one that violates a stated project rule; flag it if the idiomatic approach conflicts with a project convention.
 
 ## Budget and checkpointing
 

@@ -16,7 +16,7 @@ These rules are non-negotiable:
 1. **PRD must be approved first.** Do not write an implementation plan for a feature without an approved PRD. If the PRD status is "Draft", stop and tell the user.
 2. **The plan describes *how*, not *what*.** The PRD covers what and why. The plan covers architecture decisions, schema changes, file changes, and phased implementation.
 3. **No code in the plan.** Describe what to build in prose. No schema or ORM syntax, no TypeScript, no JSX, no code expressions. Implementation details like "use try/catch" or "return 500" are fine: code blocks are not. If you catch yourself writing backtick-wrapped code expressions (like `{ where: { status: "active" } }`), rewrite as prose.
-4. **Every phase must be testable, by a human and by the test suite.** Each phase ends with a "Testable" section describing (a) what a human can verify in the browser or via curl, and (b) the automated tests that ship *with that phase*, unit tests for the logic it introduces, plus integration or end-to-end tests for the flow it exposes. A phase that adds logic without adding tests for that logic is not done. If a phase isn't testable, merge it with the next one.
+4. **Every phase must be testable, by a human and by the test suite.** Each phase ends with a "Testable" section describing (a) what a human can verify by running it (in the UI, at the command line, via curl, or in a REPL), and (b) the automated tests that ship *with that phase*, unit tests for the logic it introduces, plus integration or end-to-end tests for the flow it exposes. A phase that adds logic without adding tests for that logic is not done. If a phase isn't testable, merge it with the next one.
 5. **Testing is part of the plan, not an afterthought.** The plan must include a "Testing Strategy" section (see structure below) and every phase must name the tests it adds. Do not defer all testing to a final phase. New code is covered as it lands. If the project has no test infrastructure yet, the first phase establishes it (test runner, e2e harness, a first passing test) before feature work proceeds, and the plan says so explicitly.
 6. **Shells before detail.** For UI work, create the page or screen shell first, then the interactive parts inside it, so every phase has somewhere to render.
 7. **Document freeze.** Once approved, the plan is frozen. Deviations during implementation go in `progress.md`.
@@ -34,8 +34,8 @@ Before writing anything, read:
 4. `.claude/CLAUDE.md`: project rules
 5. `~/.claude/CLAUDE.md`: global rules
 6. Any existing feature docs that this feature depends on or interacts with
-7. The current schema (the ORM schema file, migrations, or model definitions)
-8. Relevant existing code files that will be modified (middleware, routes, pages, components)
+7. The persisted data model, if any (database schema, migrations, model definitions, or stored file formats)
+8. Relevant existing code files that will be modified (e.g. middleware, routes, pages, and components in a web app)
 
 Understand the current state of the codebase before proposing changes. Check what already exists in shared utilities before creating new ones. If discuss-plan seeded the Architecture Decisions, the big trade-offs are largely settled; Step 2.6 then only needs to research trade-offs that surface fresh during planning, not re-litigate the agreed ones.
 
@@ -54,7 +54,7 @@ Record each fact in the plan's **Verified Facts** section: the claim, how it was
 
 ## Step 2: Draft the plan
 
-Use this exact structure. Every section is required.
+Use this exact structure. Every section is required, except Schema Changes when the feature persists no data.
 
 ```markdown
 # [Feature Name]: Implementation Plan
@@ -140,9 +140,10 @@ Cover, in prose:
 - **Integration / API tests:** which endpoints or module boundaries get tested against a
   real DB / real adjacent module, and which paths (auth boundaries, validation failures,
   error responses) must be exercised.
-- **End-to-end tests:** which user-facing flows get a Playwright browser test (run
-  `/write-e2e-tests` to author them). List the flows and the states each must cover:
-  happy path, error states, empty/loading states, signed-out and wrong-owner boundaries.
+- **End-to-end tests:** which user-facing flows get an end-to-end test in the project's
+  harness (for browser UIs, `/write-e2e-tests` authors Playwright specs). List the flows and the states each must cover:
+  happy path, error states, and, where the project has them, empty/loading states and
+  signed-out or wrong-owner boundaries.
 - **Existing infrastructure:** what test runner, harness, fixtures, and seed/data-reset
   approach already exist (from `.claude/CLAUDE.md` "Testing Reality"). If none exist,
   state that Phase 1 establishes them before feature work.
@@ -164,7 +165,7 @@ named here.]
 Each sub-step names the file and describes what changes in prose.
 Reference Architecture Decisions by number (AD-N) when relevant.]
 
-**Testable:** [Two parts. (a) Manual: what a human can verify in the browser or via curl
+**Testable:** [Two parts. (a) Manual: what a human can verify by running it (UI, command line, curl, REPL)
 after this phase. (b) Automated: the tests this phase adds, the unit tests for any logic
 introduced and the integration/e2e test for the flow exposed, named specifically and
 expected to pass at the end of the phase.]
@@ -178,15 +179,15 @@ expected to pass at the end of the phase.]
 ---
 
 [3-7 phases typical. Each phase builds on the previous.
-Phase 1 is usually schema + API foundation.
-Last phase is usually cleanup + redirects.]
+Phase 1 is usually the foundation the rest builds on (data model, core module, or interface).
+Last phase is usually cleanup (removing old paths, flags, or shims).]
 
 ## Verification (end-to-end)
 
 [Numbered list of end-to-end scenarios that should work after all phases.
 These are the acceptance tests. 8-15 items typical.
 Cover: happy paths, edge cases, auth boundaries, error states.
-Mark which scenarios are covered by an automated test (the Playwright e2e specs from the
+Mark which scenarios are covered by an automated test (the end-to-end specs from the
 Testing Strategy) versus verified manually. Aim for the critical flows to be automated, a
 scenario that only ever gets a manual check will regress silently.]
 ```
@@ -285,7 +286,7 @@ Do NOT proceed to implementation until the user explicitly approves the plan (af
 - Each phase has: title, Goal (one sentence), Changes (prose, optionally with sub-steps), Testable
 - Sub-steps use format: "### 1a. [Title] (`file/path`)"
 - Reference ADs by number: "per AD-3" or "(AD-7)"
-- Testable section is imperative: "User clicks X → Y happens"
+- Testable section is imperative: "Actor does X → Y happens"
 - Larger plans use sub-steps within phases; smaller plans use paragraphs
 
 ### Verification

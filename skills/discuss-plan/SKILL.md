@@ -1,6 +1,6 @@
 ---
 name: discuss-plan
-description: "Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run SQL or check production where a decision needs facts it can't get, writes the agreed decisions directly into the plan file's Architecture Decisions section (no separate design doc), and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Two entry points: between /write-prd and /write-plan to settle architecture before phasing, AND mid-plan-review (the round-3 design checkpoint, or whenever review rounds keep churning on one area) to step back and simplify — decisions then fold into the existing plan's Architecture Decisions. Takes a feature name or PRD path as argument."
+description: "Run a pre-plan architecture and design discussion in plain language, grounded in the approved PRD and the actual codebase. Walks the big design decisions one short topic at a time, researches technical trade-offs docs-first before surfacing them, asks you to run a read-only query or check production where a decision needs facts it can't get, writes the agreed decisions directly into the plan file's Architecture Decisions section (no separate design doc), and hands off to /write-plan. Adapts its depth to the user: drops to first-principles tutoring (one concept per message, plain analogy first, then the jargon) the moment the user signals confusion, and rises back when they're fluent. Two entry points: between /write-prd and /write-plan to settle architecture before phasing, AND mid-plan-review (the round-3 design checkpoint, or whenever review rounds keep churning on one area) to step back and simplify — decisions then fold into the existing plan's Architecture Decisions. Takes a feature name or PRD path as argument."
 disable-model-invocation: false
 argument-hint: "[feature name or path to PRD, e.g. 'Assignments' or 'context/Assignments/AssignmentsPRD.md']"
 ---
@@ -25,7 +25,7 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree we store the assignee on the task itself?") or a single open lean ("Which way do you lean on keeping a history of reassignments?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation, researched first.** Describe 2-3 realistic options in flowing sentences, say which you lean toward and why, then let the user decide. But research the technical ones before you surface them (see Step 3): documented best practice often settles a trade-off outright, and the user should only adjudicate genuinely open choices. Never decide silently; never hand over a bare "A or B?" you could have researched.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **No em dashes in customer-facing copy** you draft. The discussion and the plan file are internal, em dashes there are fine.
+7. **Customer-facing copy follows the project's style rules.** Apply any writing-style rules in CLAUDE.md to copy you draft.
 8. **Architecture-decision altitude.** Discuss the shape of the solution: data model, contracts and API surface, auth and trust boundaries, how it integrates with existing code, error and edge-case strategy, performance at real data volumes, migration and rollback. Stay above the plan: no phase breakdown, no file-by-file list, no code (those are `/write-plan`'s job). Stay above the PRD too: do not reopen what or why; if a requirement seems wrong, flag it as a PRD question, do not redesign around it silently.
 
 ## Step 1: Ground yourself (silently, before the first message)
@@ -35,7 +35,7 @@ Read, do not dump at the user:
 - The approved PRD for this feature.
 - `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`.
 - The **actual code** the feature touches: the relevant routes, components, middleware, server utilities, and the current schema (the ORM schema file, migrations, or model definitions). Read the real function bodies, policies, and existing patterns, not just file names.
-- The **installed versions** (`package.json` / `deno.json` / lockfiles / the ORM schema) so every option you raise is one this stack actually supports.
+- The **installed versions** (the project's manifests and lockfiles (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, …)) so every option you raise is one this stack actually supports.
 
 Use this to make each topic concrete and grounded in current behavior ("today every task row already carries its owner, so recording the assignee there is cheaper than a new assignments table") instead of generic.
 
@@ -68,8 +68,8 @@ Pure product/UX-preference choices with no documented answer don't need research
 
 Some design calls turn on facts you cannot read off the code: whether production data already exists, how many rows a table really holds, what a query currently costs, whether an index or constraint is actually present, what a live policy or trigger does at runtime, current error rates. Do not guess these, they change the answer (and a wrong guess on a one-way door is the expensive mistake).
 
-- **Investigate yourself** where you can: read the migration, the schema, the function body. If a documentation or database MCP is connected (for example a Supabase MCP with `search_docs`, `list_tables`, or `execute_sql`, or read-only logs/advisors), use it to check docs and inspect non-destructive state.
-- **Ask the user to investigate** what you can't reach: a specific SQL query to run against production or staging, a row count, a metric to read, a check in the dashboard. Give them the exact thing to run and what you'll do with each outcome, then fold the result into the decision before moving on.
+- **Investigate yourself** where you can: read the migration, the schema, the function body. If a documentation or database MCP is connected (for example a docs-search MCP, a database MCP with read-only query tools, or read-only logs), use it to check docs and inspect non-destructive state.
+- **Ask the user to investigate** what you can't reach: a specific read-only query, command, or log check to run against production or staging, a row count, a metric to read, a check in the dashboard. Give them the exact thing to run and what you'll do with each outcome, then fold the result into the decision before moving on.
 - When a fact governs an irreversible call and you genuinely cannot confirm it, **assume the safe direction** (e.g. assume production data exists) and say you did, so the design errs toward reversibility.
 
 ## Step 5: Walk the topics
@@ -99,7 +99,7 @@ The Response Rules assume a user who can already parse "schema", "contract", and
 
 7. **Stay at architecture altitude even while teaching.** Tutor mode explains the *concepts behind* the design decisions; it does not descend into code, file paths, or phase breakdowns (those remain out of scope for this skill, per Response Rule 8). Teach just enough for the user to own the decision.
 
-All other Response Rules hold while teaching: the 150-word cap (except the glossary case above), one question per message, plain prose, no em dashes in customer-facing copy, and research before surfacing a technical trade-off.
+All other Response Rules hold while teaching: the 150-word cap (except the glossary case above), one question per message, plain prose, customer-facing copy follows the project's style rules, and research before surfacing a technical trade-off.
 
 ## Step 6: Wrap up
 
@@ -125,7 +125,7 @@ Written into `context/[Feature]/implementation-plan.md` (created if absent):
 ### AD-1: [decision area] ([one-way door / reversible])
 
 [The choice agreed, in two or three sentences of prose. Basis: a research
-citation, an established fact (code / SQL / production, and how it was
+citation, an established fact (code / a query / production, and how it was
 confirmed), or "product call".]
 
 ### AD-2: ...
