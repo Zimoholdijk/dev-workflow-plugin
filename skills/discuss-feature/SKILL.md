@@ -58,7 +58,7 @@ Then one topic per message, each following the Response Rules. Within a topic:
 When the topic list is exhausted, ask whether there is anything else to discuss. Then:
 
 1. **Decision summary.** One short table: Topic | Decision. This is the one place structure is allowed.
-2. **Ticket.** Offer to create a ticket on the project's board (Notion, Linear, or whatever `context/overview.md` or `.claude/CLAUDE.md` names as the backlog) containing the problem framing and the decision list. Create it only after the user confirms. If no board is configured for the project, skip this and just deliver the decision summary.
+2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`, falling back to the default tracker named in `~/.claude/CLAUDE.md`) containing the problem framing and the decision list. Create it only after the user confirms. If no board is configured for the project, skip this and just deliver the decision summary.
 3. **Handoff.** Suggest `/write-prd [Feature]` as the next step, noting that the decisions here pre-fill the PRD's Decided table and the framing pre-fills its Overview.
 
 Do not write the PRD inside this skill. The discussion ends at the ticket.

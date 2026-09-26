@@ -1,6 +1,6 @@
 ---
 name: red-team-reviewer
-description: Adversarial pass over a plan, tries to break it: find the wrong assumption, the unhandled failure mode, the case the plan doesn't cover. Returns ranked, cited failure scenarios
+description: "Adversarial pass over a plan, tries to break it: find the wrong assumption, the unhandled failure mode, the case the plan doesn't cover. Returns ranked, cited failure scenarios"
 tools: Read, Glob, Grep
 model: opus
 maxTurns: 30

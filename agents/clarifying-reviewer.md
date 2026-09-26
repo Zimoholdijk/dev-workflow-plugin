@@ -1,8 +1,8 @@
 ---
 name: clarifying-reviewer
-description: Clarifying-questions pass over a plan: surfaces ambiguity, gaps, unstated assumptions, and missing tests by asking precise, project-grounded questions
+description: "Clarifying-questions pass over a plan: surfaces ambiguity, gaps, unstated assumptions, and missing tests by asking precise, project-grounded questions"
 tools: Read, Glob, Grep
-model: claude-sonnet-5
+model: sonnet
 maxTurns: 30
 ---
 

@@ -246,7 +246,7 @@ The whole loop is bounded: expect convergence in **2-3 rounds** (that is where i
 
 State the assessor's verdict explicitly each round: `Another round` (with what was fixed and what is still live), `Converged`, or `Escalate` (with the trigger, root cause, and the decision for the user). On `Escalate`, stop the loop and put that decision to the user per the trade-off rule, do not run another point-fix round in the hope the area settles itself.
 
-This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` or `/goal` primitives, and it does not use them. `/loop` is for time-spaced recurring tasks; `/goal` is a session-level model evaluator. Here the assessor owns the exit decision directly, and cold-start holds across rounds because each round spawns fresh reviewer sub-agents fed only the plan, with the sidecar withheld.
+This is an internal loop with a deterministic exit condition, **not** the Claude Code `/loop` command, and it does not use it. `/loop` is for time-spaced recurring tasks. Here the assessor owns the exit decision directly, and cold-start holds across rounds because each round spawns fresh reviewer sub-agents fed only the plan, with the sidecar withheld.
 
 ## The round-3 design checkpoint (interactive runs)
 

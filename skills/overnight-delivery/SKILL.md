@@ -42,7 +42,7 @@ What to rely on (plan-review owns the mechanics):
 
 plan-review's interactive round-3 design checkpoint does not fire here (there is no user to discuss with overnight); a loop still open after round 3 runs straight on toward the cap, and any design question arrives via the escalation path below.
 
-**If the assessor returns `Escalate`** (a recurring One-way area, an unsettleable One-way, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds).
+**If the assessor returns `Escalate`** (a second One-way in one area, an unsettleable One-way, a third Significant in one area, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds).
 
 ---
 
@@ -83,7 +83,7 @@ This implements the plan phase by phase, creating the progress doc, writing code
 
 Run `/full-code-review` with the feature branch's base (the branch this feature will merge into; check the plan's Branch field or the project's documented integration branch).
 
-This spawns 7 parallel reviewers (security, backend, frontend, architecture, documentation, regressions, and testing, the testing reviewer checks that new code has tests and runs the suite). After consolidation:
+This spawns up to 7 parallel reviewers, selected from the diff (security, backend, frontend, architecture, documentation, regressions, and testing, the testing reviewer checks that new code has tests and runs the suite). After consolidation:
 
 1. **Clear fixes**: Apply immediately (typos, missing constants, accessibility, dead code).
 2. **Tradeoffs**: Note them. They'll be reviewed after Round 2.
@@ -144,7 +144,7 @@ Present the delivery summary:
 ```
 
 Suggest the user:
-1. Review the diff (`git diff main...HEAD --stat`)
+1. Review the diff (`git diff <base>...HEAD --stat`, using the same base as the code review)
 2. Test in the browser
 3. Commit when satisfied
 4. Create a PR when ready

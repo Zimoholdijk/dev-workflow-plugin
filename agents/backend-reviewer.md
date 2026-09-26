@@ -2,7 +2,7 @@
 name: backend-reviewer
 description: Code-review lens for backend quality, correctness, and robustness, including a framework-idiom check against official docs. Reviews a branch diff or (full scope) the whole codebase. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash, WebFetch
-model: claude-sonnet-5
+model: sonnet
 maxTurns: 30
 ---
 

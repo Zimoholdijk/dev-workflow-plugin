@@ -9,7 +9,7 @@ argument-hint: "[project name, e.g. 'task-tracker' or 'my-saas-app']"
 
 You are setting up a new project: $ARGUMENTS
 
-This skill creates the full project scaffolding: context directory, CLAUDE.md rules, overview doc, and working agreements, based on battle-tested conventions. It produces files that the other skills (`/write-prd`, `/write-plan`, `/plan-review`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/overnight-delivery`) depend on.
+This skill creates the full project scaffolding: context directory, CLAUDE.md rules, overview doc, and working agreements, based on battle-tested conventions. It produces files that the other skills (`/discuss-feature`, `/write-prd`, `/discuss-plan`, `/write-plan`, `/plan-review`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/overnight-delivery`) depend on.
 
 ---
 
@@ -153,7 +153,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
 
 ## Workflow Skills
-The plan-first skills are available: `/discuss-feature`, `/write-prd`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
+The plan-first skills are available: `/discuss-feature`, `/write-prd`, `/discuss-plan`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`, `/discuss-simply`, `/overnight-delivery`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then `/discuss-plan`, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
 ```
 
 **Important:** Only include sections that are relevant. If there's no database, omit the Database section. If the tech stack is simple, keep it brief. The CLAUDE.md should grow organically as conventions are established. Don't front-load rules that haven't been tested yet.
@@ -265,7 +265,7 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 
 ## Step 6: Verify global rules exist
 
-Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contains the core workflow rules. If it doesn't exist, create it with these universal best practices:
+Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contains the core workflow rules. If it doesn't exist, show the user these starter defaults, adjust them together, and create the file only after they confirm. Lines marked *(example)* assume a particular stack; drop the ones that don't fit:
 
 ```markdown
 # Global Rules (all projects)
@@ -282,10 +282,10 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 - Before creating a constant, type, or utility, search the codebase for existing definitions. Do not redeclare, import from the shared location.
 - If the same logic appears 3+ times (across files or within one file), extract it into a helper or middleware.
 - Never write `catch {}` without logging, showing user feedback, or re-throwing. Silent catches hide bugs.
-- Never `throw new Error(...)` in API route handlers. Always return an explicit HTTP response with a status code and structured body.
-- Wrap all database calls in try/catch. Return 500 with `{ error: "Internal server error" }` on failure, never leak stack traces.
+- *(example, HTTP API)* Never `throw new Error(...)` in API route handlers. Always return an explicit HTTP response with a status code and structured body.
+- *(example, HTTP API)* Wrap all database calls in try/catch. Return 500 with `{ error: "Internal server error" }` on failure, never leak stack traces.
 - Keep functions under CC=15. If a function has more than ~15 branch points, refactor it.
-- React components should do one thing. If a component manages more than 3 concerns, split it. Target <200 lines per file.
+- *(example, React)* React components should do one thing. If a component manages more than 3 concerns, split it. Target <200 lines per file.
 - All configuration (URLs, ports, limits, feature flags) must come from environment variables, never hardcoded.
 - No placeholder, lorem ipsum, or TODO strings as committed UI text. All user-facing strings must be real copy.
 
@@ -318,15 +318,18 @@ Check that these companion skills are available (as personal skills in `~/.claud
 |-------|---------|-------------|
 | `discuss-feature` | Pre-PRD discussion, collects decisions | Before write-prd (optional) |
 | `write-prd` | Draft feature PRDs | Starting any new feature |
+| `discuss-plan` | Pre-plan architecture discussion that settles design decisions | After PRD approval, before write-plan |
 | `write-plan` | Draft implementation plans | After PRD approval |
 | `plan-review` | Multi-lens plan review (clarifying-questions + deep-critique + red-team) | After drafting a plan |
 | `research` | Research sub-agent for technical questions / best practices (docs-first, then reputable sources), grounded in the repo and plans | Any time a "what's the right way?" question surfaces |
 | `implement-plan` | Phase-by-phase implementation | After plan approval |
 | `write-e2e-tests` | Write & run Playwright browser tests via the bundled Playwright MCP | After/while implementing user-facing flows |
-| `full-code-review` | 7-reviewer parallel code review incl. a testing reviewer that runs the suite (branch diff or `full` codebase health check) | After implementation; periodically with `full` |
+| `full-code-review` | Parallel code review with up to 7 reviewers, incl. a testing reviewer that runs the suite (branch diff or `full` codebase health check) | After implementation; periodically with `full` |
 | `doc-audit` | Documentation vs. codebase audit | After implementation |
 | `overnight-delivery` | End-to-end PRD-to-code pipeline | Full feature delivery |
 | `tradeoff-review` | Walk through trade-offs one by one | During review gates |
+| `discuss-simply` | Break a confusing topic into small confirmed steps | Any time the user asks to simplify |
+| `supabase-security` | Research and apply Supabase security fixes | Supabase projects only |
 | `clarifying-review` | Sub-agent: clarifying-questions pass | Used by plan-review |
 | `deep-critique-review` | Sub-agent: deep-critique pass (cited findings) | Used by plan-review |
 | `red-team-review` | Sub-agent: adversarial pass that tries to break the plan | Used by plan-review |

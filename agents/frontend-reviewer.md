@@ -2,7 +2,7 @@
 name: frontend-reviewer
 description: Code-review lens for frontend quality, UX, accessibility, and correctness. Reviews a branch diff or (full scope) the whole codebase. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash
-model: claude-sonnet-5
+model: sonnet
 maxTurns: 30
 ---
 

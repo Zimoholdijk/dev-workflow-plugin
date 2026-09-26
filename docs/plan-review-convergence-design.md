@@ -154,7 +154,7 @@ not-yet-live feature.
 4. **Quality and conformance pass** (orchestrator): a self-check (plan prose, not a code
    tool) for repetition smell, test coverage, and CLAUDE.md conformance; anything
    substantive is routed through the grader like a reviewer finding. (`/simplify` belongs
-   on code, not the plan, so it lives in `full-code-review` and `implement-plan`.)
+   on code, not the plan, so it lives in `full-code-review`.)
 5. **Assessor** runs (every round): reads the full log, applies the tier -> behavior rules
    (section 6), tracks the dry signal (new unique gated findings this round), decides
    converge / another round / escalate, and on convergence compiles the test-obligation list.
@@ -182,9 +182,9 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
   escalates (otherwise a hard subsystem oscillates fix/clean/bank/new-One-way forever).
 - **Significant:** **always another round** (the change is big enough to verify in the
   plan), then **settled** once a fully-cold round finds nothing new in that area. Never
-  deferred. Repeated Significant *defects* in one area (~3rd recurrence) are pinned with a
-  test obligation and a simplification note rather than re-fixed in prose; repeated One-way
-  *decisions* escalate.
+  deferred. A **third** Significant in one area across the run **escalates**: the
+  still-open behaviors are pinned with test obligations and the user chooses the
+  simplification, rather than the loop re-fixing the area in prose a fourth time.
 - **Medium:** **does not gate convergence.** Fix it in the plan if the fix is cheap and
   local, and add it to the **test obligations** regardless. A reversible correctness bug is
   closed by a deterministic test at implementation, not by looping the plan. A round whose
@@ -198,7 +198,7 @@ vector**: convergence required "no live Medium below K=3", and a stream of *new*
 fresh areas never reaches the threshold, so a thorough cold reviewer that finds one more
 reversible bug each round keeps the loop alive forever. Reversible findings belong in
 tests, not in another prose round, so they simply do not gate. The only counted things are
-One-way recurrence per area and the round number, both of which trigger `Escalate` (a hard
+One-way and Significant recurrence per area and the round number, all of which trigger `Escalate` (a hard
 stop to the user), never another automatic round.
 
 **The round cap (escalate at round 5).** The 2023-2026 evidence on iterative LLM review is
@@ -232,8 +232,8 @@ change**. Mediums and Minors may remain; they do not gate (they become test obli
 The assessor then emits the **test-obligation list**, the orchestrator writes it into the
 plan (section 9), and the plan is marked Reviewed. A round that made any one-way or
 significant change is never the last round: that change must be verified by a clean cold
-pass first. A third exit exists: if an area meets the escalation test (a recurring or
-unsettleable one-way *decision*), the assessor returns `Escalate` and the loop stops for a
+pass first. A third exit exists: if an area meets an escalation test (a second or
+unsettleable one-way *decision*, or a third Significant), the assessor returns `Escalate` and the loop stops for a
 user architecture decision instead of converging or looping.
 
 ## 8. Self-consistency pass (inline, orchestrator)
@@ -280,9 +280,8 @@ an applied fix's non-local effects did not break a caller or a sibling change.
 
 ## 10. Terminology
 
-Use **"converged" / "exit condition"** throughout. Do **not** call it a "goal", `/goal` is
-a reserved Claude Code session-level primitive and this is a skill-internal loop with a
-deterministic exit condition.
+Use **"converged" / "exit condition"** throughout. Do **not** call it a "goal": this is a skill-internal loop with a
+deterministic exit condition, not a session-level feature.
 
 ## 11. What changes in the skills (encoding plan)
 

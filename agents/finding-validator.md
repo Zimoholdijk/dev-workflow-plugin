@@ -2,7 +2,7 @@
 name: finding-validator
 description: Per-finding second opinion for code review. Independently re-verifies a single Critical or High finding (is it real, was it introduced by this diff, is it handled elsewhere) and returns a validated/rejected verdict with a one-sentence reason. Read-and-reason; does not edit files.
 tools: Read, Glob, Grep, Bash
-model: claude-sonnet-5
+model: sonnet
 maxTurns: 10
 ---
 
