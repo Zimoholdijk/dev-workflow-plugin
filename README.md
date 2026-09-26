@@ -25,7 +25,7 @@ A Claude Code plugin packaging a PRD-first development workflow: write PRDs, set
 | `discuss-simply` | Step back and break the current topic into small steps when the user says "explain this" or "simplify": the first message is the first idea itself, no preamble and no list of what is coming, and always shorter than the text that confused them; one idea per message (cap 100), confirmation gate after each, then a sub-80-word close and the decision, recommendation first. Works on any trade-off, finding, or concept, anywhere in the workflow |
 | `doc-audit` | Audit project docs against the actual codebase |
 | `overnight-delivery` | End-to-end pipeline: plan, plan-review to convergence, tradeoff gate, implement, 2 code review rounds |
-| `supabase-security` | Research and apply Supabase security fixes (RLS, SECURITY DEFINER, storage) |
+| `supabase-security` | Research and apply Supabase security fixes (RLS, SECURITY DEFINER, storage). Supabase projects only; needs the Supabase MCP connected |
 
 ### Agents
 
