@@ -1,6 +1,6 @@
 ---
 name: supabase-security
-description: Research Supabase best practices for a specific security issue, verify current state via MCP, and apply the fix. Use for RLS policies, SECURITY DEFINER functions, storage policies, and other Supabase security hardening.
+description: Research Supabase best practices for a specific security issue, verify the current state (live through the Supabase MCP when connected, otherwise from the migration files plus read-only queries the user runs), and apply the fix. Use for RLS policies, SECURITY DEFINER functions, storage policies, and other Supabase security hardening.
 disable-model-invocation: false
 argument-hint: "<issue description>"
 ---
@@ -11,21 +11,21 @@ You are fixing a specific Supabase security issue: $ARGUMENTS
 
 ## Step 1: Research
 
-Use the Supabase MCP `search_docs` tool to research best practices for this specific issue. Search for:
+Research best practices for this specific issue in Supabase's official documentation: through the Supabase MCP `search_docs` tool if it is connected, otherwise on supabase.com/docs. Search for:
 - The specific Supabase feature involved (RLS, storage policies, SECURITY DEFINER, etc.)
 - Security hardening recommendations
 - Common pitfalls and how to avoid them
 
-Read the relevant documentation carefully. Do not rely on training data: the MCP docs are the source of truth.
+Read the relevant documentation carefully. Do not rely on training data: the official docs are the source of truth.
 
 ## Step 2: Verify current state
 
-Use the Supabase MCP tools to check the current live database state:
-- `execute_sql` to inspect current policies, functions, grants, triggers
-- `list_tables` to check table structure if needed
-- `list_extensions` if the fix involves extensions
+Read the migration files to learn what the schema, policies, functions, and grants should be. Then check what is actually deployed, because the live database is the source of truth and can drift from the files:
 
-Compare the live state against what the migration files say. The live DB is the source of truth for what's currently deployed.
+- **With the Supabase MCP connected:** run read-only checks yourself. Use `execute_sql` (SELECT only) to inspect current policies, functions, grants, and triggers, `list_tables` for table structure, and `list_extensions` if the fix involves extensions. Show each query before it runs.
+- **Without it:** give the user the exact read-only queries to run in the SQL editor or with the CLI, say what each result would change about the fix, and wait for the results.
+
+Compare the live state against the migration files. If the user cannot run the queries, say plainly that the fix is based on the migration files alone and that live state is unverified.
 
 ## Step 3: Determine the fix
 
