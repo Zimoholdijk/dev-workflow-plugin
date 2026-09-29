@@ -1,16 +1,15 @@
 # Plan-Review Convergence: Design Spec
 
-> Status: **Signed off and encoded** (plan-review, the grader and assessor agents,
+> Status: **Implemented** (plan-review, the grader and assessor agents,
 > implement-plan, and overnight-delivery). This is the reference for how `plan-review`
 > decides when a plan is done, and how `implement-plan` receives what review deferred.
 
 ## 1. The problem this solves
 
 Iterative cold review (clarifying, deep-critique, red-team, re-run each round) is excellent at
-*finding* issues but had no principled *stop*. A typical long run: the architecture
-settles in the early rounds, but a single tightly coupled subsystem (a concurrency
-state machine, say) keeps producing a new correctness bug every round, often one
-introduced by the previous round's own fix.
+*finding* issues but had no principled *stop*. In a long run the architecture
+can settle early while a single tightly coupled subsystem keeps producing a new
+correctness bug every round, often one introduced by the previous round's own fix.
 A cold reader will always find "the next seam" in non-deterministic code, so prose
 review of that area never converges. Those bugs are exactly the kind that deterministic
 tests catch and prose review cannot.
@@ -71,7 +70,7 @@ mislabeling reversible defects as irreversible.
 - **One-way door** (irreversible *decision*): a choice touching a trigger-list category (4.2)
   that cannot be changed with every dependant in one atomic deploy. Must be settled in the plan.
 - **Significant** (reversible but consequential): big blast radius, OR large magnitude (e.g.
-  splitting a large, widely imported module), OR a serious *defect* in important code (cross-tenant leak, auth gap)
+  splitting a large, widely imported module), OR a serious *defect* in important code (data leak across accounts, auth gap)
   whose fix is reversible.
 - **Medium** (reversible, modest size, but a real correctness/behavior defect): data loss,
   wrong state, a race, an infinite loop, a broken flow. Not big, not cosmetic.
@@ -139,9 +138,7 @@ verifies the facts the plan rests on, is it live, does prod data exist, what is 
 infrastructure (read from the repo, not inferred from whichever tools happen to be
 connected), what versions, against the code and, where it cannot tell, the user. These become
 project facts passed to every reviewer and the grader (facts, not history, so cold-start
-holds). This prevents whole rounds spent on a false premise, for example rounds
-reviewed against the wrong infrastructure, or rounds of compatibility concern for a
-feature with no users yet.
+holds). This prevents whole rounds spent on a false premise.
 
 1. **Clarifying** reviews (cold) -> **quote check** (orchestrator, mechanical: every finding's
    cited quote/line must actually exist in the plan or file; unverifiable citations are

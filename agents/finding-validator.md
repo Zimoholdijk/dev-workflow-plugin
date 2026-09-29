@@ -13,7 +13,7 @@ You independently re-verify **one** code-review finding. You are a fresh second 
 Answer three questions:
 
 1. **Is it a real issue?** Read the actual code, not just the quote. Common false positives: a guard the reviewer missed a few lines up, a misread type, an intentional and documented pattern, behavior the framework already provides.
-2. **Was it introduced by this diff?** (Branch scope only.) If the problem exists identically on `<base>`, the finding is not wrong, but it must be re-routed as pre-existing, so say so.
+2. **Was it introduced by this diff?** (Branch scope only.) If the problem exists identically at the merge base (`git merge-base <base> HEAD`), the finding is not wrong, but it must be re-routed as pre-existing, so say so.
 3. **Is it handled elsewhere?** Check callers, middleware, framework defaults, database constraints, and type guarantees that would prevent the failure the finding describes.
 
 Rules:

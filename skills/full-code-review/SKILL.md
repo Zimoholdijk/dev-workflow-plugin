@@ -28,7 +28,7 @@ The pipeline is: read the diff's *signals* (not its content) to select the roste
 
 Run these commands to understand what changed at a high level:
 
-1. `git diff $(git merge-base <base> HEAD) --stat` plus `git ls-files --others --exclude-standard`: every changed and every new file since the branch point, committed or not. The code under review is usually uncommitted, because commits are the user's, so never review committed history alone.
+1. `git diff $(git merge-base <base> HEAD) --stat` plus `git ls-files --others --exclude-standard`: every changed and every new file since the branch point, committed or not. `--stat` does not count untracked files, so add each new code file's line count (e.g. `wc -l`) as added lines for the size thresholds. The code under review is usually uncommitted, because commits are the user's, so never review committed history alone.
 2. `git log <base>..HEAD --oneline`: commits being reviewed
 
 Also read:
@@ -41,7 +41,7 @@ For **full scope**, skip the diff commands. Instead, read `context/overview.md` 
 
 ## Step 2: Select the roster from the diff's signals (mechanical)
 
-Branch scope only; full scope always runs the full roster minus regression (and minus frontend when the codebase has no UI code). Derive the roster from the diff itself — **never from how the change was described to you**. The author's characterization of a change ("just a small frontend tweak") is the least reliable input in a review: it can *add* reviewers ("also run security"), it can force everything (`depth:full`), but it can never remove one. The diff is ground truth, and checking it is nearly free.
+Branch scope only; full scope always runs the full roster minus regression (and minus frontend when the codebase has no UI code). Derive the roster from the diff itself — **never from how the change was described to you**. The author's characterization of a change ("just a small frontend tweak") is the least reliable input in a review: it can *add* reviewers ("also run security"), it can force every applicable reviewer (`depth:full`), but it can never remove one. The diff is ground truth, and checking it is nearly free.
 
 Classify mechanically from the Step 1 file list and fixed-string/regex greps over `git diff $(git merge-base <base> HEAD)` output plus the content of each new untracked file. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
 
@@ -51,7 +51,7 @@ First split the changed files into **code** and **non-code**. Non-code: markdown
 |----------|--------------|
 | `testing-reviewer` | **Always, whenever any code file changed.** Every code change gets its coverage checked and the suite run. Not skippable (except in a docs-only diff). |
 | `regression-reviewer` | A **code** file contains deleted lines beyond pure whitespace/formatting/renames. Deletions in plans/docs don't count. |
-| `frontend-reviewer` | UI code of any kind changed: web (`.tsx`/`.jsx`/`.vue`/`.svelte`, styles, client hooks), mobile, or desktop views. **Only when the diff contains UI code**: no escape hatch, size rule, or `depth:full` adds it otherwise. |
+| `frontend-reviewer` | UI code of any kind changed: web (`.tsx`/`.jsx`/`.vue`/`.svelte`, styles, client hooks), mobile, or desktop views. **Only when the diff contains UI code**: no escape hatch, size rule, or `depth:full` adds it otherwise. A file whose UI-ness is itself unclear counts as UI code. |
 | `backend-reviewer` | Non-UI application code changed: services, API handlers, CLI commands, library modules, data pipelines, database schema or migrations, background jobs, config. |
 | `security-reviewer` | Risk greps hit in a **code** file's hunks (a plan *discussing* auth is not a signal; auth code is): auth, session, token, password, secret, key, permission, role, policy, RLS, payment, price, upload, deserialize, exec, raw SQL, `fetch(`/HTTP calls with user input, redirect, CORS, cookie. Or any new/changed endpoint. |
 | `architecture-reviewer` | The diff adds new files, touches 2+ modules/layers, or moves code between layers. |
@@ -188,7 +188,7 @@ After presenting the consolidated review, do NOT silently make trade-off decisio
 
 ## Where `/simplify` fits
 
-Quality cleanup is deliberately **not** part of this skill. Running a pass that edits the working tree while reviewers are reading it is a race: reviewers see files mid-mutation and their citations go stale. If you want a simplification pass (reuse, dead code, over-abstraction), run the built-in `/simplify` **before** invoking this review, as its own step on a clean tree — the reviewers then review the simplified code. If `/simplify` is unavailable in the current Claude Code version, skip it; it is optional.
+Quality cleanup is deliberately **not** part of this skill. Running a pass that edits the working tree while reviewers are reading it is a race: reviewers see files mid-mutation and their citations go stale. If you want a simplification pass (reuse, dead code, over-abstraction), run the built-in `/simplify` **before** invoking this review, as its own step, and let it finish before the reviewers start — the reviewers then review the simplified code. If `/simplify` is unavailable in the current Claude Code version, skip it; it is optional.
 
 ## Re-invocation
 

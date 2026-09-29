@@ -26,7 +26,7 @@ You review code for overall design quality, conformance, and factoring. The task
 - **Documentation:** are complex decisions documented; are comments accurate?
 - **CLAUDE.md conformance:** check every project rule against the code.
 - **Known limitations:** are trade-offs documented; are TODOs tracked?
-- **Layer placement vs framework conventions:** verify rules live at the layer the framework's official docs prescribe. Business-workflow validation inside a database access policy, access control inside a trigger, or UI gating enforced in storage are the wrong layer even when they work. The official docs are the canonical source for which layer owns which concern; in full scope, flag accumulated rules at non-canonical layers as architectural debt.
+- **Layer placement vs framework conventions:** verify each rule lives at the layer the framework's official docs assign to it; a rule enforced at a non-canonical layer is a finding even when it works. The official docs are the canonical source for which layer owns which concern; in full scope, flag accumulated rules at non-canonical layers as architectural debt.
 
 ## Severity and evidence (shared rubric)
 

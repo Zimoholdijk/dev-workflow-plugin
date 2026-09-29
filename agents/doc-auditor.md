@@ -27,7 +27,7 @@ The task tells you which diff to use: `git diff HEAD` (local) or `git diff $(git
 
 Audit every claim in the docs against the actual code. Read the primary overview doc thoroughly, then verify:
 
-- **Tech stack**: matches the project's manifests and lockfiles, e.g. `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml` and the data schema, if any.
+- **Tech stack**: matches the project's manifests and lockfiles (e.g. `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`) and the data schema, if any.
 - **Architecture claims**: open the files each claim names and confirm the described structure, sequence, and exports actually exist.
 - **Shared utilities / file-organization lists**: every listed file exists and its exports match the description; glob the relevant source dirs and flag any shared code missing from the list.
 - **Features marked complete**: spot-check that the described pages/components exist.

@@ -2,7 +2,7 @@
 name: project-setup
 description: Bootstrap a new project with context docs, CLAUDE.md, overview, and all accumulated best practices. Run in any repo to set up the full development workflow.
 disable-model-invocation: false
-argument-hint: "[project name, e.g. 'task-tracker' or 'my-saas-app']"
+argument-hint: "[project name, e.g. 'task-tracker' or 'my-app']"
 ---
 
 # Project Setup
@@ -23,7 +23,7 @@ Before creating anything, check what already exists:
 4. Check if `context/overview.md` exists
 5. Read `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `Gemfile`, or equivalent to detect tech stack
 6. Read `prisma/schema.prisma`, `drizzle.config.ts`, `knexfile.js`, or equivalent to detect ORM/DB
-7. Check for existing framework config (`astro.config.*`, `next.config.*`, `vite.config.*`, etc.)
+7. Check for existing framework config (`next.config.*`, `vite.config.*`, `astro.config.*`, etc.)
 
 If any of `.claude/CLAUDE.md`, `context/overview.md` already exist, ask the user whether to replace or skip them. Never silently overwrite.
 
@@ -36,12 +36,12 @@ Ask the user these questions (skip any that were auto-detected in Step 1):
 1. **What are you building?** (1-2 sentence description, this goes in the overview)
 2. **Project kind and tech stack**: what kind of project it is (web app, mobile app, CLI, library, service, data pipeline), then confirm or correct what was auto-detected (language and runtime, plus whichever of frontend, API, database, and auth apply). Ask only the follow-up questions below that fit this kind of project.
 3. **Architecture**: the main components and how they talk (processes, services, packages), and how it runs in dev
-4. **Auth approach** (if any): magic link, OAuth, session-based, JWT, API keys, etc.?
+4. **Auth approach** (if any): OAuth, session-based, JWT, magic link, API keys, etc.?
 5. **Data storage** (if any): what database or storage, any soft-delete conventions, any existing models?
 6. **Deployment target**: where will this run? (helps inform env var conventions)
 7. **Local-dev gotchas**: any non-default ports, service quirks, pre-existing build/lint errors, or env vars that have bitten before? (these go in CLAUDE.md so a fresh session doesn't waste its first turns rediscovering them)
 8. **Testing reality**: what test infrastructure exists today, if any? Can new features assume a suite?
-9. **Issue tracker / board**: which tracker does this project use, and what's the specific target? (e.g. Notion: backlog data source ID; Linear: team and project keys). This is what `discuss-feature` and `write-prd` read when creating tickets. If the global `~/.claude/CLAUDE.md` names a default tracker, confirm it applies here or override it. Skip only if the project has no board.
+9. **Issue tracker / board**: which tracker does this project use, and what's the specific target? (e.g. GitHub Issues: `owner/repo`; Linear: team and project keys; Notion: backlog data source ID). This is what `discuss-feature` and `write-prd` read when creating tickets. If the global `~/.claude/CLAUDE.md` names a default tracker, confirm it applies here or override it. Skip only if the project has no board.
 
 Do NOT proceed until the user has confirmed or provided this info. The overview and CLAUDE.md must reflect the actual project, not assumptions.
 
@@ -148,9 +148,9 @@ This file contains project-specific rules that Claude must follow. Create it wit
 
 ## Issue Tracker
 [Fill from Step 2 question 9. State the tracker and the exact target so discuss-feature can create tickets without asking. Examples:
-- Notion: backlog data source ID `[id]` (workspace [name])
+- GitHub Issues: `[owner/repo]`
 - Linear: team `[KEY]`, project `[name]`
-Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
+Omit this section only if the project has no board; discuss-feature then asks once whether to file a ticket, and otherwise delivers the decision summary.]
 
 ## Workflow Skills
 The plan-first skills are available: `/discuss-feature`, `/write-prd`, `/discuss-plan`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`, `/discuss-simply`, `/overnight-delivery`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then `/discuss-plan`, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.
@@ -217,7 +217,7 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
 - **Testable phases.** Each phase produces something independently verifiable by running it (in the UI, at the command line, via curl, or in a REPL) or by a test AND ships its own tests. Shells before detail.
 - **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints and module boundaries, end-to-end tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
-- **[If the project has a visual UI: primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
+- **[If the project has a visual UI: primary viewport, e.g. mobile, desktop, or both.]**
 - **No auto-commits.** Claude does not commit unless explicitly asked.
 - **Document freeze.** PRDs and plans are frozen once agreed. Deviations go in `progress.md`, not by editing the plan.
 - **The overview is a summary.** Details live in feature docs. Updated only for stable project-wide decisions.

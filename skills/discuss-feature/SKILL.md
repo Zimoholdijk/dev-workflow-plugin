@@ -22,18 +22,18 @@ These are non-negotiable and apply to every message in the discussion:
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
 7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings, product emails or notifications); use commas, colons, or separate sentences, and follow any other writing-style rules in CLAUDE.md. The discussion and the ticket are internal, em dashes there are fine.
-8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "the export already runs as a background job, so adding a format is cheap").
+8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "task comments already support mentions, so adding assignee mentions is cheap").
 
 ## Step 1: Ground yourself (silently, before the first message)
 
-Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (the modules, screens, commands, or endpoints involved) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today the dashboard does double duty: your own tasks plus tasks waiting on you").
+Read `context/overview.md`, `.claude/CLAUDE.md`, and skim the actual code areas the feature touches (the modules, screens, commands, or endpoints involved) so trade-offs are grounded in current behavior, not guesses. Do not dump findings at the user. Use them to make each topic concrete ("today the dashboard shows both your open tasks and tasks you're watching").
 
 ## Step 2: Build a private topic list
 
 Sketch the topics to walk through, ordered from framing outward. Typical shape for a user-facing feature:
 
 1. Problem framing: what the feature actually is, who its audiences are, why now
-2. Naming and exposure: what the feature is called, what becomes public or leaves the system
+2. Naming and exposure: what the feature is called, what becomes public or is shared outside the app
 3. The interface: what the user sees or calls (screen, command, or API), empty and error cases
 4. Entry points: how users find or reach it, and what existing parts change around it
 5. Impact on existing users and data: backfills, relearning costs, prod safety
@@ -57,7 +57,7 @@ Then one topic per message, each following the Response Rules. Within a topic:
 When the topic list is exhausted, ask whether there is anything else to discuss. Then:
 
 1. **Decision summary.** One short table: Topic | Decision. This is the one place structure is allowed.
-2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`; the global default in `~/.claude/CLAUDE.md` names only the tool, so without a project board ask the user for the target) containing the problem framing and the decision list. Create it only after the user confirms. If no board is configured for the project, skip this and just deliver the decision summary.
+2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`) containing the problem framing and the decision list. Create it only after the user confirms. If the project has no Issue Tracker section, ask once whether to file a ticket and where; if the user says no, just deliver the decision summary.
 3. **Handoff.** Suggest `/write-prd [Feature]` as the next step, noting that the decisions here pre-fill the PRD's Decided table and the framing pre-fills its Overview.
 
 Do not write the PRD inside this skill. The discussion ends at the ticket.

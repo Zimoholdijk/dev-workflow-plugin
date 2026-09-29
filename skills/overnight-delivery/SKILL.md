@@ -132,7 +132,7 @@ Present the delivery summary:
 - [N] code review rounds (2)
 - [N] findings fixed
 - [N] tradeoffs accepted
-- Final verdicts: Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict], Regressions [verdict], Testing [verdict]
+- Final verdicts: Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict], Regressions [verdict], Testing [verdict] (or "not run: <reason>" for a lens the roster skipped)
 
 ### Documentation updated
 - overview.md: [what changed]

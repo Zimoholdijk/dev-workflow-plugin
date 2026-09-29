@@ -9,7 +9,7 @@ argument-hint: "[optional: 'local' to audit only uncommitted changes, or base br
 
 You are auditing project documentation against the actual state of the codebase.
 
-If `$ARGUMENTS` is `local`, audit only uncommitted/unstaged changes. If a branch name is given (e.g. `main`), audit all changes since that base. If no argument is provided, run a full audit of all documentation vs the codebase.
+If `$ARGUMENTS` is `local`, audit only uncommitted changes (staged, unstaged, and new files). If a branch name is given (e.g. `main`), audit all changes since that base. If no argument is provided, run a full audit of all documentation vs the codebase.
 
 ## Step 1: Determine scope
 
