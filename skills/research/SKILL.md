@@ -35,11 +35,11 @@ These are non-negotiable:
 Before spawning anything, pin down what's actually being asked and assemble what the sub-agent needs (it has no prior knowledge of this project):
 
 1. **State the question precisely.** If the user's phrasing is broad, narrow it to the decision actually in front of you.
-2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do database migrations run on deploy, what does the payment provider guarantee about webhook retries, and how should the CI job cache dependencies" is database docs, payment-provider docs, and CI docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
+2. **Split by documentation source, and cap the questions.** One researcher gets **one core objective**, phrased as **at most three numbered questions**, all answerable from the same documentation source. A question set that spans sources (e.g. "how do database migrations run on deploy, how should the notification queue retry failed sends, and how should the CI job cache dependencies" is database docs, queue-library docs, and CI docs) is three researchers, not one; each finishes in a fraction of the turns and a stall in one does not lose the others. Do not split a single-source question just to have more agents: every agent costs overhead, and fewer capable agents beat many narrow ones.
 3. **Identify the technologies and their versions.** Read the project's manifests and lockfiles (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, …) to learn exactly which tools and which versions are in play. Name them explicitly; "the database" alone is not enough, note the client/library versions and which sub-features are involved (auth, storage, background jobs, etc.).
 4. **Read the project context** the answer must fit: `context/overview.md`, `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, and the specific PRD / implementation plan / `progress.md` the question arose from.
 5. **Identify the relevant code.** Point the sub-agent at the specific files, schema, or plan section the question is about, so its answer is concrete, not generic.
-6. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a vendor's docs-search MCP), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
+6. **Note any available documentation tools.** If an MCP server for the technology is connected (e.g. a docs-search MCP for that technology), the sub-agent should use it for the docs-first pass. Tell it which tools exist.
 
 ## Step 2: Spawn the researcher agent
 
@@ -53,7 +53,7 @@ You do not need to restate the methodology; the agent owns it. Give it only the 
 - **Project stack and architecture** (from `overview.md`).
 - **Project rules and conventions** (relevant `CLAUDE.md` excerpts).
 - **The plan or code this question is about** (the specific plan section or files, so the answer is concrete).
-- **Documentation tools available** (e.g. "the vendor docs-search MCP", or "none, use web search and fetch").
+- **Documentation tools available** (e.g. "the docs-search MCP for the database", or "none, use web search and fetch").
 
 The agent returns a recommendation-first, cited answer (Recommendation, Why, Tradeoffs, Fit check, Sources, Confidence and open questions).
 
