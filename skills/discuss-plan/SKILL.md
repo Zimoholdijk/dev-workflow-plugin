@@ -25,7 +25,7 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree we store the assignee on the task itself?") or a single open lean ("Which way do you lean on keeping a history of reassignments?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation, researched first.** Describe 2-3 realistic options in flowing sentences, say which you lean toward and why, then let the user decide. But research the technical ones before you surface them (see Step 3): documented best practice often settles a trade-off outright, and the user should only adjudicate genuinely open choices. Never decide silently; never hand over a bare "A or B?" you could have researched.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **Customer-facing copy follows the project's style rules.** Apply any writing-style rules in CLAUDE.md to copy you draft.
+7. **No em dashes in customer-facing copy** you draft; use commas, colons, or separate sentences, and follow any other writing-style rules in CLAUDE.md. The discussion and the plan file are internal, em dashes there are fine.
 8. **Architecture-decision altitude.** Discuss the shape of the solution: data model, contracts and API surface, auth and trust boundaries, how it integrates with existing code, error and edge-case strategy, performance at real data volumes, migration and rollback. Stay above the plan: no phase breakdown, no file-by-file list, no code (those are `/write-plan`'s job). Stay above the PRD too: do not reopen what or why; if a requirement seems wrong, flag it as a PRD question, do not redesign around it silently.
 
 ## Step 1: Ground yourself (silently, before the first message)
@@ -99,7 +99,7 @@ The Response Rules assume a user who can already parse "schema", "contract", and
 
 7. **Stay at architecture altitude even while teaching.** Tutor mode explains the *concepts behind* the design decisions; it does not descend into code, file paths, or phase breakdowns (those remain out of scope for this skill, per Response Rule 8). Teach just enough for the user to own the decision.
 
-All other Response Rules hold while teaching: the 150-word cap (except the glossary case above), one question per message, plain prose, customer-facing copy follows the project's style rules, and research before surfacing a technical trade-off.
+All other Response Rules hold while teaching: the 150-word cap (except the glossary case above), one question per message, plain prose, no em dashes in customer-facing copy, and research before surfacing a technical trade-off.
 
 ## Step 6: Wrap up
 
