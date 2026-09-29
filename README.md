@@ -33,17 +33,17 @@ All defined roles live in `agents/`, so skills spawn named sub-agents (consisten
 
 Every agent carries a hard `maxTurns` and a shared budget rule: a turn is one message, not one tool call, so independent reads are batched; reading stops at a numeric reserve a few turns before the cap (five for the 20 to 30 turn agents, three for the 10 to 12 turn ones) and the remaining turns go to writing; and the complete result ships in a single final message, because nothing said before it reaches the caller. The spawning skills handle the other side: a run that comes back partial is resumed once with "no more reads, write what you have", then re-spawned once, and only then reported as not delivered, never silently dropped.
 
-**Plan-review** (red-team-reviewer on Opus; clarifying-reviewer, deep-critique-reviewer, grader, and assessor on Sonnet 5):
+**Plan-review** (red-team-reviewer on Opus; clarifying-reviewer, deep-critique-reviewer, grader, and assessor on Sonnet):
 
 | Agent | Purpose |
 |-------|---------|
 | `clarifying-reviewer` | Clarifying-questions pass: surfaces ambiguity, gaps, and missing tests |
 | `deep-critique-reviewer` | Deep-critique pass: grades fit, scope, operational failure modes, and test coverage, with cited findings |
 | `red-team-reviewer` | Adversarial pass: tries to break the plan and returns ranked, cited failure scenarios |
-| `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor, or discards it as Not-an-issue with cited refuting evidence (the false-positive filter), and tags it with an area. Decision-vs-defect gate: only an irreversible *decision* is One-way; a serious bug with a reversible fix (redeploy, tighten a policy) is Significant, not One-way, even in auth code — and a small-consequence defect (stale text, a missing checklist line) defaults to Medium even in a payment flow; the defect's own blast radius is graded, never the area's stakes. Which-methodology-measures-X is a decision, not a defect. Cold to the cost of fixing |
+| `grader` | Rates each finding by reversibility and blast radius into One-way / Significant / Medium / Minor, or discards it as Not-an-issue with cited refuting evidence (the false-positive filter), and tags it with an area. Decision-vs-defect gate: only an irreversible *decision* is One-way; a serious bug with a reversible fix (redeploy, tighten a policy) is Significant, not One-way, even in auth code — and a small-consequence defect (stale text, a missing checklist line) defaults to Medium even in an auth flow; the defect's own blast radius is graded, never the area's stakes. Choosing between defensible approaches is a decision, not a defect. Cold to the cost of fixing |
 | `assessor` | Runs every round, holds the full review log, tracks the dry signal (new unique gated findings per round), defers reversible items to test obligations, banks areas fixed-and-held through a cold pass (One-way counts persist across banking), and makes the converge / another-round / **escalate** call (only One-way/Significant gate; a second One-way in an area, a **third Significant** in an area, or the round-5 cap escalates to the user rather than looping). Also counts self-inflicted findings — those against machinery added by earlier rounds — since a rising share means the loop is reviewing its own fixes and the exit is deletion |
 
-**Code-review**, the seven lenses `full-code-review` selects from and runs in parallel (security, architecture, and regression on Opus; backend, frontend, documentation, and testing on Sonnet 5). All seven grade on one shared, impact-anchored severity rubric and must quote the offending line verbatim:
+**Code-review**, the seven lenses `full-code-review` selects from and runs in parallel (security, architecture, and regression on Opus; backend, frontend, documentation, and testing on Sonnet). All seven grade on one shared, impact-anchored severity rubric and must quote the offending line verbatim:
 
 | Agent | Purpose |
 |-------|---------|
@@ -54,7 +54,7 @@ Every agent carries a hard `maxTurns` and a shared budget rule: a turn is one me
 | `documentation-reviewer` | whether the docs reflect the change (or current code, in full scope) |
 | `regression-reviewer` | the `-` lines: behavior, guards, or conventions deleted with no replacement |
 | `testing-reviewer` | test coverage of the change, and actually runs the suite |
-| `finding-validator` (Sonnet 5) | fresh second opinion on each Critical/High finding before it reaches the user: real? introduced by this diff? handled elsewhere? |
+| `finding-validator` (Sonnet) | fresh second opinion on each Critical/High finding before it reaches the user: real? introduced by this diff? handled elsewhere? |
 
 **Other:**
 
@@ -91,11 +91,11 @@ To pull updates later: `/plugin marketplace update` then `/reload-plugins`.
 
 ## Personalize after installing
 
-This plugin ships generic on purpose: no personal workspace IDs, board IDs, or tracker choices are baked in, so it stays portable and safe to share or use at work. Personalization lives in two config layers the skills read at runtime, not in the plugin itself. After installing, set them up:
+This plugin ships generic on purpose: no personal workspace IDs, board IDs, or tracker choices are baked in, so it stays portable and safe to share or reuse across projects. Personalization lives in two config layers the skills read at runtime, not in the plugin itself. After installing, set them up:
 
-1. **Pick a default issue tracker (once, global).** `discuss-feature` creates tickets, and `write-prd` fetches one when given a ticket ID. Add a line to your `~/.claude/CLAUDE.md` naming your default tracker, for example: "Default issue tracker is Notion; use it for backlog tickets and feature boards unless a project overrides it." Project config always overrides this. Do not put a specific board or data source ID here; that is per-project.
+1. **Pick a default issue tracker (once, global).** `discuss-feature` creates tickets, and `write-prd` fetches one when given a ticket ID. Add a line to your `~/.claude/CLAUDE.md` naming your default tracker, for example: "Default issue tracker is GitHub Issues; use it for backlog tickets unless a project overrides it." Project config always overrides this. Do not put a specific board or data source ID here; that is per-project.
 
-2. **Capture each project's board (per repo).** Run `/plan-first:project-setup` in a repo. It asks which tracker and the exact target (Notion data source ID, Linear team/project) and writes it to an "Issue Tracker" section of that project's `.claude/CLAUDE.md`. `discuss-feature` reads that section and creates tickets without re-asking. If a project has no board, leave it out and the skills just deliver the decision summary instead of creating a ticket.
+2. **Capture each project's board (per repo).** Run `/plan-first:project-setup` in a repo. It asks which tracker and the exact target (Notion data source ID, Linear team/project) and writes it to an "Issue Tracker" section of that project's `.claude/CLAUDE.md`. `discuss-feature` reads that section and creates tickets without re-asking. If a project has no board, leave it out and discuss-feature just delivers the decision summary instead of creating a ticket.
 
 3. **Tune the global rules the skills inherit.** Every skill reads `~/.claude/CLAUDE.md`. Conventions you keep there (approval semantics, no-hardcoded-config, primary viewport, writing style) are obeyed by the whole workflow. This is where your cross-project standards and voice live.
 

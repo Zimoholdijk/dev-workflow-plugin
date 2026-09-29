@@ -147,7 +147,7 @@ Cover, in prose:
 - **Existing infrastructure:** what test runner, harness, fixtures, and seed/data-reset
   approach already exist (from `.claude/CLAUDE.md` "Testing Reality"). If none exist,
   state that Phase 1 establishes them before feature work.
-- **What is deliberately not tested**, and why (e.g. third-party redirect, real payment),
+- **What is deliberately not tested**, and why (e.g. third-party redirect, real email delivery),
   with the trade-off surfaced per rule 8.
 
 Every row of the File Changes table that adds or changes logic should map to a test
@@ -186,7 +186,7 @@ Last phase is usually cleanup (removing old paths, flags, or shims).]
 
 [Numbered list of end-to-end scenarios that should work after all phases.
 These are the acceptance tests. 8-15 items typical.
-Cover: happy paths, edge cases, auth boundaries, error states.
+Cover: happy paths, edge cases, error states, and auth boundaries where the project has users.
 Mark which scenarios are covered by an automated test (the end-to-end specs from the
 Testing Strategy) versus verified manually. Aim for the critical flows to be automated, a
 scenario that only ever gets a manual check will regress silently.]
@@ -290,9 +290,9 @@ Do NOT proceed to implementation until the user explicitly approves the plan (af
 - Larger plans use sub-steps within phases; smaller plans use paragraphs
 
 ### Verification
-- Numbered list, 8-15 items
+- Numbered list, usually 8-15 items (fewer for small changes)
 - End-to-end scenarios, not unit tests
-- Cover: happy path, auth boundaries, error states, edge cases
+- Cover: happy path, error states, edge cases, and auth boundaries where the project has users
 - Format: "N. Action → expected result"
 
 ### Review Log (sidecar, not in the plan)

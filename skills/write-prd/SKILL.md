@@ -163,7 +163,7 @@ Use `**Feature:** ... · **Ticket:** [TICKET-ID] · **Status:** Draft` on the fi
 - **Decided table:** Two columns only: Question | Decision. No rationale column: the decision should be self-explanatory or the Overview/context makes it clear.
 - **Open Questions:** Brief. "None at this time." if everything is decided. Don't manufacture questions.
 
-### Infrastructure PRDs (e.g. a storage or logging migration)
+### Infrastructure PRDs (e.g. a logging or build-tooling change)
 Simpler structure. Skip User Stories, Interface / Flow, Success Criteria, and Open Questions. Add instead:
 - **Affected Areas**: grouped by layer (e.g. backend / frontend / config), listing specific files and what changes
 - **Environment Variables** table: Variable | Example (dev) | Description

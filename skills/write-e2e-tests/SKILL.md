@@ -20,7 +20,7 @@ These rules are non-negotiable:
 3. **Verify live before you commit a spec.** Use the Playwright MCP to walk the flow in a real browser first. Only write a spec assertion once you have observed the real behavior. Never write assertions against behavior you have not seen.
 4. **Cover more than the happy path.** A flow is not tested until you have exercised the happy path, the obvious error states, empty/loading states, and the relevant auth boundaries (signed-out, wrong-owner, expired session). List which of these apply and cover each, or state explicitly why one does not apply.
 5. **Tests must be deterministic.** No reliance on real wall-clock timing, network flakiness, or test-order coupling. Wait on application state (visible elements, URLs, network idle), not fixed sleeps. Each spec sets up and tears down its own data; tests must pass run in any order and in isolation.
-6. **Surface gaps, don't paper over them.** If a flow cannot be tested deterministically (e.g. depends on a third-party redirect, a real payment, or unseeded data), do not write a flaky test that "mostly" passes. Surface the limitation to the user and propose how to make it testable (seed data, a test mode, a stubbed boundary).
+6. **Surface gaps, don't paper over them.** If a flow cannot be tested deterministically (e.g. depends on a third-party redirect, a real email inbox, or unseeded data), do not write a flaky test that "mostly" passes. Surface the limitation to the user and propose how to make it testable (seed data, a test mode, a stubbed boundary).
 
 ## Step 1: Gather context
 

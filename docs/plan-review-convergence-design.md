@@ -44,7 +44,7 @@ Each role is cold where it needs to be, so no one grades or stops their own work
 | **Reviewers** (clarifying, deep-critique, red-team) | Find issues. Run sequentially, each on the current plan. | The review history. They never see the `review-log.md` sidecar, so a late round scrutinizes as hard as the first. |
 | **Grader** | After each reviewer, grade every one of that reviewer's findings into a tier, and tag each with an area/topic label. | The cost of fixing. It rates by reversibility/significance, not by how annoying the fix is. It does **not** decide fix-vs-defer. |
 | **Orchestrator** | Fix everything the graders surfaced, regardless of tier. Run the inline self-consistency pass. Write the round to the sidecar. | Severity and stopping. It cannot grade, and it cannot decide convergence. |
-| **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge / another-round / **escalate** call (One-way and Significant gate; Medium and Minor become test obligations), **escalates to the user** when a One-way decision recurs or won't settle in one area, **banks areas fixed and held through a fully-cold pass** so they stop gating, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
+| **Assessor** | Runs **every round**. The only agent holding the full log. Makes the converge / another-round / **escalate** call (One-way and Significant gate; Medium and Minor become test obligations), **escalates to the user** when a One-way decision recurs or won't settle in one area, or an area reaches a third Significant, **banks areas fixed and held through a fully-cold pass** so they stop gating, and compiles the test-obligation list. | Bias toward finishing. It did not make the fixes, so it has no stake in declaring done. It is history-aware by design (that is its purpose), unlike the reviewers. |
 
 The orchestrator can **escalate** a grade (treat a lower tier as higher) or record a
 disagreement for the user, but can **never silently downgrade** a finding to make it stop
@@ -136,12 +136,12 @@ magnitude under Significant.
 
 **Round 0 (once, before the loop): establish load-bearing premises.** The orchestrator
 verifies the facts the plan rests on, is it live, does prod data exist, what is the real
-infrastructure (read from the repo, not inferred from a connector that happens to be in the
-session), what versions, against the code and, where it cannot tell, the user. These become
+infrastructure (read from the repo, not inferred from whichever tools happen to be
+connected), what versions, against the code and, where it cannot tell, the user. These become
 project facts passed to every reviewer and the grader (facts, not history, so cold-start
 holds). This prevents whole rounds spent on a false premise, for example rounds
-reviewed against the wrong datastore, or rounds of installed-base concern on a
-not-yet-live feature.
+reviewed against the wrong infrastructure, or rounds of compatibility concern for a
+feature with no users yet.
 
 1. **Clarifying** reviews (cold) -> **quote check** (orchestrator, mechanical: every finding's
    cited quote/line must actually exist in the plan or file; unverifiable citations are

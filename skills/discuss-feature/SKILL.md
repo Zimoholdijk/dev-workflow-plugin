@@ -2,7 +2,7 @@
 name: discuss-feature
 description: Run a pre-PRD feature discussion in plain language. Walks through framing, functionality, and trade-offs one short message at a time, collects decisions, then creates a ticket on the project board and hands off to /write-prd. Takes a raw feature idea or problem description as argument.
 disable-model-invocation: false
-argument-hint: "[raw feature idea or problem, e.g. 'members want to share a project board with a client']"
+argument-hint: "[raw feature idea or problem, e.g. 'assignees want a weekly digest of their open tasks']"
 ---
 
 # Discuss Feature
@@ -21,7 +21,7 @@ These are non-negotiable and apply to every message in the discussion:
 4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree with keeping it that lean?") or a single open lean ("Which way do you lean on the URL?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
-7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings, messages); use commas, colons, or separate sentences, and follow any other writing-style rules in CLAUDE.md. The discussion and the ticket are internal, em dashes there are fine.
+7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings, product emails or notifications); use commas, colons, or separate sentences, and follow any other writing-style rules in CLAUDE.md. The discussion and the ticket are internal, em dashes there are fine.
 8. **Stay at PRD altitude.** What and why, not how. Light feasibility notes are allowed only when they change the decision (e.g. "the export already runs as a background job, so adding a format is cheap").
 
 ## Step 1: Ground yourself (silently, before the first message)
@@ -39,7 +39,7 @@ Sketch the topics to walk through, ordered from framing outward. Typical shape f
 5. Impact on existing users and data: backfills, relearning costs, prod safety
 6. Scope boundary: what is explicitly lean or out, and why
 
-Adapt the list to the feature; drop topics that do not apply, add ones that do. Keep the list internal. Optionally preview the next topic in one trailing sentence ("Next I'd cover the URL and privacy question").
+Adapt the list to the feature; drop topics that do not apply, add ones that do. Keep the list internal. Optionally preview the next topic in one trailing sentence ("Next I'd cover who gets notified").
 
 ## Step 3: Walk the topics
 
@@ -57,7 +57,7 @@ Then one topic per message, each following the Response Rules. Within a topic:
 When the topic list is exhausted, ask whether there is anything else to discuss. Then:
 
 1. **Decision summary.** One short table: Topic | Decision. This is the one place structure is allowed.
-2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`, falling back to the default tracker named in `~/.claude/CLAUDE.md`) containing the problem framing and the decision list. Create it only after the user confirms. If no board is configured for the project, skip this and just deliver the decision summary.
+2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`; the global default in `~/.claude/CLAUDE.md` names only the tool, so without a project board ask the user for the target) containing the problem framing and the decision list. Create it only after the user confirms. If no board is configured for the project, skip this and just deliver the decision summary.
 3. **Handoff.** Suggest `/write-prd [Feature]` as the next step, noting that the decisions here pre-fill the PRD's Decided table and the framing pre-fills its Overview.
 
 Do not write the PRD inside this skill. The discussion ends at the ticket.

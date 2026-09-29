@@ -34,5 +34,5 @@ The user asked you to step back and simplify: $ARGUMENTS (or whatever is current
 ## Notes
 
 - Same register as `discuss-plan`'s tutor mode, available anywhere in the workflow.
-- If a step reveals a false premise ("only one person ever logs in there"), stop, say what changed, and hand that fact back to the surrounding workflow instead of finishing the lesson.
+- If a step reveals a false premise ("assignees never see that page"), stop, say what changed, and hand that fact back to the surrounding workflow instead of finishing the lesson.
 - If the topic genuinely needs only one small message, send that one message; the step machinery is for when one message can't stay small.

@@ -102,7 +102,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 ## Project-Specific Rules
 [Fill in any that apply:]
 - [API call convention, e.g. "All client-side API calls go through one shared client module"]
-- [Error response format, e.g. "{ error: 'message' } for simple errors, { message: '...', errors: { field: 'reason' } } for 422"]
+- [Error response format, e.g. one consistent shape for every error]
 - [File storage convention, if applicable]
 [Leave empty if none yet, these accumulate during development.]
 [For non-obvious, load-bearing conventions (the ones where doing the "obvious" thing is wrong), capture three things: the rule, why it exists, and the path to the canonical example in the code to read before copying it. A rule without its why gets deleted by the next refactor.]
@@ -147,7 +147,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [If the project keeps older hand-written docs, list them last and mark them as potentially stale: cross-check against live code where it matters.]
 
 ## Issue Tracker
-[Fill from Step 2 question 9. State the tracker and the exact target so discuss-feature and write-prd can create tickets without asking. Examples:
+[Fill from Step 2 question 9. State the tracker and the exact target so discuss-feature can create tickets without asking. Examples:
 - Notion: backlog data source ID `[id]` (workspace [name])
 - Linear: team `[KEY]`, project `[name]`
 Omit this section only if the project has no board; the skills then deliver the decision summary without creating a ticket.]
@@ -215,7 +215,7 @@ Each feature has its own `/context/<Feature>/` folder with PRD, implementation p
 ## Working Agreements
 
 - **PRD first, implementation plan second, code last.** No code until plan is approved.
-- **Testable phases.** Each phase produces something independently verifiable (in the browser, via curl or SQL, or by a test) AND ships its own tests. Shells before detail.
+- **Testable phases.** Each phase produces something independently verifiable by running it (in the UI, at the command line, via curl, or in a REPL) or by a test AND ships its own tests. Shells before detail.
 - **Test as you build.** Every aspect of code that's written gets a test in the same phase: unit tests for logic, integration tests for endpoints and module boundaries, end-to-end tests for user-facing flows. New code is not "done" until it's tested and the suite is green. No batching tests to the end.
 - **[If the project has a visual UI: primary viewport, e.g. mobile first with desktop as progressive enhancement.]**
 - **No auto-commits.** Claude does not commit unless explicitly asked.
@@ -272,7 +272,7 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 
 ## Workflow
 - PRD first, implementation plan second, code last. No code until the plan is approved.
-- Each implementation phase must produce something independently verifiable (in the browser, via curl or SQL, or by a test). Shells before detail.
+- Each implementation phase must produce something independently verifiable by running it (in the UI, at the command line, via curl, or in a REPL) or by a test. Shells before detail.
 - Do not commit unless explicitly asked.
 
 ## Decision Making
@@ -281,7 +281,7 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 ## Code Quality
 - Before creating a constant, type, or utility, search the codebase for existing definitions. Do not redeclare, import from the shared location.
 - If the same logic appears 3+ times (across files or within one file), extract it into a helper or middleware.
-- Never write `catch {}` without logging, showing user feedback, or re-throwing. Silent catches hide bugs.
+- Never write an empty catch or except block without logging, showing user feedback, or re-throwing. Silent catches hide bugs.
 - *(example, HTTP API)* Never `throw new Error(...)` in API route handlers. Always return an explicit HTTP response with a status code and structured body.
 - *(example, HTTP API)* Wrap all database calls in try/catch. Return 500 with `{ error: "Internal server error" }` on failure, never leak stack traces.
 - Keep functions under CC=15. If a function has more than ~15 branch points, refactor it.
@@ -296,7 +296,7 @@ Check if `~/.claude/CLAUDE.md` exists. If it does, read it and confirm it contai
 - The main agent exercises critical judgement on all feedback: apply it or document why not. Sub-agents are advisory, not authoritative.
 - Use judgement on when to invoke the full workflow. It's valuable for plans spanning 3+ files or involving schema/architecture changes. Skip for trivial changes.
 
-## Database & Migrations
+## Database & Migrations *(example, SQL database)*
 - Migration files are schema-only. Never add data manipulation (UPDATE, DELETE, INSERT) to migration files. If a migration would fail due to existing data (e.g., adding NOT NULL to a nullable column with NULL rows), surface it as a prerequisite for the user to handle (reset DB, seed clean data, etc.).
 - Before implementing schema changes, check whether the database has existing data that would conflict. Flag it to the user before writing any migration code.
 
@@ -348,7 +348,7 @@ Tell the user what was created:
 ### Created:
 - `.claude/CLAUDE.md`: [N] sections of project rules
 - `context/overview.md`: project overview with [tech stack, architecture, working agreements]
-- `~/.claude/CLAUDE.md`: [created / already exists, verified]
+- `~/.claude/CLAUDE.md`: [created / already exists, verified / declined]
 
 ### Workflow ready:
 - [List available skills]

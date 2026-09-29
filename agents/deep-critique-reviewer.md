@@ -39,7 +39,7 @@ Your review should cover:
 - Where the project has users and ownership, are auth/ownership boundaries enforced where they matter (signed-out, wrong-owner, expired session), or assumed?
 - If a migration or deploy goes wrong mid-way, what's the rollback, and does the plan name it?
 - Could you tell, in production, that this broke? Is there enough logging/observability to debug it at 3 a.m.?
-- This is a DFMEA-style pass: enumerate what could go wrong, ranked by likelihood × blast radius, and check the plan handles or consciously defers each. The most consequential gaps are usually what the plan is silent about, not what it gets wrong.
+- This is a failure-mode pass: enumerate what could go wrong, ranked by likelihood × blast radius, and check the plan handles or consciously defers each. The most consequential gaps are usually what the plan is silent about, not what it gets wrong.
 
 **Alignment with Project Goals**
 - Does this plan serve the stated product goals, or is it engineering for engineering's sake?
