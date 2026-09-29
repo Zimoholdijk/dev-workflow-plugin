@@ -1,8 +1,8 @@
 ---
 name: full-code-review
-description: Parallel multi-lens code review (security, backend, frontend, architecture, documentation, regressions, testing) with the roster selected mechanically from the diff's own signals — small single-surface diffs get a reduced roster, anything ambiguous or risky gets all seven. Findings then pass a mechanical quote check and a per-finding validation pass before anything reaches the user. The testing reviewer checks that new code has tests and actually runs the suite. Two scopes; branch diff review (default, use after completing an implementation before committing) or whole-codebase health check (pass 'full', use as a periodic project health check).
+description: Parallel multi-lens code review (security, backend, frontend, architecture, documentation, regressions, testing) with the roster selected mechanically from the diff's own signals — small single-surface diffs get a reduced roster, anything ambiguous or risky gets every reviewer, except that the frontend reviewer runs only when the diff contains UI code. Findings then pass a mechanical quote check and a per-finding validation pass before anything reaches the user. The testing reviewer checks that new code has tests and actually runs the suite. Two scopes; branch diff review (default, use after completing an implementation before committing) or whole-codebase health check (pass 'full', use as a periodic project health check).
 disable-model-invocation: false
-argument-hint: "[base branch or commit, e.g. 'main' or 'HEAD~5'; or 'full' for a whole-codebase health check; add 'depth:full' to force all seven reviewers]"
+argument-hint: "[base branch or commit, e.g. 'main' or 'HEAD~5'; or 'full' for a whole-codebase health check; add 'depth:full' to force every applicable reviewer]"
 ---
 
 # Full Code Review
@@ -14,7 +14,7 @@ If no base was provided, do not silently assume `main`. Determine the base branc
 1. Check `.claude/CLAUDE.md` and `context/overview.md` for a documented integration branch (gitflow projects diff against `develop`, others may use a release branch).
 2. If none is documented, ask the user which branch to compare against, suggesting `main` as the likely answer.
 
-Every reviewer brief below uses `<base>`; substitute the resolved base branch or commit. If the argument contains the token `depth:full`, the full seven-reviewer roster is forced regardless of what Step 2 finds.
+Every reviewer brief below uses `<base>`; substitute the resolved base branch or commit. If the argument contains the token `depth:full`, every reviewer is forced regardless of what Step 2 finds, except `frontend-reviewer`, which runs only when the diff contains UI code.
 
 The pipeline is: read the diff's *signals* (not its content) to select the roster → spawn reviewers → quote-check and dedup their findings mechanically → validate Critical/High findings with fresh second-opinion agents → consolidate and present → walk trade-offs. Findings the pipeline discards are still shown, in a Discarded section with the reason; nothing is silently dropped.
 
@@ -22,7 +22,7 @@ The pipeline is: read the diff's *signals* (not its content) to select the roste
 
 **Branch scope (default).** The argument is a base branch or commit (e.g. `main`, `develop`, `HEAD~5`). Reviewers focus on what changed on the current branch vs that base and grade it against the feature's planning docs and project rules. They do not lecture about pre-existing codebase concerns unrelated to the diff; anything pre-existing they do flag is routed to its own bucket.
 
-**Full scope.** If the argument is `full`, there is no diff. Reviewers scan the entire codebase: top-level patterns, conventions, shared infrastructure, and documentation. Use it as a periodic project health check. It always runs the full roster (minus `regression-reviewer`, which needs a diff). The reviewer briefs below are written for branch scope; apply the "Full scope adjustments" section when running full. The two modes are materially different and feeding the wrong context produces a noisy review.
+**Full scope.** If the argument is `full`, there is no diff. Reviewers scan the entire codebase: top-level patterns, conventions, shared infrastructure, and documentation. Use it as a periodic project health check. It always runs the full roster, minus `regression-reviewer` (it needs a diff) and minus `frontend-reviewer` when the codebase has no UI code. The reviewer briefs below are written for branch scope; apply the "Full scope adjustments" section when running full. The two modes are materially different and feeding the wrong context produces a noisy review.
 
 ## Step 1: Gather context (lightweight)
 
@@ -41,7 +41,7 @@ For **full scope**, skip the diff commands. Instead, read `context/overview.md` 
 
 ## Step 2: Select the roster from the diff's signals (mechanical)
 
-Branch scope only; full scope always runs the full roster minus regression. Derive the roster from the diff itself — **never from how the change was described to you**. The author's characterization of a change ("just a small frontend tweak") is the least reliable input in a review: it can *add* reviewers ("also run security"), it can force everything (`depth:full`), but it can never remove one. The diff is ground truth, and checking it is nearly free.
+Branch scope only; full scope always runs the full roster minus regression (and minus frontend when the codebase has no UI code). Derive the roster from the diff itself — **never from how the change was described to you**. The author's characterization of a change ("just a small frontend tweak") is the least reliable input in a review: it can *add* reviewers ("also run security"), it can force everything (`depth:full`), but it can never remove one. The diff is ground truth, and checking it is nearly free.
 
 Classify mechanically from `git diff <base>...HEAD --stat` and fixed-string/regex greps over `git diff <base>...HEAD` output. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
 
@@ -51,20 +51,20 @@ First split the changed files into **code** and **non-code**. Non-code: markdown
 |----------|--------------|
 | `testing-reviewer` | **Always, whenever any code file changed.** Every code change gets its coverage checked and the suite run. Not skippable (except in a docs-only diff). |
 | `regression-reviewer` | A **code** file contains deleted lines beyond pure whitespace/formatting/renames. Deletions in plans/docs don't count. |
-| `frontend-reviewer` | UI code of any kind changed: web (`.tsx`/`.jsx`/`.vue`/`.svelte`, styles, client hooks), mobile, or desktop views. Never spawned for a project with no UI. |
+| `frontend-reviewer` | UI code of any kind changed: web (`.tsx`/`.jsx`/`.vue`/`.svelte`, styles, client hooks), mobile, or desktop views. **Only when the diff contains UI code**: no escape hatch, size rule, or `depth:full` adds it otherwise. |
 | `backend-reviewer` | Non-UI application code changed: services, API handlers, CLI commands, library modules, data pipelines, database schema or migrations, background jobs, config. |
 | `security-reviewer` | Risk greps hit in a **code** file's hunks (a plan *discussing* auth is not a signal; auth code is): auth, session, token, password, secret, key, permission, role, policy, RLS, payment, price, upload, deserialize, exec, raw SQL, `fetch(`/HTTP calls with user input, redirect, CORS, cookie. Or any new/changed endpoint. |
 | `architecture-reviewer` | The diff adds new files, touches 2+ modules/layers, or moves code between layers. |
 | `documentation-reviewer` | The diff touches docs (`*.md`, `docs/`, `context/`) or adds a route, exported utility, env var, or other documented surface. |
 
-**Escape hatches — run all seven whenever any of these hold:**
+**Escape hatches — run every reviewer whenever any of these hold** (`frontend-reviewer` still only when the diff contains UI code):
 
 - The diff is roughly ≥ 150 changed **code** lines or ≥ 10 **code** files (past that size, single-surface claims stop being credible). Docs, plans, and lockfiles never count toward size.
 - Any changed **code** file doesn't classify cleanly (unknown extension, generated code, vendored deps, a file mixing UI and non-UI code). Non-code files never trigger this.
 - The user asked for it (`depth:full` or words to that effect).
 - You are uncertain for any reason. Ambiguity always resolves toward the full roster, never away from it.
 
-**Announce the roster before spawning**, one line of evidence per decision, e.g.: "Reduced roster (3 of 7): frontend (only `components/*.tsx` and `.css` changed, 28 lines), testing (always), regression (14 deleted lines). No backend files, no risk-grep hits — skipping backend, security, architecture, docs. Re-run with `depth:full` for all seven." Then proceed; don't block on confirmation. If the roster is the full seven, one line ("full roster: [reason]") is enough.
+**Announce the roster before spawning**, one line of evidence per decision, e.g.: "Reduced roster (3 of 7): frontend (only `components/*.tsx` and `.css` changed, 28 lines), testing (always), regression (14 deleted lines). No backend files, no risk-grep hits — skipping backend, security, architecture, docs. Re-run with `depth:full` for every applicable reviewer." Then proceed; don't block on confirmation. If the roster is the full set, one line ("full roster: [reason]") is enough.
 
 ## Step 3: Spawn the selected reviewers in parallel
 
@@ -82,7 +82,7 @@ Launch every selected reviewer agent in a **single message** so they run in para
 
 The `testing-reviewer` runs commands (it executes the suite); the rest are read-and-reason. All reviewers grade on the same anchored severity rubric (it lives in each agent's definition), and every finding must carry a verbatim **Evidence** quote — findings without one do not survive Step 4.
 
-In **full** scope, spawn six: skip `regression-reviewer` (it needs a diff) and note the skip in the final report rather than spawning an agent whose only output is "out of scope".
+In **full** scope, skip `regression-reviewer` (it needs a diff), and skip `frontend-reviewer` if the codebase has no UI code; note each skip in the final report rather than spawning an agent whose only output is "out of scope".
 
 ## Step 4: Mechanical quote gate and dedup (no judgment)
 
