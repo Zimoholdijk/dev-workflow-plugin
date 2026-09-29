@@ -144,7 +144,7 @@ Present the delivery summary:
 ```
 
 Suggest the user:
-1. Review the diff (`git diff <base>...HEAD --stat`, using the same base as the code review)
+1. Review the changes (`git diff $(git merge-base <base> HEAD) --stat` and `git status`, using the same base as the code review)
 2. Try the feature yourself (run the app, the command, or the examples)
 3. Commit when satisfied
 4. Create a PR when ready

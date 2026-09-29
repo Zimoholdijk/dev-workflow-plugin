@@ -15,8 +15,8 @@ If `$ARGUMENTS` is `local`, audit only uncommitted/unstaged changes. If a branch
 
 Based on the argument, set the audit scope:
 
-- **`local`**: Run `git diff --stat` and `git diff --staged --stat` to find changed files. The audit checks only that documentation reflects these local changes.
-- **`<base branch>`**: Run `git diff <base>...HEAD --stat` and `git log <base>..HEAD --oneline` to find all changes on this branch. The audit checks that documentation reflects all branch changes.
+- **`local`**: Run `git status --porcelain` to find every changed, staged, and new file. The audit checks only that documentation reflects these local changes.
+- **`<base branch>`**: Run `git diff $(git merge-base <base> HEAD) --stat`, `git ls-files --others --exclude-standard`, and `git log <base>..HEAD --oneline` to find all changes on this branch, committed or not. The audit checks that documentation reflects all branch changes.
 - **No argument (full audit)**: No diff scoping: audit ALL documentation against the full codebase.
 
 ## Step 2: Spawn the doc-auditor (two passes)
@@ -26,7 +26,7 @@ Both passes use the `doc-auditor` sub-agent; the task message tells it which mod
 ### Pass 1: Change-scoped (skip if full audit with no argument)
 
 Only run this pass if a scope was provided (`local` or a base branch). Spawn `doc-auditor` in **Mode A (change-scoped)**, telling it:
-- which diff command to use (`git diff` for local, `git diff <base>...HEAD` for a branch),
+- which diff command to use (`git diff HEAD` for local, `git diff $(git merge-base <base> HEAD)` for a branch, plus the new files listed by `git ls-files --others --exclude-standard` in both cases),
 - the project's primary docs to check against (`context/overview.md`, `.claude/CLAUDE.md`, relevant feature `progress.md` files).
 
 ### Pass 2: Full audit

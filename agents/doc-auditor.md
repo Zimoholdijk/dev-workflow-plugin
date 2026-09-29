@@ -12,7 +12,7 @@ The documentation you audit is whatever the project uses as its source of truth,
 
 ## Mode A: change-scoped (the task gives you a diff scope)
 
-The task tells you whether to use `git diff` (uncommitted) or `git diff <base>...HEAD` (branch). Run it, then for each **meaningful** change (skip whitespace/comment/format-only) check whether the docs kept up:
+The task tells you which diff to use: `git diff HEAD` (local) or `git diff $(git merge-base <base> HEAD)` (branch), plus the new files listed by `git ls-files --others --exclude-standard` in both cases. Run it, then for each **meaningful** change (skip whitespace/comment/format-only) check whether the docs kept up:
 
 1. **New shared utility / helper / hook / lib / route / middleware** added: is it listed where the project records shared code (e.g. a Shared Utilities table in `overview.md`, a File Organization list in `CLAUDE.md`)?
 2. **Schema / data-model change**: are the related claims in the docs still accurate?

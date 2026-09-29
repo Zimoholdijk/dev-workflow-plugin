@@ -28,7 +28,7 @@ The pipeline is: read the diff's *signals* (not its content) to select the roste
 
 Run these commands to understand what changed at a high level:
 
-1. `git diff <base>...HEAD --stat`: list of changed files
+1. `git diff $(git merge-base <base> HEAD) --stat` plus `git ls-files --others --exclude-standard`: every changed and every new file since the branch point, committed or not. The code under review is usually uncommitted, because commits are the user's, so never review committed history alone.
 2. `git log <base>..HEAD --oneline`: commits being reviewed
 
 Also read:
@@ -43,7 +43,7 @@ For **full scope**, skip the diff commands. Instead, read `context/overview.md` 
 
 Branch scope only; full scope always runs the full roster minus regression (and minus frontend when the codebase has no UI code). Derive the roster from the diff itself — **never from how the change was described to you**. The author's characterization of a change ("just a small frontend tweak") is the least reliable input in a review: it can *add* reviewers ("also run security"), it can force everything (`depth:full`), but it can never remove one. The diff is ground truth, and checking it is nearly free.
 
-Classify mechanically from `git diff <base>...HEAD --stat` and fixed-string/regex greps over `git diff <base>...HEAD` output. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
+Classify mechanically from the Step 1 file list and fixed-string/regex greps over `git diff $(git merge-base <base> HEAD)` output plus the content of each new untracked file. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
 
 First split the changed files into **code** and **non-code**. Non-code: markdown and docs (`*.md`, `docs/`, `context/`, plans, PRDs), lockfiles (`package-lock.json`, `yarn.lock`, etc.), and images/other assets. Everything else is code — including config, migrations, and scripts. All size thresholds below count **code lines only**: a 400-line plan committed alongside a 12-line code tweak is a 12-line diff for roster purposes. If the diff contains **no code files at all** (a plans/docs-only commit), spawn only `documentation-reviewer` and say so; there is nothing for the other lenses to review.
 
@@ -90,7 +90,7 @@ In **full** scope, skip `regression-reviewer` (it needs a diff), and skip `front
 
 When the reviewers return, run two purely mechanical filters yourself. These require no code comprehension, so they don't violate the no-pre-digestion rule:
 
-1. **Quote check.** Write `git diff <base>...HEAD` to a temp file once. For each finding, grep its Evidence quote with fixed-string matching (`grep -F`) first in that diff, then (if not found) in the cited file. Whitespace-insensitive matching is fine; paraphrase is not. A finding whose quote matches nothing goes to **Discarded (citation not found)**. Do not repair or reinterpret a failed quote on the reviewer's behalf.
+1. **Quote check.** Write `git diff $(git merge-base <base> HEAD)` to a temp file once. For each finding, grep its Evidence quote with fixed-string matching (`grep -F`) first in that diff, then (if not found) in the cited file. Whitespace-insensitive matching is fine; paraphrase is not. A finding whose quote matches nothing goes to **Discarded (citation not found)**. Do not repair or reinterpret a failed quote on the reviewer's behalf.
 2. **Dedup.** Two findings are duplicates when they cite the same file, lines within ±3 of each other, and describe substantially the same issue. Merge them into one entry listing every reviewer that flagged it. **Cross-reviewer agreement is the strongest confidence signal**: mark merged findings as corroborated and keep the highest severity assigned.
 
 Also split out findings marked **Pre-existing: yes** into their own bucket now (branch scope); they skip validation and are presented separately as non-blocking.

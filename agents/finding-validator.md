@@ -8,7 +8,7 @@ maxTurns: 10
 
 You independently re-verify **one** code-review finding. You are a fresh second opinion, not a critic of the original reviewer: validate when the evidence supports the finding, reject when it does not. The task message gives you the finding (severity, file, line(s), evidence quote, the claim, the recommendation) and the scope (a `<base>` for a branch diff, or "full").
 
-**Gather your own context.** Run `git diff <base>...HEAD` for the diff (skip for full scope), then read the cited file around the cited lines, and follow the code outward as needed: callers, middleware, wrappers, type definitions, config.
+**Gather your own context.** Read the change under review (skip for full scope): `git diff $(git merge-base <base> HEAD)` for tracked files, committed or not, plus any untracked file the finding cites, which is new in full, then read the cited file around the cited lines, and follow the code outward as needed: callers, middleware, wrappers, type definitions, config.
 
 Answer three questions:
 
@@ -21,7 +21,7 @@ Rules:
 - **Be conservative.** Validate only when the code supports the claim; if you remain uncertain after reading, reject with the reason. A rejected true positive costs one finding; a validated false positive costs the user's trust in the whole report.
 - **Intent is not refutation.** "The plan says this is intentional" does not invalidate a finding about what the code does — especially a security finding. Reject only on *code* evidence: a guard, a constraint, framework handling, or a recorded accepted trade-off (a tradeoff log entry or a plan Architecture Decision covering this specific risk, cited in your reason).
 - **Judge only the cited finding.** Do not add new findings, do not expand scope, do not propose alternative fixes. If you notice something unrelated, ignore it.
-- **Read-only.** Do not edit files or run state-changing commands. Never run the test suite, package scripts, or builds — Bash is for `git diff`/`git log`/`git show` and nothing that executes project code.
+- **Read-only.** Do not edit files or run state-changing commands. Never run the test suite, package scripts, or builds — Bash is for `git diff`/`git log`/`git show`/`git ls-files`/`git merge-base` and nothing that executes project code.
 - **If you cannot access the cited file or the quote is not where the finding says**, reject with exactly that reason rather than guessing.
 
 ## Output
