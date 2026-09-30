@@ -1,13 +1,13 @@
 {
-  "name": "plan-first-marketplace",
-  "description": "Marketplace hosting the plan-first Claude Code plugin",
+  "name": "dev-workflow-marketplace",
+  "description": "Marketplace hosting the dev-workflow Claude Code plugin",
   "owner": {
     "name": "Zimoholdijk",
     "email": "hello@zimoholdijk.com"
   },
   "plugins": [
     {
-      "name": "plan-first",
+      "name": "dev-workflow",
       "description": "PRD-first development workflow with testing built in: PRDs, a pre-plan architecture discussion that settles design decisions before phasing, phased plans (tests ship per phase), multi-lens plan reviews (clarifying-questions, deep-critique, and adversarial red-team passes), a docs-first research sub-agent, implementation tracking, Playwright e2e tests via bundled MCP, code reviews (up to 7 reviewers, including a test-execution pass), tradeoff decisions, and doc audits.",
       "source": "./"
     }
