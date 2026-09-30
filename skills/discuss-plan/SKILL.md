@@ -69,7 +69,7 @@ Pure product/UX-preference choices with no documented answer don't need research
 Some design calls turn on facts you cannot read off the code: whether production data already exists, how many rows a table really holds, what a query currently costs, whether an index or constraint is actually present, what a live policy or trigger does at runtime, current error rates. Do not guess these, they change the answer (and a wrong guess on a one-way door is the expensive mistake).
 
 - **Investigate yourself** where you can: read the migration, the schema, the function body. If a documentation or database MCP is connected (for example a docs-search MCP, a database MCP with read-only query tools, or read-only logs), use it to check docs and inspect non-destructive state.
-- **Ask the user to investigate** what you can't reach: a specific read-only query, command, or log check to run against production or staging, a row count, a metric to read, a check in the dashboard. Give them the exact thing to run and what you'll do with each outcome, then fold the result into the decision before moving on.
+- **Ask the user to investigate** what you can't reach: a specific read-only query, command, or log check to run against production or staging, a row count, a metric to read, a check in an admin console. Give them the exact thing to run and what you'll do with each outcome, then fold the result into the decision before moving on.
 - When a fact governs an irreversible call and you genuinely cannot confirm it, **assume the safe direction** (e.g. assume production data exists) and say you did, so the design errs toward reversibility.
 
 ## Step 5: Walk the topics

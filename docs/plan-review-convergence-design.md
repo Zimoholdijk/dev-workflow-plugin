@@ -7,7 +7,7 @@
 ## 1. The problem this solves
 
 Iterative cold review (clarifying, deep-critique, red-team, re-run each round) is excellent at
-*finding* issues but had no principled *stop*. In a long run the architecture
+*finding* issues but has no principled *stop* on its own. In a long run the architecture
 can settle early while a single tightly coupled subsystem keeps producing a new
 correctness bug every round, often one introduced by the previous round's own fix.
 A cold reader will always find "the next seam" in non-deterministic code, so prose
@@ -170,9 +170,7 @@ Only **One-way and Significant** findings gate convergence. Medium and Minor do 
   push an irreversible decision to "fix in code later"). But a **second** One-way in the
   same area, or one that will not stay settled across two rounds, **escalates**: the
   assessor returns `Escalate` and the loop stops for a user architecture decision, rather
-  than point-fixing symptoms forever. (The old design only raised an advisory flag here and
-  kept looping, which is how a loop can run many rounds on one area,
-  each round point-fixing a new symptom of the one architecture decision underneath.) A
+  than point-fixing symptoms forever. A
   One-way fixed once and then clean through a fully-cold round is **settled** and stops
   gating, **but its area's One-way count persists across banking**: banking suspends
   gating, it does not erase history, so a second One-way in a previously-banked area still
@@ -252,7 +250,7 @@ fixes the contradictions it finds, and re-checks those follow-on fixes.
 ## 9. Handoff to `implement-plan`: write obligations into the plan
 
 The test-obligation list is not a loose handoff. It is **written into the implementation
-plan itself at convergence**, before `implement-plan` is ever invoked. The assessor
+plan itself at convergence** (or when the user accepts the residual after an escalation, with the pinned obligations included), before `implement-plan` is ever invoked. Until then, pinned obligations live in the sidecar only. The assessor
 produces the list (every Medium and Minor from the run); the
 orchestrator (the only writer) then does two things to `implementation-plan.md`:
 

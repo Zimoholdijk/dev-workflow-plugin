@@ -21,7 +21,7 @@ These rules are non-negotiable:
 6. **Shells before detail.** For UI work, create the page or screen shell first, then the interactive parts inside it, so every phase has somewhere to render.
 7. **Document freeze.** Once approved, the plan is frozen. Deviations during implementation go in `progress.md`.
 8. **Surface all trade-offs, but research them first.** Never accept trade-offs silently. Note known limitations, performance compromises, and security implications. But before presenting a trade-off as an open choice, research it (Step 2.6): documented best practice often resolves it outright, and the user should only adjudicate genuinely open choices, each backed by evidence, never a bare "A or B?" they have to research themselves.
-9. **Facts before phases.** A plan rests on claims about the world: what the data actually looks like, how many rows there really are, what the current code does at runtime. Every such claim is verified before drafting (Step 1.5) and recorded in the plan's **Verified Facts** section with how it was checked. Never guess the shape of the data, the volume of a table, or the behavior of existing code when a query, a file read, or one question to the user would settle it. And never defer the check into the plan: a "Phase 0", "probe", or "spike" phase whose purpose is to discover something the planner could learn today is not a phase, it is unfinished planning. A discovery phase survives only when the fact cannot exist before the code does (an access key that does not exist yet, a system not yet deployed), and then the plan says why and what each outcome changes.
+9. **Facts before phases.** A plan rests on claims about the world: what the data actually looks like, how many rows there really are, what the current code does at runtime. Every such claim is verified before drafting (Step 1.5) and recorded in the plan's **Verified Facts** section with how it was checked. Never guess the shape of the data, the volume of a table, or the behavior of existing code when a query, a file read, or one question to the user would settle it. And never defer the check into the plan: a "Phase 0", "probe", or "spike" phase whose purpose is to discover something the planner could learn today is not a phase, it is unfinished planning. A discovery phase survives only when the fact cannot exist before the code does (a dependency not yet released, an environment not yet provisioned), and then the plan says why and what each outcome changes.
 10. **Structure smell-check before finalizing.** Before presenting the plan for review, re-read every phase looking for this shape: "for type A do X with separator Y1; for type B do X with separator Y2." When N branches differ only by a literal or small piece of metadata, surface "branched plan vs. single path with data difference" as an explicit Architecture Decision trade-off. A branched plan produces branched code; catching it in prose is cheaper than refactoring merged code.
 
 ## Step 1: Gather context
@@ -50,7 +50,7 @@ Before drafting, list every claim the plan's correctness depends on that is a fa
 
 **How a fact gets verified, in order:** read the code and the schema; then, if a database MCP with a query tool is connected, run a read-only `SELECT` yourself (show the query before it runs; never a write, never a call that mutates or costs, and nothing against production beyond a read); otherwise hand the user the exact query, log lookup, or dashboard check to run, say what each outcome means for the plan, and **wait for the answer**. Only when the fact is genuinely unobtainable does the safe assumption apply (assume production data exists, assume the worst case the documentation allows), stated as an assumption, never as a fact.
 
-Record each fact in the plan's **Verified Facts** section: the claim, how it was checked (the query, the file and line, or "user confirmed"), and the result. Reviewers inherit these as project facts, so a fact you verify once is not re-litigated for five rounds; a fact you skip becomes a round of review against a guess. If a verified fact contradicts a seeded Architecture Decision, flag it to the user before drafting around it.
+Record each fact in the plan's **Verified Facts** section: the claim, how it was checked (the query, the file and line, or "user confirmed"), and the result. Reviewers inherit these as project facts, so a fact you verify once is not re-litigated every round; a fact you skip becomes a round of review against a guess. If a verified fact contradicts a seeded Architecture Decision, flag it to the user before drafting around it.
 
 ## Step 2: Draft the plan
 
@@ -310,7 +310,7 @@ Do NOT proceed to implementation until the user explicitly approves the plan (af
 - No Review Log inside the plan (it's a sidecar)
 - No phases that can't be independently verified (browser, curl, SQL, or a test)
 - No "Phase 0" / probe / spike phase to learn a fact the planner could verify now (Step 1.5); discovery belongs in Verified Facts, not in a phase
-- No claim about response shape, data volume, or current behavior that is not in Verified Facts
+- No claim about the data, its volume, or current behavior that is not in Verified Facts
 - No phase that adds logic without naming the tests it adds for that logic
 - No plan without a Testing Strategy section
 - No file changes without a phase assignment

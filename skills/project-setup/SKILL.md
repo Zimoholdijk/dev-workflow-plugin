@@ -22,8 +22,8 @@ Before creating anything, check what already exists:
 3. Check if `context/` directory exists
 4. Check if `context/overview.md` exists
 5. Read `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `Gemfile`, or equivalent to detect tech stack
-6. Read `prisma/schema.prisma`, `drizzle.config.ts`, `knexfile.js`, or equivalent to detect ORM/DB
-7. Check for existing framework config (`next.config.*`, `vite.config.*`, `astro.config.*`, etc.)
+6. Read the ORM or database config (e.g. `prisma/schema.prisma`, `alembic.ini`, a Django `models.py`, or equivalent) to detect ORM/DB
+7. Check for existing framework config (e.g. `next.config.*`, `vite.config.*`, Django `settings.py`, `config/routes.rb`, or equivalent)
 
 If any of `.claude/CLAUDE.md`, `context/overview.md` already exist, ask the user whether to replace or skip them. Never silently overwrite.
 
@@ -41,7 +41,7 @@ Ask the user these questions (skip any that were auto-detected in Step 1):
 6. **Deployment target**: where will this run? (helps inform env var conventions)
 7. **Local-dev gotchas**: any non-default ports, service quirks, pre-existing build/lint errors, or env vars that have bitten before? (these go in CLAUDE.md so a fresh session doesn't waste its first turns rediscovering them)
 8. **Testing reality**: what test infrastructure exists today, if any? Can new features assume a suite?
-9. **Issue tracker / board**: which tracker does this project use, and what's the specific target? (e.g. GitHub Issues: `owner/repo`; Linear: team and project keys; Notion: backlog data source ID). This is what `discuss-feature` and `write-prd` read when creating tickets. If the global `~/.claude/CLAUDE.md` names a default tracker, confirm it applies here or override it. Skip only if the project has no board.
+9. **Issue tracker / board**: which tracker does this project use, and what's the specific target? (e.g. GitHub Issues: `owner/repo`; Linear: team and project keys; Notion: backlog data source ID). This is what `discuss-feature` reads when creating tickets (and `write-prd` when fetching one). If the global `~/.claude/CLAUDE.md` names a default tracker, confirm it applies here or override it. Skip only if the project has no board.
 
 Do NOT proceed until the user has confirmed or provided this info. The overview and CLAUDE.md must reflect the actual project, not assumptions.
 
@@ -83,7 +83,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Things that have bitten before and would waste a fresh session's first turns. Examples:
 - Non-default dev server port or config
 - Docker or service naming quirks
-- Pre-existing build/lint errors that are NOT yours to fix (the bar: add zero new ones)
+- Pre-existing build/lint errors that are NOT yours to fix
 - Env vars whose behavior differs from what their name suggests]
 [Fill from Step 2 question 7. Omit this section until something has actually bitten.]
 
@@ -150,7 +150,7 @@ This file contains project-specific rules that Claude must follow. Create it wit
 [Fill from Step 2 question 9. State the tracker and the exact target so discuss-feature can create tickets without asking. Examples:
 - GitHub Issues: `[owner/repo]`
 - Linear: team `[KEY]`, project `[name]`
-Omit this section only if the project has no board; discuss-feature then asks once whether to file a ticket, and otherwise delivers the decision summary.]
+Omit this section only if the project has no board; discuss-feature then asks once whether to file a ticket and where (suggesting the default tracker from `~/.claude/CLAUDE.md`, if one is named); if the user says no, it just delivers the decision summary.]
 
 ## Workflow Skills
 The plan-first skills are available: `/discuss-feature`, `/write-prd`, `/discuss-plan`, `/write-plan`, `/plan-review`, `/research`, `/implement-plan`, `/write-e2e-tests`, `/full-code-review`, `/doc-audit`, `/tradeoff-review`, `/discuss-simply`, `/overnight-delivery`. For anything non-trivial, walk the user through the planning workflow (optionally `/discuss-feature` first, then PRD, then `/discuss-plan`, then implementation plan, then implementation, with tests written as each phase lands) before writing code. The plugin also bundles the Playwright MCP (`mcp__playwright__*` browser tools) that `/write-e2e-tests` uses to drive a real browser.

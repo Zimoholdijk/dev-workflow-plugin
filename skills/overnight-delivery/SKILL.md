@@ -37,12 +37,12 @@ Why convergence beats a fixed number: a one-way door or significant change is ne
 What to rely on (plan-review owns the mechanics):
 - **Cold start every round.** The `review-log.md` sidecar is withheld from reviewers, so a late round scrutinizes the plan as hard as the first.
 - **Trade-offs carry to the Stage 3 gate.** This pipeline runs unattended, so genuine user-owned trade-offs surfaced during the loop are accumulated for `/tradeoff-review` at Stage 3, not blocked on mid-loop. Clear, best-practice-resolved decisions are applied in-loop with their citation.
-- **Test obligations land in the plan.** At convergence, everything review deferred to code+tests is written into `implementation-plan.md` as a `## Test Obligations` section plus per-phase references. Stage 4 (`/implement-plan`) is required to fulfil them, so nothing deferred is silently lost.
+- **Test obligations land in the plan.** At convergence (or when the user accepts the residual after an escalation), everything review deferred to code+tests is written into `implementation-plan.md` as a `## Test Obligations` section plus per-phase references. Stage 4 (`/implement-plan`) is required to fulfil them, so nothing deferred is silently lost.
 - **Sidecar per round.** Each round appends to `context/[Feature]/review-log.md` with the round's graded findings and the assessor's verdict; the plan status is set to "Reviewed" once converged.
 
 plan-review's interactive round-3 design checkpoint does not fire here (there is no user to discuss with overnight); a loop still open after round 3 runs straight on toward the cap, and any design question arrives via the escalation path below.
 
-**If the assessor returns `Escalate`** (a second One-way in one area, an unsettleable One-way, a third Significant in one area, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds).
+**If the assessor returns `Escalate`** (a second One-way in one area, an unsettleable One-way, a third Significant in one area, or the round-5 cap), the plan has a problem more rounds cannot fix. **Stop the pipeline here.** Do not proceed to Stage 4 on an unsettled architecture, and do not keep looping. Record the escalation (trigger, root cause, the decision required) as the first and blocking item of the Stage 3 tradeoff gate, present Stage 3 to the user, and wait. The pipeline resumes only after the user decides (redesign the plan and re-run Stage 2, accept the residual explicitly, or knowingly authorize more review rounds). If they accept the residual, finish plan-review's convergence write-up first, so the pinned obligations land in the plan.
 
 ---
 
@@ -132,7 +132,7 @@ Present the delivery summary:
 - [N] code review rounds (2)
 - [N] findings fixed
 - [N] tradeoffs accepted
-- Final verdicts: Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict], Regressions [verdict], Testing [verdict] (or "not run: <reason>" for a lens the roster skipped)
+- Final verdicts, per lens ("not run: <reason>" if the roster skipped it, "not delivered" if it failed): Security [verdict], Backend [verdict], Frontend [verdict], Architecture [verdict], Documentation [verdict], Regressions [verdict], Testing [verdict]
 
 ### Documentation updated
 - overview.md: [what changed]

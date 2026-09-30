@@ -35,7 +35,7 @@ Also read:
 - `~/.claude/CLAUDE.md` (global rules)
 - `.claude/CLAUDE.md` (project rules, if it exists)
 
-For **full scope**, skip the diff commands. Instead, read `context/overview.md` and `.claude/CLAUDE.md`, then list the top-level directories the review should cover (e.g. `src/`, `api/`, `db/`). Tell the user which directories are in scope and ask to confirm before spawning: the review is expensive (up to seven parallel reviewers plus validators) and easy to misframe.
+For **full scope**, skip the diff commands. Instead, read `context/overview.md` and `.claude/CLAUDE.md`, then list the top-level directories the review should cover (e.g. `src/`, `api/`, `db/`). Tell the user which directories are in scope and ask to confirm before spawning: the review is expensive (up to six parallel reviewers plus validators) and easy to misframe.
 
 **Important:** Do NOT pre-read the full diff, source files, or overview yourself. Each reviewer agent will gather its own context by reading the codebase directly. Your job is to orchestrate and to run the *mechanical* checks in Steps 2 and 4; the judgment calls belong to the reviewers and validators.
 
@@ -45,7 +45,7 @@ Branch scope only; full scope always runs the full roster minus regression (and 
 
 Classify mechanically from the Step 1 file list and fixed-string/regex greps over `git diff $(git merge-base <base> HEAD)` output plus the content of each new untracked file. Do not read or interpret the code itself — file paths, extensions, line counts, and grep hits only:
 
-First split the changed files into **code** and **non-code**. Non-code: markdown and docs (`*.md`, `docs/`, `context/`, plans, PRDs), lockfiles (`package-lock.json`, `yarn.lock`, etc.), and images/other assets. Everything else is code — including config, migrations, and scripts. All size thresholds below count **code lines only**: a 400-line plan committed alongside a 12-line code tweak is a 12-line diff for roster purposes. If the diff contains **no code files at all** (a plans/docs-only commit), spawn only `documentation-reviewer` and say so; there is nothing for the other lenses to review.
+First split the changed files into **code** and **non-code**. Non-code: markdown and docs (`*.md`, `docs/`, `context/`, plans, PRDs), lockfiles (`package-lock.json`, `yarn.lock`, etc.), and images/other assets. Everything else is code — including config, migrations, and scripts. All size thresholds below count **code lines only**: a large plan committed alongside a small code change counts only the code lines for roster purposes. If the diff contains **no code files at all** (a plans/docs-only commit), spawn only `documentation-reviewer` and say so; there is nothing for the other lenses to review.
 
 | Reviewer | Include when |
 |----------|--------------|

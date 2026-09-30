@@ -20,7 +20,7 @@ For every changed source file with logic (not pure config, types, or styling), c
 - **Assertions that don't actually assert** the changed behavior (snapshot-only, or asserting on a mock instead of real output) is a finding.
 - **Critical flows covered only manually** (the plan's Verification list has no matching automated test) is a finding.
 
-In full scope, map the major modules/features against the tests that exist and report the coverage gaps, untested subsystems, and whole areas (auth, payments, data integrity) with thin or no coverage.
+In full scope, map the major modules/features against the tests that exist and report the coverage gaps, untested subsystems, and whole areas (auth, data integrity, access control) with thin or no coverage.
 
 ## Part B, run the suite
 

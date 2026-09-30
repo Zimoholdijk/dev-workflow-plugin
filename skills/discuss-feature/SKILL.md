@@ -18,7 +18,7 @@ These are non-negotiable and apply to every message in the discussion:
 1. **150 words maximum per message.** Hard cap. If a topic needs more, it is two topics.
 2. **One topic per message.** Never bundle. Wait for the user's answer before moving to the next topic.
 3. **Plain English.** No jargon, no code blocks, no headers, no bullet-heavy structure. Conversational prose. (One exception: the decision summary table at the end.)
-4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree with keeping it that lean?") or a single open lean ("Which way do you lean on the URL?"). Never numbered option menus, never stacked asks.
+4. **Every message ends with exactly one question.** Either yes/no on your recommendation ("Agree with keeping it that lean?") or a single open lean ("Which way do you lean on the default view?"). Never numbered option menus, never stacked asks.
 5. **Trade-offs in prose with a recommendation.** Describe 2-3 realistic options in flowing sentences, say which one you lean toward and why, then let the user decide. Never decide silently.
 6. **Record and move on.** Once the user decides, do not relitigate. Acknowledge in a few words and open the next topic.
 7. **No em dashes in customer-facing copy** you draft (CTA text, UI strings, product emails or notifications); use commas, colons, or separate sentences, and follow any other writing-style rules in CLAUDE.md. The discussion and the ticket are internal, em dashes there are fine.
@@ -49,7 +49,7 @@ Then one topic per message, each following the Response Rules. Within a topic:
 
 - If the user asks a clarifying question, answer it inside the word budget, then re-ask your question.
 - If the user proposes something, evaluate it honestly: agree and build on it, or push back with the concrete cost.
-- If the user seems confused by your phrasing, restate concretely (bullet the two or three concrete artifacts: page, URL, button) rather than re-explaining abstractly.
+- If the user seems confused by your phrasing, restate concretely (bullet the two or three concrete artifacts: screen, button, message) rather than re-explaining abstractly.
 - Surface relearning and migration costs for existing production users as explicit trade-offs the user accepts, not footnotes.
 
 ## Step 4: Wrap up
@@ -57,7 +57,7 @@ Then one topic per message, each following the Response Rules. Within a topic:
 When the topic list is exhausted, ask whether there is anything else to discuss. Then:
 
 1. **Decision summary.** One short table: Topic | Decision. This is the one place structure is allowed.
-2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`) containing the problem framing and the decision list. Create it only after the user confirms. If the project has no Issue Tracker section, ask once whether to file a ticket and where; if the user says no, just deliver the decision summary.
+2. **Ticket.** Offer to create a ticket on the project's board (the Issue Tracker section of `.claude/CLAUDE.md`) containing the problem framing and the decision list. Create it only after the user confirms. If the project has no Issue Tracker section, ask once whether to file a ticket and where (suggesting the default tracker from `~/.claude/CLAUDE.md`, if one is named); if the user says no, just deliver the decision summary. If the tracker's MCP server or CLI is not available, skip the ticket and deliver the summary.
 3. **Handoff.** Suggest `/write-prd [Feature]` as the next step, noting that the decisions here pre-fill the PRD's Decided table and the framing pre-fills its Overview.
 
 Do not write the PRD inside this skill. The discussion ends at the ticket.
